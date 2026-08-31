@@ -8,6 +8,7 @@ import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseImportFile } from '@/lib/import'
 import { writeImport } from '@/lib/importStore'
 import { setDemoMode, setImportSession } from '@/lib/sessionMode'
+import { playSuccess } from '@/lib/sounds'
 import { BRAND } from '@/lib/branding'
 import TroveMark from '@/components/TroveMark'
 import styles from './LandingPage.module.css'
@@ -146,6 +147,7 @@ export default function LandingPage() {
       setError(signInError.message)
       return
     }
+    playSuccess()
     router.push('/library')
     router.refresh()
   }

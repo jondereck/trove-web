@@ -56,7 +56,7 @@ export default function SettingsPage() {
   return (
     <AppShell mode="cloud">
       <h1 className={`serif ${styles.title}`}>Settings</h1>
-      <p className={styles.subtitle}>Trove Web · read-only Cloud library on this device</p>
+      <p className={styles.subtitle}>Trove Web · browse and Quick Save on this device</p>
 
       <Card className={styles.card}>
         <CardHeader>
@@ -76,7 +76,7 @@ export default function SettingsPage() {
         <CardContent className={styles.switchRow}>
           <div>
             <p className={styles.switchLabel}>Interaction sounds</p>
-            <p className={styles.switchHint}>Subtle taps when wired in a later update.</p>
+            <p className={styles.switchHint}>Subtle taps on navigation and sign-in when enabled.</p>
           </div>
           <Switch
             checked={sounds}
@@ -92,7 +92,7 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>About</CardTitle>
           <CardDescription>
-            Trove Web is in active development. Vault, editing, and Quick Save arrive in later phases.
+            Trove Web is in active development. Vault and advanced editing arrive in later phases.
           </CardDescription>
         </CardHeader>
       </Card>

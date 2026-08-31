@@ -3,6 +3,7 @@
 
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import AppShell from '@/components/AppShell'
 
@@ -29,6 +30,7 @@ import { createClient } from '@/lib/supabase/client'
 import { countsByType } from '@/lib/libraryCore'
 
 import { useLibrarySaves } from '@/lib/useLibrarySaves'
+import { playSuccess } from '@/lib/sounds'
 
 import type { LibraryStats } from '@/lib/types'
 
@@ -38,9 +40,17 @@ import styles from './LibraryPage.module.css'
 
 export default function LibraryPage() {
 
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { loading: sessionLoading, error: sessionError, saves: localSaves, mode, importFileName, firstName } =
 
     useLibrarySaves()
+
+  useEffect(() => {
+    if (searchParams.get('signed_in') !== '1') return
+    playSuccess()
+    router.replace('/library')
+  }, [router, searchParams])
 
   const hour = new Date().getHours()
 

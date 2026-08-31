@@ -1,0 +1,101 @@
+.header {
+  margin-bottom: 24px;
+}
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--trove-muted);
+  margin-bottom: 6px;
+}
+
+.title {
+  font-size: 36px;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.empty {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: var(--trove-text-sub);
+}
+
+.empty p {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--trove-text);
+  margin: 0 0 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.cardWide {
+  grid-column: 1 / -1;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.chartBox {
+  width: 100%;
+}
+
+.legend {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 13px;
+  color: var(--trove-text-sub);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.muted {
+  color: var(--trove-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

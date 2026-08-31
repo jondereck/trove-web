@@ -120,6 +120,21 @@ export async function fetchCloudLibrarySaves(supabase: SupabaseClient): Promise<
   return saves
 }
 
+export async function fetchCloudSavesForStats(supabase: SupabaseClient): Promise<Save[]> {
+  const all: Save[] = []
+  const pageSize = 500
+  let offset = 0
+
+  while (true) {
+    const { saves, total } = await fetchCloudLibrarySavesPage(supabase, offset, pageSize, 'all')
+    all.push(...saves)
+    if (all.length >= total || saves.length < pageSize) break
+    offset += pageSize
+  }
+
+  return all
+}
+
 export async function fetchProfileFirstName(supabase: SupabaseClient): Promise<string | undefined> {
   const { data } = await supabase.from('profiles').select('first_name').maybeSingle()
   const name = data?.first_name

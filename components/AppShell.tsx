@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
+  BarChart3,
   ChevronDown,
   FolderOpen,
   Inbox,
@@ -17,7 +18,9 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
+import { playNavClick } from '@/lib/sounds'
 import MobileDesktopGate from '@/components/MobileDesktopGate'
+import QuickSaveFab from '@/components/QuickSaveFab'
 import TroveMark from '@/components/TroveMark'
 import UserAvatar from '@/components/UserAvatar'
 import styles from './AppShell.module.css'
@@ -33,6 +36,7 @@ const NAV: NavItem[] = [
   { label: 'Library', href: '/library', icon: <LayoutGrid size={18} strokeWidth={1.75} /> },
   { label: 'Collections', href: '/collections', icon: <FolderOpen size={18} strokeWidth={1.75} /> },
   { label: 'Search', href: '/search', icon: <Search size={18} strokeWidth={1.75} /> },
+  { label: 'Statistics', href: '/statistics', icon: <BarChart3 size={18} strokeWidth={1.75} /> },
   { label: 'Unsorted', icon: <Inbox size={18} strokeWidth={1.75} />, soon: true },
 ]
 
@@ -67,11 +71,17 @@ export default function AppShell({ mode, importFileName, children }: Props) {
   }, [mode])
 
   const isActive = (href: string) => {
-    if (href === '/library') return pathname === '/library' || pathname.startsWith('/library/')
+    if (href === '/library') {
+      return pathname === '/library' || pathname.startsWith('/library/') || pathname.startsWith('/tracker/')
+    }
     if (href === '/collections') {
       return pathname === '/collections' || pathname.startsWith('/collections/')
     }
-    return pathname === href
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
+  const handleNavClick = () => {
+    playNavClick()
   }
 
   const signOut = async () => {
@@ -102,6 +112,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
                     key={item.label}
                     href={item.href}
                     className={isActive(item.href) ? styles.navActive : styles.navLink}
+                    onClick={handleNavClick}
                   >
                     <span className={styles.navIcon}>{item.icon}</span>
                     {item.label}
@@ -139,6 +150,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
           <div className={styles.mainWrap}>
             {children}
+            <QuickSaveFab mode={mode} />
           </div>
         </div>
       </div>
