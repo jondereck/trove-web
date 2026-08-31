@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { CollectionWithCount } from '@/lib/collections'
+import CollectionCoverTile from './CollectionCoverTile'
 import styles from './CollectionCard.module.css'
 
 type Props = {
@@ -7,20 +8,49 @@ type Props = {
 }
 
 export default function CollectionCard({ collection }: Props) {
-  const color = collection.color ?? 'var(--trove-accent)'
+  const color = collection.color ?? '#c0613c'
+  const icon = collection.icon ?? 'folder-outline'
+  const slots = collection.cover_slots ?? []
+  const count = collection.save_count ?? 0
 
   return (
     <Link href={`/collections/${collection.id}`} className={styles.card}>
-      <div className={styles.iconWrap} style={{ background: `${color}22`, color }}>
-        <span aria-hidden>📁</span>
+      <div className={styles.cover}>
+        <CollectionCoverTile
+          slot={slots[0]}
+          color={color}
+          icon={icon}
+          alpha={0.55}
+          radius={12}
+          className={styles.coverBig}
+        />
+        <div className={styles.coverColumn}>
+          <CollectionCoverTile
+            slot={slots[1]}
+            color={color}
+            icon={icon}
+            alpha={0.34}
+            radius={8}
+            compact
+            className={styles.coverSmall}
+          />
+          <CollectionCoverTile
+            slot={slots[2]}
+            color={color}
+            icon={icon}
+            alpha={0.2}
+            radius={8}
+            compact
+            className={styles.coverSmall}
+          />
+        </div>
       </div>
       <div className={styles.body}>
-        <strong>{collection.name}</strong>
-        {collection.description ? <span>{collection.description}</span> : null}
+        <strong className={styles.name}>{collection.name}</strong>
+        <span className={styles.meta}>
+          {count} {count === 1 ? 'item' : 'items'}
+        </span>
       </div>
-      <span className={styles.count}>
-        {collection.save_count} {collection.save_count === 1 ? 'save' : 'saves'}
-      </span>
     </Link>
   )
 }

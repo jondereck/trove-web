@@ -1,51 +1,56 @@
 .card {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--trove-border);
+  display: block;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   color: inherit;
-}
-
-.card:last-child {
-  border-bottom: none;
+  box-shadow: 0 4px 14px rgba(40, 30, 20, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
-  background: var(--trove-cream);
+  border-color: var(--trove-accent-border);
+  box-shadow: 0 8px 24px rgba(26, 26, 26, 0.06);
 }
 
-.iconWrap {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
+.cover {
   display: grid;
-  place-items: center;
-  font-size: 22px;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 6px;
+  padding: 10px;
+  background: var(--trove-bg);
+}
+
+.coverBig {
+  height: 80px;
+}
+
+.coverColumn {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+}
+
+.coverSmall {
+  min-height: 37px;
 }
 
 .body {
+  padding: 12px 14px 14px;
   display: grid;
   gap: 4px;
-  min-width: 0;
 }
 
-.body strong {
+.name {
   font-size: 15px;
   font-weight: 600;
-}
-
-.body span {
-  font-size: 13px;
-  color: var(--trove-text-sub);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.count {
+.meta {
   font-size: 12px;
   color: var(--trove-muted);
-  white-space: nowrap;
 }

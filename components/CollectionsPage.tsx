@@ -1,7 +1,7 @@
 'use client'
 
 import AppShell from '@/components/AppShell'
-import CollectionCard from '@/components/CollectionCard'
+import CollectionGrid from '@/components/CollectionGrid'
 import DemoBanner from '@/components/DemoBanner'
 import { useLibrarySaves } from '@/lib/useLibrarySaves'
 import styles from './CollectionsPage.module.css'
@@ -13,9 +13,15 @@ export default function CollectionsPage() {
     <AppShell mode={mode} importFileName={importFileName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
-      <h1 className={`serif ${styles.title}`}>Collections</h1>
+      <div className={styles.header}>
+        <div>
+          <p className={styles.kicker}>{collections.length} COLLECTIONS</p>
+          <h1 className={`serif ${styles.title}`}>Collections</h1>
+        </div>
+      </div>
+
       <p className={styles.subtitle}>
-        {mode === 'cloud' && 'Folders from your Trove Cloud library'}
+        {mode === 'cloud' && 'Same folders as Trove mobile'}
         {mode === 'demo' && 'Demo folders · read-only preview'}
         {mode === 'import' && 'Folders from your imported file'}
       </p>
@@ -30,17 +36,7 @@ export default function CollectionsPage() {
             <span>Create folders in Trove mobile to organize saves.</span>
           </div>
         ) : (
-          <div className={styles.card}>
-            <div className={styles.head}>
-              <h2>All collections</h2>
-              <span>{collections.length}</span>
-            </div>
-            <div>
-              {collections.map(collection => (
-                <CollectionCard key={collection.id} collection={collection} />
-              ))}
-            </div>
-          </div>
+          <CollectionGrid collections={collections} />
         )
       ) : null}
     </AppShell>

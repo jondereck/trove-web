@@ -1,7 +1,21 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+  margin-bottom: 6px;
+}
+
 .title {
   font-size: clamp(32px, 5vw, 44px);
   font-weight: 400;
-  margin-bottom: 8px;
 }
 
 .subtitle {

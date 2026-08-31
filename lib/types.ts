@@ -1,3 +1,8 @@
+export type CollectionCoverSlot =
+  | { kind: 'image'; url: string; domain?: string }
+  | { kind: 'brand'; domain: string }
+  | { kind: 'note'; title: string; preview: string }
+
 export type SaveType = 'link' | 'image' | 'video' | 'note' | 'tracker'
 
 export interface Save {
@@ -25,7 +30,10 @@ export interface Collection {
   icon?: string
   color?: string
   description?: string
+  cover_image_url?: string | null
   created_at: string
+  save_count?: number
+  cover_slots?: CollectionCoverSlot[]
 }
 
 export type BackupPayload = {
@@ -33,4 +41,15 @@ export type BackupPayload = {
   exportedAt: string
   saves: Save[]
   collections: Collection[]
+}
+
+export type SavesPageResult = {
+  saves: Save[]
+  total: number
+}
+
+export type LibraryStats = {
+  total: number
+  notes: number
+  links: number
 }

@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { attachSaveCountsWithCovers, fetchCloudCollections } from '@/lib/collections'
 import { getDemoLibrary } from '@/lib/demo'
-import { attachSaveCounts, fetchCloudCollections, type CollectionWithCount } from '@/lib/collections'
 import { readImport } from '@/lib/importStore'
-import { fetchCloudLibrarySaves, fetchProfileFirstName } from '@/lib/library'
+import { fetchProfileFirstName } from '@/lib/library'
 import {
   getImportSession,
   getSessionMode,
@@ -14,6 +14,7 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import type { Save } from '@/lib/types'
+import type { CollectionWithCount } from '@/lib/collections'
 
 export type LibraryState = {
   loading: boolean
@@ -47,7 +48,7 @@ export function useLibrarySaves(): LibraryState {
             loading: false,
             error: '',
             saves: demo.saves,
-            collections: attachSaveCounts(demo.collections, demo.saves),
+            collections: attachSaveCountsWithCovers(demo.collections, demo.saves),
             mode: 'demo',
           })
         }
@@ -64,7 +65,7 @@ export function useLibrarySaves(): LibraryState {
               loading: false,
               error: '',
               saves: record.saves,
-              collections: attachSaveCounts(record.collections, record.saves),
+              collections: attachSaveCountsWithCovers(record.collections, record.saves),
               mode: 'import',
               importFileName: record.name,
             })
@@ -92,8 +93,7 @@ export function useLibrarySaves(): LibraryState {
       }
 
       try {
-        const [saves, collections, firstName] = await Promise.all([
-          fetchCloudLibrarySaves(supabase),
+        const [collections, firstName] = await Promise.all([
           fetchCloudCollections(supabase),
           fetchProfileFirstName(supabase),
         ])
@@ -101,7 +101,7 @@ export function useLibrarySaves(): LibraryState {
           setState({
             loading: false,
             error: '',
-            saves,
+            saves: [],
             collections,
             mode: 'cloud',
             firstName,

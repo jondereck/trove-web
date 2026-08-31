@@ -1,19 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import AppShell from '@/components/AppShell'
 import DemoBanner from '@/components/DemoBanner'
-import SaveList from '@/components/SaveList'
-import {
-  fetchCloudCollection,
-  fetchCloudCollectionSaves,
-  filterSavesForCollection,
-  findCollectionById,
-} from '@/lib/collections'
-import { createClient } from '@/lib/supabase/client'
+import LoadMoreFooter from '@/components/LoadMoreFooter'
+import SaveGrid from '@/components/SaveGrid'
+import { usePaginatedSaves } from '@/hooks/usePaginatedSaves'
+import { filterSavesForCollection, findCollectionById } from '@/lib/collections'
 import { useLibrarySaves } from '@/lib/useLibrarySaves'
-import type { Collection, Save } from '@/lib/types'
 import styles from './CollectionDetailPage.module.css'
 
 type Props = {
@@ -21,60 +16,32 @@ type Props = {
 }
 
 export default function CollectionDetailPage({ id }: Props) {
-  const { loading: sessionLoading, error: sessionError, saves, collections, mode, importFileName } =
+  const { loading: sessionLoading, error: sessionError, saves: localSaves, collections, mode, importFileName } =
     useLibrarySaves()
-  const [collection, setCollection] = useState<Collection | null>(null)
-  const [collectionSaves, setCollectionSaves] = useState<Save[]>([])
-  const [detailLoading, setDetailLoading] = useState(true)
-  const [detailError, setDetailError] = useState('')
 
-  useEffect(() => {
-    if (sessionLoading || sessionError) return
+  const localCollectionSaves = useMemo(
+    () => (mode === 'cloud' ? [] : filterSavesForCollection(localSaves, id)),
+    [mode, localSaves, id],
+  )
 
-    let cancelled = false
+  const collection = findCollectionById(collections, id)
 
-    async function load() {
-      setDetailLoading(true)
-      setDetailError('')
+  const {
+    saves,
+    total,
+    loading: pageLoading,
+    loadingMore,
+    error: pageError,
+    loadMore,
+  } = usePaginatedSaves({
+    mode,
+    collectionId: mode === 'cloud' ? id : undefined,
+    localSaves: localCollectionSaves,
+    enabled: !sessionLoading && !sessionError && (mode === 'cloud' || !!collection),
+  })
 
-      if (mode === 'cloud') {
-        try {
-          const supabase = createClient()
-          const [col, colSaves] = await Promise.all([
-            fetchCloudCollection(supabase, id),
-            fetchCloudCollectionSaves(supabase, id),
-          ])
-          if (!cancelled) {
-            setCollection(col)
-            setCollectionSaves(colSaves)
-            setDetailLoading(false)
-          }
-        } catch (e) {
-          if (!cancelled) {
-            setDetailError(e instanceof Error ? e.message : 'Could not load collection.')
-            setDetailLoading(false)
-          }
-        }
-        return
-      }
-
-      const col = findCollectionById(collections, id)
-      const colSaves = filterSavesForCollection(saves, id)
-      if (!cancelled) {
-        setCollection(col ?? null)
-        setCollectionSaves(colSaves)
-        setDetailLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [sessionLoading, sessionError, mode, id, saves, collections])
-
-  const loading = sessionLoading || detailLoading
-  const error = sessionError || detailError
+  const loading = sessionLoading || (mode === 'cloud' ? pageLoading : sessionLoading)
+  const error = sessionError || pageError
 
   return (
     <AppShell mode={mode} importFileName={importFileName}>
@@ -89,20 +56,30 @@ export default function CollectionDetailPage({ id }: Props) {
       {loading ? <p className={styles.status}>Loading collection…</p> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
 
-      {!loading && !error && !collection ? (
+      {!loading && !error && !collection && mode !== 'cloud' ? (
         <div className={styles.missing}>
           <p>Collection not found.</p>
           <Link href="/collections">Back to collections</Link>
         </div>
       ) : null}
 
-      {!loading && !error && collection ? (
+      {!loading && !error && (collection || mode === 'cloud') ? (
         <>
-          <h1 className={`serif ${styles.title}`}>{collection.name}</h1>
-          {collection.description ? (
+          <h1 className={`serif ${styles.title}`}>{collection?.name ?? 'Collection'}</h1>
+          {collection?.description ? (
             <p className={styles.description}>{collection.description}</p>
           ) : null}
-          <SaveList saves={collectionSaves} />
+          <SaveGrid
+            saves={saves}
+            emptyTitle="No saves in this collection yet."
+            emptyHint="Add saves to this folder in Trove mobile."
+          />
+          <LoadMoreFooter
+            loaded={saves.length}
+            total={total}
+            loading={loadingMore}
+            onLoadMore={loadMore}
+          />
         </>
       ) : null}
     </AppShell>

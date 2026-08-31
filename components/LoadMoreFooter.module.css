@@ -1,0 +1,32 @@
+.wrap {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  margin-top: 24px;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--trove-muted);
+  text-align: center;
+}
+
+.button {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--trove-accent-border);
+  color: var(--trove-accent);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}

@@ -1,0 +1,51 @@
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.brand,
+.glyph {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--trove-accent);
+}
+
+.brand {
+  background: var(--trove-accent-soft);
+}
+
+.note {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  display: grid;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.note strong {
+  font-size: 10px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note span {
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--trove-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
