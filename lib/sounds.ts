@@ -41,12 +41,20 @@ function playTone(frequency: number, durationMs: number, volume = 0.04): void {
 }
 
 export function playNavClick(): void {
-  playTone(520, 45, 0.03)
+  playTone(520, 45, 0.055)
+}
+
+export function playHover(): void {
+  playTone(680, 22, 0.03)
+}
+
+export function playCardClick(): void {
+  playTone(480, 38, 0.05)
 }
 
 export function playSuccess(): void {
-  playTone(440, 70, 0.035)
-  window.setTimeout(() => playTone(660, 90, 0.03), 70)
+  playTone(440, 70, 0.06)
+  window.setTimeout(() => playTone(660, 90, 0.055), 70)
 }
 
 export function primeSounds(): void {

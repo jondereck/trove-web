@@ -7,6 +7,7 @@ import { attachSaveCountsWithCovers, fetchCloudCollections } from '@/lib/collect
 import { getDemoLibrary } from '@/lib/demo'
 import { readImport } from '@/lib/importStore'
 import { fetchProfileFirstName } from '@/lib/library'
+import { cacheSessionMetadata, peekLibrarySessionCache } from '@/lib/libraryCache'
 import {
   getImportSession,
   getSessionMode,
@@ -26,15 +27,21 @@ export type LibraryState = {
   firstName?: string
 }
 
-export function useLibrarySaves(): LibraryState {
-  const router = useRouter()
-  const [state, setState] = useState<LibraryState>({
-    loading: true,
+function initialCloudState(): LibraryState {
+  const cached = peekLibrarySessionCache()
+  return {
+    loading: !cached,
     error: '',
     saves: [],
-    collections: [],
+    collections: cached?.collections ?? [],
     mode: 'cloud',
-  })
+    firstName: cached?.firstName,
+  }
+}
+
+export function useLibrarySaves(): LibraryState {
+  const router = useRouter()
+  const [state, setState] = useState<LibraryState>(initialCloudState)
 
   useEffect(() => {
     let cancelled = false
@@ -97,6 +104,7 @@ export function useLibrarySaves(): LibraryState {
           fetchCloudCollections(supabase),
           fetchProfileFirstName(supabase),
         ])
+        cacheSessionMetadata({ collections, firstName })
         if (!cancelled) {
           setState({
             loading: false,
@@ -109,12 +117,18 @@ export function useLibrarySaves(): LibraryState {
         }
       } catch (e) {
         if (!cancelled) {
+          const cached = peekLibrarySessionCache()
           setState({
             loading: false,
-            error: e instanceof Error ? e.message : 'Could not load library.',
+            error: cached
+              ? ''
+              : e instanceof Error
+                ? e.message
+                : 'Could not load library.',
             saves: [],
-            collections: [],
+            collections: cached?.collections ?? [],
             mode: 'cloud',
+            firstName: cached?.firstName,
           })
         }
       }

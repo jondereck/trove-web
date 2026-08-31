@@ -16,13 +16,22 @@ type Props = {
   viewAllHref?: string
   emptyTitle?: string
   emptyHint?: string
+  canEdit?: boolean
 }
 
-function CardGrid({ saves, compact = false }: { saves: Save[]; compact?: boolean }) {
+function CardGrid({
+  saves,
+  compact = false,
+  canEdit = false,
+}: {
+  saves: Save[]
+  compact?: boolean
+  canEdit?: boolean
+}) {
   return (
     <div className={styles.grid}>
       {saves.map(save => (
-        <SaveCard key={save.id} save={save} compact={compact} />
+        <SaveCard key={save.id} save={save} compact={compact} canEdit={canEdit} />
       ))}
     </div>
   )
@@ -36,6 +45,7 @@ export default function SaveGrid({
   viewAllHref,
   emptyTitle = 'No saves in your library yet.',
   emptyHint = 'Save items in Trove mobile, or try the demo on the sign-in page.',
+  canEdit = false,
 }: Props) {
   if (saves.length === 0 && !title) {
     return (
@@ -73,7 +83,7 @@ export default function SaveGrid({
           ))}
         </div>
       ) : (
-        <CardGrid saves={saves} compact={titleTone === 'accent'} />
+        <CardGrid saves={saves} compact={titleTone === 'accent'} canEdit={canEdit} />
       )}
     </section>
   )

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   BarChart3,
   ChevronDown,
@@ -18,7 +18,6 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
-import { playNavClick } from '@/lib/sounds'
 import MobileDesktopGate from '@/components/MobileDesktopGate'
 import QuickSaveFab from '@/components/QuickSaveFab'
 import TroveMark from '@/components/TroveMark'
@@ -52,6 +51,8 @@ export default function AppShell({ mode, importFileName, children }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const [profile, setProfile] = useState<SidebarProfile>(GUEST_PROFILE)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (mode !== 'cloud') {
@@ -70,6 +71,31 @@ export default function AppShell({ mode, importFileName, children }: Props) {
     }
   }, [mode])
 
+  useEffect(() => {
+    if (!profileMenuOpen) return
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileMenuOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setProfileMenuOpen(false)
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [profileMenuOpen])
+
+  useEffect(() => {
+    setProfileMenuOpen(false)
+  }, [pathname])
+
   const isActive = (href: string) => {
     if (href === '/library') {
       return pathname === '/library' || pathname.startsWith('/library/') || pathname.startsWith('/tracker/')
@@ -78,10 +104,6 @@ export default function AppShell({ mode, importFileName, children }: Props) {
       return pathname === '/collections' || pathname.startsWith('/collections/')
     }
     return pathname === href || pathname.startsWith(`${href}/`)
-  }
-
-  const handleNavClick = () => {
-    playNavClick()
   }
 
   const signOut = async () => {
@@ -112,7 +134,6 @@ export default function AppShell({ mode, importFileName, children }: Props) {
                     key={item.label}
                     href={item.href}
                     className={isActive(item.href) ? styles.navActive : styles.navLink}
-                    onClick={handleNavClick}
                   >
                     <span className={styles.navIcon}>{item.icon}</span>
                     {item.label}
@@ -137,14 +158,76 @@ export default function AppShell({ mode, importFileName, children }: Props) {
                   }}>Clear</button>
                 </div>
               ) : null}
-              <button type="button" className={styles.profileBtn} onClick={signOut}>
-                <UserAvatar
-                  imageUrl={profile.avatarUrl}
-                  initials={profile.initials}
-                />
-                <span className={styles.profileName}>{profile.displayName}</span>
-                <ChevronDown size={16} className={styles.profileChevron} />
-              </button>
+              <div className={styles.profileWrap} ref={profileMenuRef}>
+                <button
+                  type="button"
+                  className={`${styles.profileBtn} ${profileMenuOpen ? styles.profileBtnOpen : ''}`}
+                  aria-expanded={profileMenuOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setProfileMenuOpen(open => !open)}
+                >
+                  <UserAvatar
+                    imageUrl={profile.avatarUrl}
+                    initials={profile.initials}
+                  />
+                  <span className={styles.profileName}>{profile.displayName}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`${styles.profileChevron} ${profileMenuOpen ? styles.profileChevronOpen : ''}`}
+                  />
+                </button>
+
+                {profileMenuOpen ? (
+                  <div className={styles.profileMenu} role="menu">
+                    {mode === 'cloud' ? (
+                      <Link
+                        href="/settings"
+                        className={styles.profileMenuItem}
+                        role="menuitem"
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        Settings
+                      </Link>
+                    ) : null}
+                    {mode === 'import' ? (
+                      <button
+                        type="button"
+                        className={styles.profileMenuItem}
+                        role="menuitem"
+                        onClick={async () => {
+                          clearDemoMode()
+                          await clearImportSession()
+                          setProfileMenuOpen(false)
+                          router.push('/')
+                        }}
+                      >
+                        Clear import
+                      </button>
+                    ) : null}
+                    {mode === 'demo' ? (
+                      <Link
+                        href="/"
+                        className={styles.profileMenuItem}
+                        role="menuitem"
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        Sign in
+                      </Link>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={`${styles.profileMenuItem} ${styles.profileMenuDanger}`}
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileMenuOpen(false)
+                        void signOut()
+                      }}
+                    >
+                      {mode === 'cloud' ? 'Sign out' : 'Back to home'}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </aside>
 

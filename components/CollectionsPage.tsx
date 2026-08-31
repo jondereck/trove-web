@@ -22,10 +22,12 @@ export default function CollectionsPage() {
         <h1 className={`serif ${styles.title}`}>Collections</h1>
       </header>
 
-      {loading ? <TroveLoader label="Loading collections…" /> : null}
+      {loading && collections.length === 0 ? (
+        <TroveLoader label="Loading collections…" />
+      ) : null}
       {error ? <p className={styles.error}>{error}</p> : null}
 
-      {!loading && !error ? (
+      {!error && (collections.length > 0 || !loading) ? (
         collections.length === 0 ? (
           <div className={styles.empty}>
             <p>No collections yet.</p>

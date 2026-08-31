@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, Hanken_Grotesk } from 'next/font/google'
+import InteractionSounds from '@/components/InteractionSounds'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +27,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn(serif.variable, sans.variable)}>
-      <body>{children}</body>
+      <body>
+        <InteractionSounds />
+        {children}
+      </body>
     </html>
   )
 }

@@ -1,4 +1,6 @@
 import type { Save } from './types'
+import { buildNoteCardChecklistPreview } from './noteChecklistPreview'
+import type { TrackerStatus } from './tracker'
 
 export function saveCardSourceLabel(type: Save['type']): string {
   if (type === 'note') return 'Note'
@@ -45,4 +47,54 @@ export function tagChipColor(tag: string): { bg: string; text: string } {
     hash = (hash * 31 + tag.charCodeAt(i)) & 0xffffffff
   }
   return CHIP_PALETTE[Math.abs(hash) % CHIP_PALETTE.length]!
+}
+
+/** Plain preview for note cards — no raw markdown or checklist syntax. */
+export function plainTextFromMarkdown(source: string): string {
+  return source
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^-\s*\[[ xX]\]\s*/gm, '')
+    .replace(/^[-*+]\s+(?!\[[ xX]\])/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function saveCardNoteBody(save: Pick<Save, 'content' | 'description'>): string {
+  return (save.content || save.description || '').trim()
+}
+
+export function saveCardDescriptionBlurb(
+  save: Pick<Save, 'type' | 'title' | 'content' | 'description'>,
+): string | null {
+  const title = save.title.trim()
+  const body = saveCardNoteBody(save)
+  if (!body) return null
+  if (body === title) return null
+
+  if (save.type === 'note') {
+    if (buildNoteCardChecklistPreview(body)) return null
+    return plainTextFromMarkdown(body) || null
+  }
+
+  if (save.type === 'link' || save.type === 'image' || save.type === 'video') {
+    return body
+  }
+
+  return null
+}
+
+export function trackerStatusColor(
+  status: TrackerStatus | null | undefined,
+  accent = '#c0613c',
+  muted = '#999999',
+): string {
+  if (status === 'overdue' || status === 'expired') return '#e53e3e'
+  if (status === 'due_soon') return accent
+  if (status === 'on_track' || status === 'active') return '#2a7a4f'
+  return muted
 }

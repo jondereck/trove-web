@@ -120,9 +120,11 @@ export default function LibraryPage() {
 
 
 
-  const loading = sessionLoading || pageLoading
-
   const error = sessionError || pageError
+
+  const showFullLoader =
+    (sessionLoading && mode === 'cloud' && saves.length === 0) ||
+    (pageLoading && saves.length === 0)
 
   const saveTotal = stats?.total ?? total
 
@@ -186,13 +188,13 @@ export default function LibraryPage() {
 
 
 
-      {loading ? <TroveLoader label="Loading library…" /> : null}
+      {showFullLoader ? <TroveLoader label="Loading library…" /> : null}
 
       {error ? <p className={styles.error}>{error}</p> : null}
 
 
 
-      {!loading && !error ? (
+      {!showFullLoader && !error ? (
 
         <SaveBrowseBody
 
@@ -209,6 +211,8 @@ export default function LibraryPage() {
           emptyTitle={emptyCopy.title}
 
           emptyHint={emptyCopy.hint}
+
+          canEdit={mode === 'cloud'}
 
         />
 

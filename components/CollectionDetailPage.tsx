@@ -47,8 +47,10 @@ export default function CollectionDetailPage({ id }: Props) {
     enabled: !sessionLoading && !sessionError && (mode === 'cloud' || !!collection),
   })
 
-  const loading = sessionLoading || (mode === 'cloud' ? pageLoading : sessionLoading)
   const error = sessionError || pageError
+  const showFullLoader =
+    (sessionLoading && mode === 'cloud' && saves.length === 0) ||
+    (pageLoading && saves.length === 0)
 
   return (
     <AppShell mode={mode} importFileName={importFileName}>
@@ -79,17 +81,17 @@ export default function CollectionDetailPage({ id }: Props) {
         />
       </div>
 
-      {loading ? <TroveLoader label="Loading collection…" /> : null}
+      {showFullLoader ? <TroveLoader label="Loading collection…" /> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
 
-      {!loading && !error && !collection && mode !== 'cloud' ? (
+      {!showFullLoader && !error && !collection && mode !== 'cloud' ? (
         <div className={styles.missing}>
           <p>Collection not found.</p>
           <Link href="/collections">Back to collections</Link>
         </div>
       ) : null}
 
-      {!loading && !error && (collection || mode === 'cloud') ? (
+      {!showFullLoader && !error && (collection || mode === 'cloud') ? (
         <SaveBrowseBody
           saves={saves}
           layout={viewMode}
@@ -98,6 +100,7 @@ export default function CollectionDetailPage({ id }: Props) {
           onLoadMore={loadMore}
           emptyTitle="No saves in this collection yet."
           emptyHint="Add saves to this folder in Trove mobile."
+          canEdit={mode === 'cloud'}
         />
       ) : null}
     </AppShell>

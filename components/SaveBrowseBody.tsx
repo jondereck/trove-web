@@ -17,6 +17,7 @@ type Props = {
   showPinned?: boolean
   emptyTitle?: string
   emptyHint?: string
+  canEdit?: boolean
 }
 
 export default function SaveBrowseBody({
@@ -28,6 +29,7 @@ export default function SaveBrowseBody({
   showPinned = true,
   emptyTitle,
   emptyHint,
+  canEdit = false,
 }: Props) {
   const { pinned, rest } = partitionPinnedSaves(saves)
   const hasPinned = showPinned && pinned.length > 0
@@ -46,6 +48,7 @@ export default function SaveBrowseBody({
         layout={layout}
         emptyTitle={emptyTitle}
         emptyHint={emptyHint}
+        canEdit={canEdit}
       />
     )
   }
@@ -58,15 +61,16 @@ export default function SaveBrowseBody({
           layout={layout}
           title="PINNED"
           titleTone="accent"
+          canEdit={canEdit}
         />
       ) : null}
 
       {hasPinned ? (
         rest.length > 0 ? (
-          <SaveGrid saves={rest} layout={layout} title="ALL SAVES" />
+          <SaveGrid saves={rest} layout={layout} title="ALL SAVES" canEdit={canEdit} />
         ) : null
       ) : (
-        <SaveGrid saves={saves} layout={layout} />
+        <SaveGrid saves={saves} layout={layout} canEdit={canEdit} />
       )}
 
       <div ref={sentinelRef} className={styles.sentinel} aria-hidden />
