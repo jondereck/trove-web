@@ -2,13 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Cloud, CloudDownload, Info } from 'lucide-react'
+import { Cloud, CloudDownload, FileText, Info } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseImportFile } from '@/lib/import'
 import { writeImport } from '@/lib/importStore'
 import { setDemoMode, setImportSession } from '@/lib/sessionMode'
 import { BRAND } from '@/lib/branding'
+import TroveMark from '@/components/TroveMark'
 import styles from './LandingPage.module.css'
 
 function GoogleLogo() {
@@ -42,28 +43,42 @@ function AppleLogo() {
   )
 }
 
+function PlayStoreLogo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M3.2 2.1 13.3 12 3.2 21.9A1.8 1.8 0 0 1 2 20.7V3.3a1.8 1.8 0 0 1 1.2-1.2z" />
+      <path fill="#34A853" d="M13.3 12 17.6 16.3 3.2 21.9z" />
+      <path fill="#FBBC05" d="M21.4 10.9 17.6 7.7 13.3 12l4.3 4.3 3.8-3.1a1.2 1.2 0 0 0 0-2.3z" />
+      <path fill="#EA4335" d="M13.3 12 17.6 7.7 3.2 2.1z" />
+    </svg>
+  )
+}
+
 function PeachWaves() {
   return (
     <svg
       className={styles.waves}
-      viewBox="0 0 800 520"
-      preserveAspectRatio="xMinYMax slice"
+      viewBox="0 0 900 420"
+      preserveAspectRatio="xMinYMax meet"
       aria-hidden
     >
       <path
-        fill="#f5ddd3"
-        fillOpacity="0.55"
-        d="M0,320 C180,220 280,380 460,280 C600,200 680,360 800,300 L800,520 L0,520 Z"
+        fill="none"
+        stroke="#e8c8b8"
+        strokeWidth="1.4"
+        d="M-20,280 C80,220 160,330 280,260 C400,190 470,300 580,250 C700,200 780,280 920,230"
       />
       <path
-        fill="#f0c8b8"
-        fillOpacity="0.35"
-        d="M0,400 C140,340 240,460 400,400 C560,340 660,440 800,390 L800,520 L0,520 Z"
+        fill="none"
+        stroke="#f0d4c6"
+        strokeWidth="1.2"
+        d="M-20,320 C90,270 180,360 300,300 C420,240 510,340 640,290 C760,240 840,310 920,270"
       />
       <path
-        fill="#f8e4dc"
-        fillOpacity="0.5"
-        d="M0,460 C120,420 200,500 360,470 C520,440 620,500 800,480 L800,520 L0,520 Z"
+        fill="none"
+        stroke="#edd0c2"
+        strokeWidth="1.1"
+        d="M-20,360 C70,330 150,390 280,340 C410,290 500,380 630,340 C760,300 840,360 920,330"
       />
     </svg>
   )
@@ -141,36 +156,39 @@ export default function LandingPage() {
   const authBusy = loading || oauthProvider !== null
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-landing-page>
       <PeachWaves />
 
       <section className={styles.left}>
         <p className={styles.wordmark}>{BRAND.name}</p>
 
-        <div className={styles.heroLogo} aria-hidden>
-          T
-        </div>
+        <div className={styles.hero}>
+          <div className={styles.titleRow}>
+            <TroveMark size={56} variant="mark" />
+            <h1 className={styles.productName}>{BRAND.webName}</h1>
+            <span className={styles.beta}>{BRAND.beta}</span>
+          </div>
 
-        <div className={styles.titleRow}>
-          <h1 className={styles.productName}>{BRAND.webName}</h1>
-          <span className={styles.beta}>{BRAND.beta}</span>
-        </div>
+          <p className={`serif ${styles.tagline}`}>{BRAND.tagline}.</p>
 
-        <p className={styles.tagline}>{BRAND.tagline}.</p>
+          <div className={styles.bodyCopy}>
+            <p>
+              Sign in with the same Trove Cloud account you use on mobile to browse your synced
+              library on this device.
+            </p>
+            <p>You can also load a local export or explore a demo library.</p>
+          </div>
 
-        <div className={styles.bodyCopy}>
-          <p>
-            Sign in with the same Trove Cloud account you use on mobile to browse your synced
-            library on this device.
-          </p>
-          <p>
-            You can also load a local export or explore a demo library.
-          </p>
-        </div>
-
-        <div className={styles.storeRow}>
-          <span className={styles.storeBadge}>Google Play</span>
-          <span className={styles.storeBadge}>App Store</span>
+          <div className={styles.storeRow}>
+            <span className={styles.storeBadge}>
+              <PlayStoreLogo />
+              Google Play
+            </span>
+            <span className={styles.storeBadge}>
+              <AppleLogo />
+              App Store
+            </span>
+          </div>
         </div>
 
         <p className={styles.footerNote}>
@@ -242,19 +260,17 @@ export default function LandingPage() {
 
         <div className={styles.divider} />
 
-        <span className={styles.loadPill}>Load data</span>
+        <p className={styles.loadLabel}>Load data</p>
 
         <div className={styles.loadHead}>
           <div className={styles.loadIcon}>
             <CloudDownload size={18} strokeWidth={2} />
           </div>
-          <p>
-            Choose a Trove export to review saves locally in your browser — JSON, ZIP backup,
-            or Raindrop CSV.
-          </p>
+          <p>Choose a file. Select a Trove export to review saves locally in your browser.</p>
         </div>
 
         <label className={styles.filePick}>
+          <FileText size={18} strokeWidth={1.75} aria-hidden />
           <span>{importLoading ? 'Reading file…' : 'Choose JSON, ZIP, or CSV'}</span>
           <input
             type="file"
@@ -264,9 +280,7 @@ export default function LandingPage() {
           />
         </label>
         {importMessage ? <p className={styles.hint}>{importMessage}</p> : null}
-        <p className={styles.hint}>
-          Opens a local export — does not upload to Trove Cloud.
-        </p>
+        <p className={styles.hint}>Opens a local export — does not upload to Trove Cloud.</p>
 
         <div className={styles.orRow}>
           <span className={styles.orLine} />
@@ -275,10 +289,10 @@ export default function LandingPage() {
         </div>
 
         <div className={styles.demoRow}>
+          <Info size={16} strokeWidth={2} aria-hidden />
           <button type="button" className={styles.demoLink} onClick={handleDemo}>
             Start with a demo →
           </button>
-          <Info size={16} strokeWidth={2} color="var(--trove-muted)" aria-hidden />
         </div>
         <p className={styles.demoHint}>
           Explore sample links, notes, and images without signing in.

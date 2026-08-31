@@ -117,6 +117,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html:has([data-landing-page]),
+html:has([data-landing-page]) body {
+  overflow: hidden;
+  height: 100%;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

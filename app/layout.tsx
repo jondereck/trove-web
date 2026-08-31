@@ -17,6 +17,10 @@ const sans = Hanken_Grotesk({
 export const metadata: Metadata = {
   title: 'Trove Web',
   description: 'Browse your Trove Cloud library in the browser.',
+  icons: {
+    icon: '/trove-app-icon.svg',
+    apple: '/trove-app-icon.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -8,14 +8,9 @@ type Props = {
 
 export default function CollectionGrid({ collections }: Props) {
   return (
-    <div className={styles.grid}>
-      <div className={styles.col}>
-        {collections.filter((_, i) => i % 2 === 0).map(collection => (
-          <CollectionCard key={collection.id} collection={collection} />
-        ))}
-      </div>
-      <div className={styles.col}>
-        {collections.filter((_, i) => i % 2 === 1).map(collection => (
+    <div className={styles.scrollWrap}>
+      <div className={styles.grid}>
+        {collections.map(collection => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
       </div>

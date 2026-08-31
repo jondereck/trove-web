@@ -1,21 +1,23 @@
 .page {
   position: relative;
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(340px, 460px);
-  gap: 48px;
-  align-items: center;
-  padding: 48px clamp(20px, 5vw, 72px);
-  background: var(--trove-bg);
+  height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(340px, 420px);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: stretch;
+  padding: clamp(24px, 3.5vh, 40px) clamp(28px, 5vw, 72px);
+  background: var(--trove-bg);
+  box-sizing: border-box;
 }
 
 .waves {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: min(72vw, 720px);
-  height: min(55vh, 520px);
+  width: min(70vw, 720px);
+  height: min(46vh, 380px);
   pointer-events: none;
   z-index: 0;
 }
@@ -23,42 +25,41 @@
 .left {
   position: relative;
   z-index: 1;
-  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 540px;
 }
 
 .wordmark {
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(36px, 5vw, 48px);
+  font-size: clamp(34px, 4.4vw, 46px);
   font-weight: 400;
   color: var(--trove-accent);
   line-height: 1;
-  margin-bottom: 28px;
+  flex-shrink: 0;
 }
 
-.heroLogo {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  background: var(--trove-accent);
-  color: var(--trove-on-accent);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 38px;
-  line-height: 1;
-  margin-bottom: 20px;
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding: 20px 0;
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
 .productName {
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(28px, 3.4vw, 36px);
   font-weight: 400;
   line-height: 1.1;
   color: var(--trove-text);
@@ -75,110 +76,112 @@
 }
 
 .tagline {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 400;
+  line-height: 1.15;
   color: var(--trove-text);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .bodyCopy {
   display: grid;
-  gap: 14px;
-  margin-bottom: 28px;
+  gap: 10px;
+  margin-bottom: 22px;
+  max-width: 420px;
 }
 
 .bodyCopy p {
-  font-size: 16px;
-  line-height: 1.65;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--trove-text-sub);
 }
 
 .storeRow {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 36px;
 }
 
 .storeBadge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
+  padding: 9px 14px;
+  border-radius: 999px;
   border: 1px solid var(--trove-border);
   background: var(--trove-card);
   font-size: 13px;
   font-weight: 500;
-  color: var(--trove-text-sub);
+  color: var(--trove-text);
   cursor: default;
 }
 
 .footerNote {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--trove-muted);
-  line-height: 1.55;
+  line-height: 1.5;
+  flex-shrink: 0;
 }
 
 .card {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 460px;
-  justify-self: end;
+  max-width: 420px;
+  align-self: center;
   background: var(--trove-card);
   border: 1px solid var(--trove-border);
   border-radius: var(--radius-xl);
-  padding: 28px;
-  box-shadow: 0 24px 60px rgba(26, 26, 26, 0.06);
+  padding: 24px;
+  box-shadow: 0 18px 48px rgba(26, 26, 26, 0.06);
 }
 
 .sectionHead {
   display: flex;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .iconCircle {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--trove-accent);
-  color: var(--trove-on-accent);
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
 
 .sectionHead h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--trove-text);
 }
 
 .sectionHead p {
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--trove-text-sub);
 }
 
 .form {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .label {
   display: grid;
-  gap: 6px;
-  font-size: 13px;
+  gap: 5px;
+  font-size: 12px;
   color: var(--trove-text-sub);
 }
 
 .input {
   border: 1px solid var(--trove-border);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 10px 12px;
   background: #f5f4f0;
   color: var(--trove-text);
   outline: none;
@@ -191,10 +194,10 @@
 }
 
 .primaryBtn {
-  margin-top: 4px;
+  margin-top: 2px;
   border: none;
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: 11px 14px;
   background: var(--trove-accent);
   color: var(--trove-on-accent);
   font-weight: 600;
@@ -214,8 +217,8 @@
 
 .oauthRow {
   display: grid;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .oauthBtn,
@@ -225,9 +228,9 @@
   justify-content: center;
   gap: 10px;
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 10px 12px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
 }
@@ -261,32 +264,28 @@
 .divider {
   height: 1px;
   background: var(--trove-border);
-  margin: 28px 0;
+  margin: 18px 0 14px;
 }
 
-.loadPill {
-  display: inline-block;
+.loadLabel {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--trove-accent-soft);
   color: var(--trove-accent);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .loadHead {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .loadIcon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--trove-accent-soft);
   color: var(--trove-accent);
@@ -296,24 +295,24 @@
 }
 
 .loadHead p {
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--trove-text-sub);
-  padding-top: 6px;
+  padding-top: 4px;
 }
 
 .filePick {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 18px 16px;
-  border: 1.5px dashed var(--trove-border);
+  gap: 10px;
+  padding: 14px 12px;
+  border: 1px solid var(--trove-border);
   border-radius: var(--radius-md);
   background: var(--trove-bg);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--trove-text);
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
@@ -329,25 +328,25 @@
 }
 
 .hint {
-  margin-top: 10px;
-  font-size: 12px;
+  margin-top: 6px;
+  font-size: 11px;
   color: var(--trove-muted);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .error {
   color: #b42318;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .orRow {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  margin: 24px 0 16px;
+  gap: 10px;
+  margin: 14px 0 10px;
   color: var(--trove-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -360,6 +359,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  color: var(--trove-accent);
 }
 
 .demoLink {
@@ -367,7 +367,7 @@
   background: none;
   color: var(--trove-accent);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   padding: 0;
 }
@@ -377,17 +377,24 @@
 }
 
 .demoHint {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 4px;
+  font-size: 12px;
   color: var(--trove-text-sub);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 @media (max-width: 960px) {
   .page {
+    height: auto;
+    max-height: none;
+    overflow: auto;
     grid-template-columns: 1fr;
-    padding-top: 32px;
-    padding-bottom: 32px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .hero {
+    padding: 24px 0;
   }
 
   .card {
@@ -397,6 +404,6 @@
 
   .waves {
     width: 100%;
-    height: 40vh;
+    height: 32vh;
   }
 }

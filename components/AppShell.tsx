@@ -16,6 +16,7 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import MobileDesktopGate from '@/components/MobileDesktopGate'
+import TroveMark from '@/components/TroveMark'
 import styles from './AppShell.module.css'
 
 type NavItem = {
@@ -68,8 +69,9 @@ export default function AppShell({ mode, importFileName, firstName, children }: 
       <div className={styles.desktopOnly}>
         <div className={styles.shell}>
           <aside className={styles.sidebar}>
-            <Link href="/library" className={`serif ${styles.wordmark}`}>
-              Trove
+            <Link href="/library" className={styles.brand}>
+              <TroveMark size={32} className={styles.brandIcon} />
+              <span className={`serif ${styles.wordmark}`}>Trove</span>
             </Link>
 
             <nav className={styles.nav}>

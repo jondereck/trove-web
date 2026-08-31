@@ -1,4 +1,4 @@
-import { Monitor } from 'lucide-react'
+import TroveMark from '@/components/TroveMark'
 import styles from './MobileDesktopGate.module.css'
 
 const DOCS_URL = 'https://github.com/jondereck/trove'
@@ -9,7 +9,7 @@ export default function MobileDesktopGate() {
     <div className={styles.gate} role="region" aria-label="Desktop recommended">
       <div className={styles.card}>
         <div className={styles.iconWrap}>
-          <Monitor size={28} strokeWidth={1.75} aria-hidden />
+          <TroveMark size={56} />
         </div>
 
         <h1 className={styles.headline}>Best on desktop</h1>
