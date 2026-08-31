@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trove Web
 
-## Getting Started
+Browser companion for [Trove](https://github.com/jondereck/trove) — sign in with your Cloud account and browse your synced library on a second PC.
 
-First, run the development server:
+Phase A: email login, read-only library, demo mode, JSON import preview, future-ready shell (OAuth stubs, FAB, sounds toggle, disabled nav).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Setup
+
+```powershell
+cd C:\Users\jonde\trove-web
+copy .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fill `.env.local` with the **same** Supabase project as mobile:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm install
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Local dev server |
+| `npm run build` | Production build |
+| `npm test` | Unit tests (`lib/**/*.test.ts`) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Docs
 
-## Deploy on Vercel
+- Spec: `../trove/docs/superpowers/specs/2026-08-31-trove-web-mvp-design.md`
+- Plan: `../trove/docs/superpowers/plans/2026-08-31-trove-web-phase-a.md`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy (Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Import `jondereck/trove-web` on Vercel
+2. Set the three `NEXT_PUBLIC_*` env vars
+3. Add `https://<your-domain>/auth/callback` to Supabase Auth redirect URLs (Phase B OAuth)
+
+## Parallel development
+
+Keep mobile (`trove`) and web (`trove-web`) in separate Cursor windows. Schema changes in mobile `supabase/migrations` must be reflected in web types/queries manually until a shared package exists.

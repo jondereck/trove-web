@@ -1,0 +1,12 @@
+.error {
+  color: #b42318;
+}
+
+.missing {
+  padding: 32px 0;
+}
+
+.missing a {
+  color: var(--trove-accent);
+  font-weight: 600;
+}

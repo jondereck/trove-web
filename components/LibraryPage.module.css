@@ -1,0 +1,31 @@
+.date {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+  margin-bottom: 8px;
+}
+
+.greeting {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+.insight {
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--trove-accent-soft);
+  border: 1px solid var(--trove-accent-border);
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.status,
+.error {
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #b42318;
+}

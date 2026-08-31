@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "exportedAt": "2026-08-31T00:00:00.000Z",
+  "collections": [
+    {
+      "id": "demo-col-1",
+      "user_id": "demo",
+      "name": "Reading",
+      "icon": "book-outline",
+      "color": "#c0613c",
+      "description": "Articles and docs",
+      "created_at": "2026-08-01T10:00:00.000Z"
+    }
+  ],
+  "saves": [
+    {
+      "id": "demo-save-1",
+      "user_id": "demo",
+      "title": "React Native docs",
+      "description": "Core concepts and guides for building native apps.",
+      "type": "link",
+      "url": "https://reactnative.dev/docs/getting-started",
+      "tags": ["docs", "mobile"],
+      "is_inbox": false,
+      "created_at": "2026-08-28T09:15:00.000Z"
+    },
+    {
+      "id": "demo-save-2",
+      "user_id": "demo",
+      "title": "Weekend groceries",
+      "description": "Quick checklist for the market run.",
+      "type": "note",
+      "content": "- [ ] Coffee beans\n- [x] Olive oil\n- [ ] Fresh basil",
+      "tags": ["personal"],
+      "is_inbox": false,
+      "created_at": "2026-08-27T14:20:00.000Z"
+    },
+    {
+      "id": "demo-save-3",
+      "user_id": "demo",
+      "title": "Sunset reference",
+      "description": "Warm palette inspiration for UI work.",
+      "type": "image",
+      "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+      "tags": ["design"],
+      "is_inbox": false,
+      "created_at": "2026-08-26T18:40:00.000Z"
+    },
+    {
+      "id": "demo-save-4",
+      "user_id": "demo",
+      "title": "Expo SDK release notes",
+      "description": "What changed in the latest SDK.",
+      "type": "link",
+      "url": "https://docs.expo.dev/versions/latest/",
+      "tags": ["docs", "expo"],
+      "is_inbox": false,
+      "created_at": "2026-08-25T11:05:00.000Z"
+    },
+    {
+      "id": "demo-save-5",
+      "user_id": "demo",
+      "title": "Project ideas",
+      "type": "note",
+      "content": "Ship Trove Web Phase A first.\n\nFocus on login + read-only library.",
+      "tags": ["trove"],
+      "is_inbox": false,
+      "created_at": "2026-08-24T08:00:00.000Z"
+    }
+  ]
+}

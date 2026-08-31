@@ -1,0 +1,41 @@
+.card {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--trove-border);
+}
+
+.head h2 {
+  font-size: 18px;
+}
+
+.head span {
+  font-size: 13px;
+  color: var(--trove-muted);
+}
+
+.empty {
+  background: var(--trove-card);
+  border: 1px dashed var(--trove-border);
+  border-radius: var(--radius-xl);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty p {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.empty span {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+}
