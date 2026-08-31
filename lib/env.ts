@@ -14,6 +14,10 @@ export function supabaseAnonKey(): string {
   )
 }
 
+export function isSupabaseConfigured(): boolean {
+  return Boolean(supabaseUrl().trim() && supabaseAnonKey().trim())
+}
+
 export function siteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 }
