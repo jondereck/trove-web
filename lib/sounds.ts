@@ -21,40 +21,44 @@ function getAudioContext(): AudioContext | null {
   return sharedCtx
 }
 
+const MASTER_GAIN = 1.75
+
 function playTone(frequency: number, durationMs: number, volume = 0.04): void {
   const ctx = getAudioContext()
   if (!ctx) return
+
+  const level = Math.min(volume * MASTER_GAIN, 0.14)
 
   const oscillator = ctx.createOscillator()
   const gain = ctx.createGain()
   oscillator.type = 'sine'
   oscillator.frequency.value = frequency
-  gain.gain.value = volume
+  gain.gain.value = level
   oscillator.connect(gain)
   gain.connect(ctx.destination)
 
   const now = ctx.currentTime
-  gain.gain.setValueAtTime(volume, now)
+  gain.gain.setValueAtTime(level, now)
   gain.gain.exponentialRampToValueAtTime(0.0001, now + durationMs / 1000)
   oscillator.start(now)
   oscillator.stop(now + durationMs / 1000 + 0.02)
 }
 
 export function playNavClick(): void {
-  playTone(520, 45, 0.055)
+  playTone(520, 45, 0.065)
 }
 
 export function playHover(): void {
-  playTone(680, 22, 0.03)
+  playTone(680, 24, 0.038)
 }
 
 export function playCardClick(): void {
-  playTone(480, 38, 0.05)
+  playTone(480, 40, 0.06)
 }
 
 export function playSuccess(): void {
-  playTone(440, 70, 0.06)
-  window.setTimeout(() => playTone(660, 90, 0.055), 70)
+  playTone(440, 75, 0.07)
+  window.setTimeout(() => playTone(660, 95, 0.065), 70)
 }
 
 export function primeSounds(): void {

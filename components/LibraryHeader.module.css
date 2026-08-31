@@ -39,6 +39,8 @@
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 30;
 }
 
 .iconBtn {
@@ -51,9 +53,4 @@
   place-items: center;
   color: var(--trove-text);
   cursor: pointer;
-}
-
-.iconBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }

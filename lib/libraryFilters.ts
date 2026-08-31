@@ -1,4 +1,5 @@
 import { classifyLinkSource } from './linkSource'
+import { filterSavesByReminderIds, listSaveIdsWithUpcomingReminders } from './libraryReminderFilter'
 import type { LibraryFilter, Save } from './types'
 
 export type { LibraryFilter } from './types'
@@ -27,7 +28,9 @@ export function filterSavesByChip(saves: Save[], filter: LibraryFilter): Save[] 
     return library.filter(s => s.is_viewed === false).sort(byPinnedThenCreated)
   }
   if (filter === 'fav') return library.filter(s => s.is_favorite).sort(byPinnedThenCreated)
-  if (filter === 'reminders') return []
+  if (filter === 'reminders') {
+    return filterSavesByReminderIds(library, listSaveIdsWithUpcomingReminders()).sort(byPinnedThenCreated)
+  }
   if (filter === 'github' || filter === 'docs') {
     return library.filter(s => classifyLinkSource(s.url) === filter).sort(byPinnedThenCreated)
   }

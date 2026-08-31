@@ -7,7 +7,7 @@ import styles from './DomainBrand.module.css'
 type Props = {
   url?: string
   domain?: string
-  onClick?: () => void
+  onClick?: (event: React.MouseEvent) => void
 }
 
 export default function DomainBrand({ url, domain: domainProp, onClick }: Props) {
@@ -28,7 +28,15 @@ export default function DomainBrand({ url, domain: domainProp, onClick }: Props)
 
   if (onClick) {
     return (
-      <button type="button" className={styles.button} onClick={onClick}>
+      <button
+        type="button"
+        className={styles.button}
+        onClick={event => {
+          event.preventDefault()
+          event.stopPropagation()
+          onClick?.(event)
+        }}
+      >
         {content}
       </button>
     )

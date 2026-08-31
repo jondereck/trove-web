@@ -40,6 +40,12 @@
   color: var(--muted-foreground);
 }
 
+.enabledBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2a7a4f;
+}
+
 .sep {
   margin: 24px 0;
 }

@@ -54,6 +54,8 @@
   --radius-lg: 18px;
   --radius-xl: 24px;
   --font-heading: var(--font-serif);
+  --trove-grid-card-height: 268px;
+  --trove-grid-card-compact-height: 248px;
 }
 
 @theme inline {
@@ -186,5 +188,15 @@ input {
   }
   html {
     @apply font-sans;
+  }
+}
+
+.desktopOnly {
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .desktopOnly {
+    display: none !important;
   }
 }

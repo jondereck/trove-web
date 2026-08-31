@@ -15,16 +15,26 @@ import {
   readSoundsEnabled,
   writeSoundsEnabled,
 } from '@/lib/sessionMode'
+import {
+  ensureNotificationPermission,
+  notificationPermission,
+  notificationsSupported,
+  rescheduleWebReminders,
+} from '@/lib/webReminderNotifications'
+import { hydrateSaveReminderStore } from '@/lib/saveRemindersCore'
+import { loadReminderStore } from '@/lib/reminderStore'
 import styles from './SettingsPage.module.css'
 
 export default function SettingsPage() {
   const router = useRouter()
   const [email, setEmail] = useState<string | null>(null)
   const [sounds, setSounds] = useState(false)
+  const [notifyState, setNotifyState] = useState<'unsupported' | NotificationPermission>('default')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setSounds(readSoundsEnabled())
+    setNotifyState(notificationsSupported() ? notificationPermission() : 'unsupported')
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
@@ -85,6 +95,39 @@ export default function SettingsPage() {
               writeSoundsEnabled(value)
             }}
           />
+        </CardContent>
+        <CardContent className={styles.switchRow}>
+          <div>
+            <p className={styles.switchLabel}>Browser reminders</p>
+            <p className={styles.switchHint}>
+              {notifyState === 'unsupported'
+                ? 'This browser does not support desktop notifications.'
+                : notifyState === 'granted'
+                  ? 'Reminders from Trove mobile sync here and notify on this device.'
+                  : notifyState === 'denied'
+                    ? 'Notifications are blocked in your browser settings.'
+                    : 'Allow notifications to get save reminders on this computer.'}
+            </p>
+          </div>
+          {notifyState === 'unsupported' ? null : notifyState === 'granted' ? (
+            <span className={styles.enabledBadge}>On</span>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={notifyState === 'denied'}
+              onClick={() => {
+                void ensureNotificationPermission().then(granted => {
+                  setNotifyState(notificationPermission())
+                  if (granted) {
+                    rescheduleWebReminders(hydrateSaveReminderStore(loadReminderStore()))
+                  }
+                })
+              }}
+            >
+              Enable
+            </Button>
+          )}
         </CardContent>
       </Card>
 

@@ -1,14 +1,16 @@
 .cardWrap {
   position: relative;
+}
+
+.cardWrap:not(.compact):not(.listWrap) {
   height: 100%;
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 268px;
-  background: var(--trove-card);
+  background: var(--card-paper, var(--trove-card));
   border: 1px solid var(--trove-border);
   border-radius: 16px;
   overflow: hidden;
@@ -16,12 +18,63 @@
   transition: border-color 0.15s ease;
 }
 
+.cardWrap:not(.compact):not(.listWrap) .card:not(.cardList) {
+  height: 100%;
+  min-height: var(--trove-grid-card-height);
+}
+
+.cardWrap.compact:not(.listWrap) .card:not(.cardList) {
+  height: 100%;
+  min-height: var(--trove-grid-card-compact-height);
+}
+
+.cardNote,
 .cardNoThumb {
-  background: var(--trove-cream, #fdf6ef);
+  background: var(--card-paper, var(--trove-cream, #fdf6ef));
+}
+
+.cardUnread {
+  background: var(--trove-accent-soft);
+  border-color: var(--trove-accent-border, #e8c4b4);
 }
 
 .card:hover {
   border-color: #ddd9d2;
+}
+
+.cardList {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--trove-border);
+  background: var(--card-paper, var(--trove-card));
+}
+
+.listWrap .cardList:hover {
+  background: var(--trove-bg);
+}
+
+.unreadStripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--trove-accent);
+  z-index: 1;
+}
+
+.newBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: var(--trove-accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .actionBtns {
@@ -82,6 +135,31 @@
   height: 96px;
 }
 
+.listThumbWrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.listThumbFallback {
+  background: var(--trove-cream);
+  color: var(--trove-muted);
+  border: 1px solid var(--trove-border);
+}
+
+.listThumb,
+.thumbPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listThumbLogo,
 .thumbLogo {
   width: 42px;
   height: 42px;
@@ -89,24 +167,55 @@
   object-fit: contain;
 }
 
-.thumbPhoto {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .thumbIcon {
   display: grid;
   place-items: center;
 }
 
+.playOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.galleryBadge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.listRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
 .body {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;
+}
+
+.cardList .body {
+  padding: 0;
+  gap: 6px;
 }
 
 .cardNoThumb .body {
@@ -115,10 +224,11 @@
 
 .snippetSlot {
   flex: 1;
-  min-height: 52px;
+  min-height: 40px;
   display: grid;
   gap: 4px;
   align-content: start;
+  overflow: hidden;
 }
 
 .metaRow {
@@ -126,6 +236,43 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.metaLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sourceLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--trove-muted);
+  min-width: 0;
+}
+
+.sourceLabel span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sourceBadge {
+  font-size: 10px;
+  color: var(--trove-muted);
+  flex-shrink: 0;
+}
+
+.unreadDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--trove-accent);
+  flex-shrink: 0;
 }
 
 .domain {
@@ -153,6 +300,23 @@
   overflow: hidden;
 }
 
+.cardWrap.compact .title {
+  min-height: calc(14px * 1.35 * 2);
+}
+
+.cardList .title {
+  font-size: 15px;
+  -webkit-line-clamp: 2;
+}
+
+.titleUnread {
+  font-weight: 800;
+}
+
+.cardNoThumb .desc {
+  -webkit-line-clamp: 5;
+}
+
 .desc {
   font-size: 12px;
   line-height: 1.45;
@@ -161,6 +325,13 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.noteText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--trove-text);
+  -webkit-line-clamp: 5;
 }
 
 .descMuted {
@@ -232,11 +403,28 @@
   flex-shrink: 0;
 }
 
+.reminderActive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reminderDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
 .tagRow {
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
   overflow: hidden;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .tag {

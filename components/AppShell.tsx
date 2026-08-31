@@ -18,8 +18,8 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
-import MobileDesktopGate from '@/components/MobileDesktopGate'
 import QuickSaveFab from '@/components/QuickSaveFab'
+import ReminderSync from '@/components/ReminderSync'
 import TroveMark from '@/components/TroveMark'
 import UserAvatar from '@/components/UserAvatar'
 import styles from './AppShell.module.css'
@@ -119,6 +119,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
   return (
     <>
+      <ReminderSync mode={mode} />
       <div className={styles.desktopOnly}>
         <div className={styles.shell}>
           <aside className={styles.sidebar}>
@@ -237,7 +238,6 @@ export default function AppShell({ mode, importFileName, children }: Props) {
           </div>
         </div>
       </div>
-      <MobileDesktopGate />
     </>
   )
 }

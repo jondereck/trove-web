@@ -4,6 +4,8 @@ import {
   coverPoolNeedsMore,
 } from './collectionCovers'
 import { postgresUrlOrFilter } from './linkSource'
+import { listSaveIdsWithUpcomingReminders } from './libraryReminderFilter'
+import { ensureRemindersSynced } from './reminderSession'
 import type { Collection, LibraryFilter, Save, SavesPageResult } from './types'
 import { filterLibrarySaves } from './libraryCore'
 import { sortByPinnedThenCreated } from './libraryFilters'
@@ -131,7 +133,48 @@ export async function fetchCloudCollectionSavesPage(
   filter: LibraryFilter = 'all',
 ): Promise<SavesPageResult> {
   if (filter === 'reminders') {
-    return { saves: [], total: 0 }
+    await ensureRemindersSynced(supabase)
+    const ids = listSaveIdsWithUpcomingReminders()
+    if (ids.length === 0) return { saves: [], total: 0 }
+
+    const pinOk = await hasPinColumns(supabase)
+    let query = supabase
+      .from('saves')
+      .select('*', { count: 'exact' })
+      .eq('collection_id', collectionId)
+      .in('id', ids)
+    if (pinOk) query = query.order('is_pinned', { ascending: false })
+    query = query.order('created_at', { ascending: false })
+
+    let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+
+    if (result.error && missingPinColumn(result.error)) {
+      markPinColumnsUnavailable()
+      query = supabase
+        .from('saves')
+        .select('*', { count: 'exact' })
+        .eq('collection_id', collectionId)
+        .in('id', ids)
+        .order('created_at', { ascending: false })
+      result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+    }
+
+    if (result.error && /is_vault/.test(result.error.message)) {
+      query = supabase
+        .from('saves')
+        .select('*', { count: 'exact' })
+        .eq('collection_id', collectionId)
+        .in('id', ids)
+      if (pinOk) query = query.order('is_pinned', { ascending: false })
+      query = query.order('created_at', { ascending: false })
+      result = await query.range(offset, offset + limit - 1)
+    }
+
+    if (result.error) throw result.error
+    return {
+      saves: sortByPinnedThenCreated(filterLibrarySaves((result.data ?? []) as Save[])),
+      total: result.count ?? 0,
+    }
   }
 
   const pinOk = await hasPinColumns(supabase)

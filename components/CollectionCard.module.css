@@ -1,5 +1,9 @@
 .card {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  min-height: var(--trove-grid-card-height);
   background: var(--trove-card);
   border: 1px solid var(--trove-border);
   border-radius: var(--radius-lg);
@@ -15,36 +19,47 @@
 }
 
 .cover {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 6px;
-  padding: 10px;
-  background: var(--trove-bg);
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+  min-height: 112px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--trove-cream);
 }
 
 .coverBig {
-  height: 80px;
+  flex: 2 1 0;
+  min-width: 0;
+  height: 100%;
 }
 
 .coverColumn {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .coverSmall {
-  min-height: 37px;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
 }
 
 .body {
-  padding: 12px 14px 14px;
+  flex-shrink: 0;
+  padding: 4px 14px 14px;
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

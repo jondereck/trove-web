@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { postgresUrlOrFilter } from './linkSource'
+import { listSaveIdsWithUpcomingReminders } from './libraryReminderFilter'
+import { ensureRemindersSynced } from './reminderSession'
 import { sortByPinnedThenCreated } from './libraryFilters'
 import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
 import { parseSaveRow } from './saves'
@@ -29,7 +31,38 @@ export async function fetchCloudLibrarySavesPage(
   filter: LibraryFilter = 'all',
 ): Promise<SavesPageResult> {
   if (filter === 'reminders') {
-    return { saves: [], total: 0 }
+    await ensureRemindersSynced(supabase)
+    const ids = listSaveIdsWithUpcomingReminders()
+    if (ids.length === 0) return { saves: [], total: 0 }
+
+    const pinOk = await hasPinColumns(supabase)
+    let query = supabase.from('saves').select('*', { count: 'exact' }).in('id', ids)
+    query = query.eq('is_inbox', false)
+    if (pinOk) query = query.order('is_pinned', { ascending: false })
+    query = query.order('created_at', { ascending: false })
+
+    let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+
+    if (result.error && missingPinColumn(result.error)) {
+      markPinColumnsUnavailable()
+      query = supabase.from('saves').select('*', { count: 'exact' }).in('id', ids)
+      query = query.eq('is_inbox', false).order('created_at', { ascending: false })
+      result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+    }
+
+    if (result.error && /is_vault/.test(result.error.message)) {
+      query = supabase.from('saves').select('*', { count: 'exact' }).in('id', ids)
+      query = query.eq('is_inbox', false)
+      if (pinOk) query = query.order('is_pinned', { ascending: false })
+      query = query.order('created_at', { ascending: false })
+      result = await query.range(offset, offset + limit - 1)
+    }
+
+    if (result.error) throw result.error
+    return {
+      saves: sortByPinnedThenCreated(filterLibrarySaves((result.data ?? []).map(parseSaveRow))),
+      total: result.count ?? 0,
+    }
   }
 
   const pinOk = await hasPinColumns(supabase)

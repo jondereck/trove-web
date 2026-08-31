@@ -26,6 +26,7 @@ import type { Collection } from '@/lib/types'
 import type { Save, SaveUpdate } from '@/lib/types'
 import type { StoredSaveReminder } from '@/lib/saveRemindersCore'
 import { formatCurrentReminder, reminderPresets } from '@/lib/saveRemindersCore'
+import { ensureNotificationPermission } from '@/lib/webReminderNotifications'
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
@@ -206,6 +207,7 @@ export function useSaveDetail(id: string) {
       }
       upsertLocalReminder(row)
       setReminders(prev => [...prev.filter(r => r.id !== id), row])
+      void ensureNotificationPermission()
       if (canEdit) {
         const supabase = createClient()
         if (!userIdRef.current) {

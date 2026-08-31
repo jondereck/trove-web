@@ -205,16 +205,3 @@
   background: var(--trove-bg);
   box-sizing: border-box;
 }
-
-@media (max-width: 900px) {
-  .desktopOnly {
-    display: none;
-  }
-
-  .mainWrap {
-    margin-left: 0;
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-}

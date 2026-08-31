@@ -5,7 +5,6 @@ import { Pin } from 'lucide-react'
 import type { Save } from '@/lib/types'
 import type { LibraryViewMode } from '@/components/FilterBar'
 import SaveCard from './SaveCard'
-import SaveRow from './SaveRow'
 import styles from './SaveGrid.module.css'
 
 type Props = {
@@ -79,7 +78,7 @@ export default function SaveGrid({
       ) : layout === 'list' ? (
         <div className={styles.list}>
           {saves.map(save => (
-            <SaveRow key={save.id} save={save} />
+            <SaveCard key={save.id} save={save} layout="list" canEdit={canEdit} />
           ))}
         </div>
       ) : (

@@ -1,4 +1,7 @@
 import type { SaveReminderStore, StoredSaveReminder } from './saveRemindersCore'
+import { hydrateSaveReminderStore } from './saveRemindersCore'
+import { invalidateUpcomingReminderIndex } from './upcomingReminderIndex'
+import { cancelWebReminder, rescheduleWebReminders } from './webReminderNotifications'
 
 const STORE_KEY = 'trove-web:reminder-store'
 
@@ -25,6 +28,8 @@ export function loadReminderStore(): SaveReminderStore {
 export function saveReminderStore(store: SaveReminderStore): void {
   if (typeof window === 'undefined') return
   localStorage.setItem(STORE_KEY, JSON.stringify(store))
+  invalidateUpcomingReminderIndex()
+  rescheduleWebReminders(hydrateSaveReminderStore(store))
 }
 
 export function remindersForSave(
@@ -49,6 +54,7 @@ export function upsertLocalReminder(row: StoredSaveReminder): SaveReminderStore 
 export function removeLocalReminder(reminderId: string): SaveReminderStore {
   const store = loadReminderStore()
   delete store.upcoming[reminderId]
+  cancelWebReminder(reminderId)
   saveReminderStore(store)
   return store
 }

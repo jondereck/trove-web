@@ -1,3 +1,11 @@
+.tile {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .image {
   width: 100%;
   height: 100%;
@@ -7,33 +15,34 @@
 
 .brand,
 .glyph {
-  width: 100%;
-  height: 100%;
   display: grid;
   place-items: center;
-  font-size: 18px;
-  font-weight: 700;
   color: var(--trove-accent);
 }
 
-.brand {
-  background: var(--trove-accent-soft);
+.brandIcon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.glyph {
+  font-size: 18px;
 }
 
 .note {
-  width: 100%;
-  height: 100%;
   padding: 6px;
   background: var(--trove-card);
   border: 1px solid var(--trove-border);
   display: grid;
   gap: 2px;
-  overflow: hidden;
+  align-content: start;
 }
 
 .note strong {
   font-size: 10px;
   line-height: 1.2;
+  font-weight: 600;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -42,10 +51,18 @@
 
 .note span {
   font-size: 9px;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--trove-muted);
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.noteCompact strong {
+  -webkit-line-clamp: 1;
+}
+
+.noteCompact span {
+  -webkit-line-clamp: 2;
 }

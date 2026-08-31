@@ -20,6 +20,7 @@ import TroveLoader from '@/components/TroveLoader'
 import { usePaginatedSaves } from '@/hooks/usePaginatedSaves'
 
 import { greetingForHour } from '@/lib/greeting'
+import { consumeLibraryFilterIntent } from '@/lib/libraryFilterIntent'
 
 import type { LibraryFilter } from '@/lib/libraryFilters'
 
@@ -57,6 +58,11 @@ export default function LibraryPage() {
   const [filter, setFilter] = useState<LibraryFilter>('all')
 
   const [viewMode, setViewMode] = useState<LibraryViewMode>('grid')
+
+  useEffect(() => {
+    const intent = consumeLibraryFilterIntent()
+    if (intent) setFilter(intent)
+  }, [])
 
 
 

@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
+import NotificationsMenu from '@/components/NotificationsMenu'
 import { weekdayLabel } from '@/lib/greeting'
 import type { LibraryFilter } from '@/lib/types'
 import FilterBar, { type LibraryViewMode } from '@/components/FilterBar'
@@ -40,9 +41,7 @@ export default function LibraryHeader({
           </p>
         </div>
         <div className={styles.actions}>
-          <button type="button" className={styles.iconBtn} aria-label="Notifications" disabled>
-            <Bell size={18} />
-          </button>
+          <NotificationsMenu />
           <Link href={settingsHref} className={styles.iconBtn} aria-label="Settings">
             <Settings size={18} />
           </Link>

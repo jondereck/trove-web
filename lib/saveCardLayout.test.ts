@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  noteCardShowsTitle,
   plainTextFromMarkdown,
   saveCardDescriptionBlurb,
   trackerStatusColor,
@@ -44,5 +45,24 @@ describe('saveCardLayout', () => {
   it('colors tracker status dots', () => {
     assert.equal(trackerStatusColor('overdue'), '#e53e3e')
     assert.equal(trackerStatusColor('on_track'), '#2a7a4f')
+  })
+
+  it('detects when note cards should show a separate title', () => {
+    assert.equal(
+      noteCardShowsTitle({
+        title: 'Groceries',
+        content: '- [ ] Milk',
+        description: '',
+      }),
+      true,
+    )
+    assert.equal(
+      noteCardShowsTitle({
+        title: 'Quick thought',
+        content: 'Quick thought',
+        description: '',
+      }),
+      false,
+    )
   })
 })

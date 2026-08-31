@@ -1,4 +1,9 @@
+'use client'
+
+import { useState } from 'react'
+import { Link2 } from 'lucide-react'
 import type { CollectionCoverSlot } from '@/lib/types'
+import { brandTileForDomain, faviconUrl } from '@/lib/linkBrand'
 import styles from './CollectionCoverTile.module.css'
 
 function tint(hex: string, alpha: number): string {
@@ -20,6 +25,53 @@ type Props = {
   className?: string
 }
 
+function BrandTile({
+  domain,
+  radius,
+  className,
+}: {
+  domain: string
+  radius: number
+  className?: string
+}) {
+  const tile = brandTileForDomain(domain)
+  return (
+    <div
+      className={`${styles.tile} ${styles.brand} ${className ?? ''}`}
+      style={{ borderRadius: radius, backgroundColor: tile.bg, color: tile.accent }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={faviconUrl(domain)} alt="" className={styles.brandIcon} />
+    </div>
+  )
+}
+
+function GlyphTile({
+  color,
+  icon,
+  alpha,
+  radius,
+  className,
+}: {
+  color: string
+  icon: string
+  alpha: number
+  radius: number
+  className?: string
+}) {
+  return (
+    <div
+      className={`${styles.tile} ${styles.glyph} ${className ?? ''}`}
+      style={{
+        borderRadius: radius,
+        background: `linear-gradient(135deg, ${tint(color, alpha + 0.15)}, ${tint(color, alpha)})`,
+      }}
+    >
+      <span aria-hidden>{icon.includes('book') ? '📖' : '📁'}</span>
+    </div>
+  )
+}
+
 export default function CollectionCoverTile({
   slot,
   color,
@@ -29,43 +81,63 @@ export default function CollectionCoverTile({
   compact = false,
   className,
 }: Props) {
-  const style = {
-    borderRadius: radius,
-    background: `linear-gradient(135deg, ${tint(color, alpha + 0.15)}, ${tint(color, alpha)})`,
-  }
+  const [imgError, setImgError] = useState(false)
 
-  if (slot?.kind === 'image') {
+  if (slot?.kind === 'image' && !imgError) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={slot.url}
-        alt=""
-        className={`${styles.image} ${className ?? ''}`}
+      <div
+        className={`${styles.tile} ${className ?? ''}`}
         style={{ borderRadius: radius }}
-      />
-    )
-  }
-
-  if (slot?.kind === 'brand') {
-    return (
-      <div className={`${styles.brand} ${className ?? ''}`} style={{ borderRadius: radius }}>
-        <span>{slot.domain.slice(0, 1).toUpperCase()}</span>
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={slot.url}
+          alt=""
+          className={styles.image}
+          onError={() => setImgError(true)}
+        />
       </div>
     )
   }
 
+  if (slot?.kind === 'image' && imgError && slot.domain) {
+    return <BrandTile domain={slot.domain} radius={radius} className={className} />
+  }
+
+  if (slot?.kind === 'brand') {
+    return <BrandTile domain={slot.domain} radius={radius} className={className} />
+  }
+
   if (slot?.kind === 'note') {
     return (
-      <div className={`${styles.note} ${className ?? ''}`} style={{ borderRadius: radius }}>
+      <div
+        className={`${styles.tile} ${styles.note} ${compact ? styles.noteCompact : ''} ${className ?? ''}`}
+        style={{ borderRadius: radius }}
+      >
         {slot.title ? <strong>{slot.title}</strong> : null}
         {slot.preview ? <span>{slot.preview}</span> : null}
       </div>
     )
   }
 
+  if (slot?.kind === 'image' && imgError) {
+    return (
+      <div
+        className={`${styles.tile} ${styles.brand} ${className ?? ''}`}
+        style={{ borderRadius: radius, backgroundColor: 'var(--trove-accent-soft)' }}
+      >
+        <Link2 size={compact ? 14 : 18} strokeWidth={1.75} />
+      </div>
+    )
+  }
+
   return (
-    <div className={`${styles.glyph} ${className ?? ''}`} style={style}>
-      <span aria-hidden>{icon.includes('book') ? '📖' : '📁'}</span>
-    </div>
+    <GlyphTile
+      color={color}
+      icon={icon}
+      alpha={alpha}
+      radius={radius}
+      className={className}
+    />
   )
 }

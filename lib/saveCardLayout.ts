@@ -1,6 +1,20 @@
 import type { Save } from './types'
 import { buildNoteCardChecklistPreview } from './noteChecklistPreview'
+import { formatTrackerSummary, readTracker, type TrackerSummary } from './tracker'
 import type { TrackerStatus } from './tracker'
+
+export function saveCardTrackerSummary(save: Pick<Save, 'type' | 'content' | 'tracker'>): TrackerSummary | null {
+  if (save.type !== 'tracker') return null
+  const data = readTracker(save)
+  return data ? formatTrackerSummary(data) : null
+}
+
+export function noteCardShowsTitle(
+  save: Pick<Save, 'title' | 'content' | 'description'>,
+): boolean {
+  const body = saveCardNoteBody(save)
+  return !!(save.title && save.title !== body && save.title !== body.slice(0, 60))
+}
 
 export function saveCardSourceLabel(type: Save['type']): string {
   if (type === 'note') return 'Note'
