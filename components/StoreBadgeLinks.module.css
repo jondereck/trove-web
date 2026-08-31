@@ -1,0 +1,82 @@
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.rowStacked {
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.rowHorizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 11px 0 9px;
+  border-radius: 7px;
+  border: none;
+  background: #000000;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.badge:hover {
+  opacity: 0.88;
+}
+
+.badge:active {
+  transform: scale(0.98);
+}
+
+.copy {
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  line-height: 1;
+}
+
+.copy small {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+.copy strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.playCopy small {
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.appleIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.playIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: unset;
+}

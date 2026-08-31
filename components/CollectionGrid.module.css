@@ -1,3 +1,39 @@
+.section {
+  margin-bottom: 28px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--trove-muted);
+  font-weight: 700;
+}
+
+.sectionTitleAccent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--trove-accent);
+  font-weight: 700;
+}
+
+.sectionPin {
+  flex-shrink: 0;
+}
+
 .scrollWrap {
   overflow-x: auto;
   padding-bottom: 4px;

@@ -22,6 +22,11 @@ This repo is the **browser companion** to **Trove Mobile** (`../trove` or the **
 
 When mobile and web disagree on Library / Collections / save detail UX, **update web, not mobile** (see `trove/AGENTS.md` § Trove Web).
 
+## Icons
+
+Do not recreate App Store / Google Play badges or other trademark logos. Use
+`react-icons/si` via `components/StoreBadgeLinks.tsx`. No emoji as product icons.
+
 ## Before porting a feature
 
 1. Read the mobile screen (`trove/app/…`) and its `lib/` helpers.

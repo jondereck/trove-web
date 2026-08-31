@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Cloud, CloudDownload, FileText, Info, Sparkle } from 'lucide-react'
+import { SiApple, SiGoogle } from 'react-icons/si'
 import { createClient } from '@/lib/supabase/client'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseImportFile } from '@/lib/import'
@@ -10,50 +11,9 @@ import { writeImport } from '@/lib/importStore'
 import { setDemoMode, setImportSession } from '@/lib/sessionMode'
 import { playSuccess } from '@/lib/sounds'
 import { BRAND } from '@/lib/branding'
+import StoreBadgeLinks from '@/components/StoreBadgeLinks'
 import TroveMark from '@/components/TroveMark'
 import styles from './LandingPage.module.css'
-
-function GoogleLogo() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c3.42-3.15 5.384-7.784 5.384-13.316z"
-      />
-      <path
-        fill="#34A853"
-        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
-      />
-      <path
-        fill="#EA4335"
-        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"
-      />
-    </svg>
-  )
-}
-
-function AppleLogo() {
-  return (
-    <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden>
-      <path d="M13.2 9.48c-.02-2.09 1.71-3.09 1.78-3.14-0.97-1.41-2.48-1.6-3.01-1.62-1.28-.13-2.5.75-3.15.75-.65 0-1.65-.74-2.72-.72-1.4.02-2.69.81-3.41 2.06-1.45 2.52-.37 6.25 1.04 8.3.69 1 1.51 2.12 2.59 2.08 1.04-.04 1.43-.67 2.69-.67 1.26 0 1.61.67 2.71.65 1.12-.02 1.83-1.02 2.51-2.03.79-1.15 1.11-2.27 1.13-2.33-.02-.01-2.17-.83-2.19-3.3zm-2.06-6.07c.57-.69.95-1.65.85-2.61-.82.03-1.81.55-2.4 1.24-.53.61-1 1.6-.87 2.54.92.07 1.86-.47 2.42-1.17z" />
-    </svg>
-  )
-}
-
-function PlayStoreLogo() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-      <path fill="#4285F4" d="M3.2 2.1 13.3 12 3.2 21.9A1.8 1.8 0 0 1 2 20.7V3.3a1.8 1.8 0 0 1 1.2-1.2z" />
-      <path fill="#34A853" d="M13.3 12 17.6 16.3 3.2 21.9z" />
-      <path fill="#FBBC05" d="M21.4 10.9 17.6 7.7 13.3 12l4.3 4.3 3.8-3.1a1.2 1.2 0 0 0 0-2.3z" />
-      <path fill="#EA4335" d="M13.3 12 17.6 7.7 3.2 2.1z" />
-    </svg>
-  )
-}
 
 function PeachWaves() {
   return (
@@ -213,16 +173,7 @@ export default function LandingPage() {
             <p>You can also load a local export or explore a demo library.</p>
           </div>
 
-          <div className={styles.storeRow}>
-            <span className={styles.storeBadge}>
-              <PlayStoreLogo />
-              Google Play
-            </span>
-            <span className={styles.storeBadge}>
-              <AppleLogo />
-              App Store
-            </span>
-          </div>
+          <StoreBadgeLinks layout="row" className={styles.storeRow} />
         </div>
       </section>
 
@@ -274,7 +225,7 @@ export default function LandingPage() {
             disabled={authBusy}
             onClick={() => handleOAuth('google')}
           >
-            <GoogleLogo />
+            <SiGoogle size={18} aria-hidden />
             {oauthProvider === 'google' ? 'Redirecting…' : 'Sign in with Google'}
           </button>
           <button
@@ -283,7 +234,7 @@ export default function LandingPage() {
             disabled={authBusy}
             onClick={() => handleOAuth('apple')}
           >
-            <AppleLogo />
+            <SiApple size={18} aria-hidden />
             {oauthProvider === 'apple' ? 'Redirecting…' : 'Sign in with Apple'}
           </button>
         </div>

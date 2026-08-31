@@ -1,3 +1,15 @@
+# Trove Web agent rules
+
+## Icons (hard rule)
+
+Do not recreate brand or platform icons (App Store, Google Play, social logos) as
+hand-drawn SVGs or CSS shapes. Use `react-icons/si` for monochrome marks and
+`@iconify/react` (`logos:*`) for multicolor brand icons — see
+`components/StoreBadgeLinks.tsx`. UI chrome uses Lucide. Never use emoji as icons in
+product UI.
+
+See `trove/AGENTS.md` for mobile ↔ web parity (Library, Collections, tokens).
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
