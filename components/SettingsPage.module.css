@@ -1,0 +1,49 @@
+.title {
+  font-size: clamp(32px, 5vw, 40px);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--muted-foreground);
+  margin-bottom: 24px;
+}
+
+.card {
+  margin-bottom: 16px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.label {
+  color: var(--muted-foreground);
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.switchLabel {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.switchHint {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.sep {
+  margin: 24px 0;
+}
+
+.status {
+  color: var(--muted-foreground);
+}

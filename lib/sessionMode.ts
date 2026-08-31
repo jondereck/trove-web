@@ -1,8 +1,10 @@
+import { deleteImport } from './importStore'
+
 export type SessionMode = 'cloud' | 'demo' | 'import'
 
 const DEMO_KEY = 'trove-web:demo'
 const IMPORT_NAME_KEY = 'trove-web:import-name'
-const IMPORT_SAVES_KEY = 'trove-web:import-saves'
+const IMPORT_ID_KEY = 'trove-web:import-id'
 const SOUNDS_KEY = 'trove-web:sounds-enabled'
 
 function hasWindow(): boolean {
@@ -13,7 +15,7 @@ export function setDemoMode(): void {
   if (!hasWindow()) return
   sessionStorage.setItem(DEMO_KEY, '1')
   sessionStorage.removeItem(IMPORT_NAME_KEY)
-  sessionStorage.removeItem(IMPORT_SAVES_KEY)
+  sessionStorage.removeItem(IMPORT_ID_KEY)
 }
 
 export function clearDemoMode(): void {
@@ -26,25 +28,33 @@ export function isDemoMode(): boolean {
   return sessionStorage.getItem(DEMO_KEY) === '1'
 }
 
-export function setImportSession(name: string, savesJson: string): void {
+export function setImportSession(name: string, importId: string): void {
   if (!hasWindow()) return
   sessionStorage.removeItem(DEMO_KEY)
   sessionStorage.setItem(IMPORT_NAME_KEY, name)
-  sessionStorage.setItem(IMPORT_SAVES_KEY, savesJson)
+  sessionStorage.setItem(IMPORT_ID_KEY, importId)
 }
 
-export function clearImportSession(): void {
+export async function clearImportSession(): Promise<void> {
   if (!hasWindow()) return
+  const id = sessionStorage.getItem(IMPORT_ID_KEY)
   sessionStorage.removeItem(IMPORT_NAME_KEY)
-  sessionStorage.removeItem(IMPORT_SAVES_KEY)
+  sessionStorage.removeItem(IMPORT_ID_KEY)
+  if (id) {
+    try {
+      await deleteImport(id)
+    } catch {
+      // IndexedDB may be unavailable; session flags are already cleared.
+    }
+  }
 }
 
-export function getImportSession(): { name: string; savesJson: string } | null {
+export function getImportSession(): { name: string; id: string } | null {
   if (!hasWindow()) return null
   const name = sessionStorage.getItem(IMPORT_NAME_KEY)
-  const savesJson = sessionStorage.getItem(IMPORT_SAVES_KEY)
-  if (!name || !savesJson) return null
-  return { name, savesJson }
+  const id = sessionStorage.getItem(IMPORT_ID_KEY)
+  if (!name || !id) return null
+  return { name, id }
 }
 
 export function getSessionMode(): SessionMode {

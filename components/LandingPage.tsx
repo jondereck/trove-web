@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
-import { parseBackupJson } from '@/lib/importJson'
+import { parseImportFile } from '@/lib/import'
+import { writeImport } from '@/lib/importStore'
 import { setDemoMode, setImportSession } from '@/lib/sessionMode'
 import { BRAND } from '@/lib/branding'
 import styles from './LandingPage.module.css'
@@ -58,23 +59,24 @@ export default function LandingPage() {
     router.push('/library')
   }
 
+  const [importLoading, setImportLoading] = useState(false)
+
   const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
     setImportMessage('')
     setError('')
-    const ext = file.name.split('.').pop()?.toLowerCase()
-    if (ext !== 'json') {
-      setImportMessage('Full zip and CSV import coming soon — use a Trove JSON export for now.')
-      return
-    }
+    setImportLoading(true)
     try {
-      const raw = await file.text()
-      const parsed = parseBackupJson(raw)
-      setImportSession(file.name, JSON.stringify(parsed.saves))
+      const parsed = await parseImportFile(file)
+      const importId = await writeImport(file.name, parsed.saves, parsed.collections)
+      setImportSession(file.name, importId)
       router.push('/library')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not read that file.')
+    } finally {
+      setImportLoading(false)
+      event.target.value = ''
     }
   }
 
@@ -166,8 +168,8 @@ export default function LandingPage() {
           <h3>Choose a file</h3>
           <p>Select a Trove `.json` export to review saves locally in your browser.</p>
           <label className={styles.filePick}>
-            <span>Choose JSON, ZIP, or CSV</span>
-            <input type="file" accept=".json,.zip,.csv" onChange={handleFile} />
+            <span>{importLoading ? 'Reading file…' : 'Choose JSON, ZIP, or CSV'}</span>
+            <input type="file" accept=".json,.zip,.csv" onChange={handleFile} disabled={importLoading} />
           </label>
           {importMessage ? <p className={styles.hint}>{importMessage}</p> : null}
           <p className={styles.hint}>Opens a local export — does not upload to Trove Cloud.</p>

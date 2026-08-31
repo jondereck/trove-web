@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getDemoLibrary } from '@/lib/demo'
+import { readImport } from '@/lib/importStore'
 import { fetchCloudLibrarySaves, fetchProfileFirstName } from '@/lib/library'
 import {
   getImportSession,
@@ -52,21 +53,22 @@ export function useLibrarySaves(): LibraryState {
       const imported = getImportSession()
       if (mode === 'import' && imported) {
         try {
-          const saves = JSON.parse(imported.savesJson) as Save[]
+          const record = await readImport(imported.id)
+          if (!record) throw new Error('Import expired. Choose the file again.')
           if (!cancelled) {
             setState({
               loading: false,
               error: '',
-              saves,
+              saves: record.saves,
               mode: 'import',
-              importFileName: imported.name,
+              importFileName: record.name,
             })
           }
-        } catch {
+        } catch (e) {
           if (!cancelled) {
             setState({
               loading: false,
-              error: 'Could not read imported saves.',
+              error: e instanceof Error ? e.message : 'Could not read imported saves.',
               saves: [],
               mode: 'import',
               importFileName: imported.name,

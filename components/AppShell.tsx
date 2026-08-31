@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   clearDemoMode,
@@ -26,7 +26,7 @@ const NAV: NavItem[] = [
   { label: 'Search', soon: true },
   { label: 'Inbox', soon: true },
   { label: 'Statistics', soon: true },
-  { label: 'Settings', soon: true },
+  { label: 'Settings', href: '/settings' },
 ]
 
 type Props = {
@@ -37,11 +37,17 @@ type Props = {
 
 export default function AppShell({ mode, importFileName, children }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
   const [sounds, setSounds] = useState(readSoundsEnabled)
+
+  const isActive = (href: string) => {
+    if (href === '/library') return pathname === '/library' || pathname.startsWith('/library/')
+    return pathname === href
+  }
 
   const signOut = async () => {
     clearDemoMode()
-    clearImportSession()
+    await clearImportSession()
     if (mode === 'cloud') {
       const supabase = createClient()
       await supabase.auth.signOut()
@@ -50,9 +56,9 @@ export default function AppShell({ mode, importFileName, children }: Props) {
     router.refresh()
   }
 
-  const clearLocalSession = () => {
+  const clearLocalSession = async () => {
     clearDemoMode()
-    clearImportSession()
+    await clearImportSession()
     router.push('/')
   }
 
@@ -73,7 +79,11 @@ export default function AppShell({ mode, importFileName, children }: Props) {
         <nav className={styles.nav}>
           {NAV.map(item => (
             item.href ? (
-              <Link key={item.label} href={item.href} className={styles.navActive}>
+              <Link
+                key={item.label}
+                href={item.href}
+                className={isActive(item.href) ? styles.navActive : styles.navLink}
+              >
                 {item.label}
               </Link>
             ) : (
