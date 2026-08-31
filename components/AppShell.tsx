@@ -22,8 +22,8 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { label: 'Library', href: '/library' },
-  { label: 'Collections', soon: true },
-  { label: 'Search', soon: true },
+  { label: 'Collections', href: '/collections' },
+  { label: 'Search', href: '/search' },
   { label: 'Inbox', soon: true },
   { label: 'Statistics', soon: true },
   { label: 'Settings', href: '/settings' },
@@ -42,6 +42,9 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
   const isActive = (href: string) => {
     if (href === '/library') return pathname === '/library' || pathname.startsWith('/library/')
+    if (href === '/collections') {
+      return pathname === '/collections' || pathname.startsWith('/collections/')
+    }
     return pathname === href
   }
 

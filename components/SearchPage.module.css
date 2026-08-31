@@ -1,0 +1,105 @@
+.title {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.searchBox {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  margin-bottom: 24px;
+}
+
+.searchBox input {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+  width: 100%;
+}
+
+.searchIcon {
+  color: var(--trove-muted);
+  font-size: 18px;
+}
+
+.shortcut {
+  font-size: 11px;
+  color: var(--trove-muted);
+  border: 1px solid var(--trove-border);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.status,
+.error,
+.prompt {
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #b42318;
+}
+
+.prompt {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sectionHead h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sectionHead span {
+  font-size: 13px;
+  color: var(--trove-muted);
+}
+
+.card {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.empty {
+  padding: 32px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--trove-border);
+  background: var(--trove-card);
+  text-align: center;
+}
+
+.empty p {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty span {
+  font-size: 14px;
+  color: var(--trove-text-sub);
+}

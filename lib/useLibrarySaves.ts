@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getDemoLibrary } from '@/lib/demo'
+import { attachSaveCounts, fetchCloudCollections, type CollectionWithCount } from '@/lib/collections'
 import { readImport } from '@/lib/importStore'
 import { fetchCloudLibrarySaves, fetchProfileFirstName } from '@/lib/library'
 import {
@@ -18,6 +19,7 @@ export type LibraryState = {
   loading: boolean
   error: string
   saves: Save[]
+  collections: CollectionWithCount[]
   mode: SessionMode
   importFileName?: string
   firstName?: string
@@ -29,6 +31,7 @@ export function useLibrarySaves(): LibraryState {
     loading: true,
     error: '',
     saves: [],
+    collections: [],
     mode: 'cloud',
   })
 
@@ -44,6 +47,7 @@ export function useLibrarySaves(): LibraryState {
             loading: false,
             error: '',
             saves: demo.saves,
+            collections: attachSaveCounts(demo.collections, demo.saves),
             mode: 'demo',
           })
         }
@@ -60,6 +64,7 @@ export function useLibrarySaves(): LibraryState {
               loading: false,
               error: '',
               saves: record.saves,
+              collections: attachSaveCounts(record.collections, record.saves),
               mode: 'import',
               importFileName: record.name,
             })
@@ -70,6 +75,7 @@ export function useLibrarySaves(): LibraryState {
               loading: false,
               error: e instanceof Error ? e.message : 'Could not read imported saves.',
               saves: [],
+              collections: [],
               mode: 'import',
               importFileName: imported.name,
             })
@@ -86,8 +92,9 @@ export function useLibrarySaves(): LibraryState {
       }
 
       try {
-        const [saves, firstName] = await Promise.all([
+        const [saves, collections, firstName] = await Promise.all([
           fetchCloudLibrarySaves(supabase),
+          fetchCloudCollections(supabase),
           fetchProfileFirstName(supabase),
         ])
         if (!cancelled) {
@@ -95,6 +102,7 @@ export function useLibrarySaves(): LibraryState {
             loading: false,
             error: '',
             saves,
+            collections,
             mode: 'cloud',
             firstName,
           })
@@ -105,6 +113,7 @@ export function useLibrarySaves(): LibraryState {
             loading: false,
             error: e instanceof Error ? e.message : 'Could not load library.',
             saves: [],
+            collections: [],
             mode: 'cloud',
           })
         }

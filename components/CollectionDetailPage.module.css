@@ -1,0 +1,42 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--trove-muted);
+  margin-bottom: 16px;
+}
+
+.breadcrumb a {
+  color: var(--trove-accent);
+}
+
+.title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.description {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.status,
+.error {
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #b42318;
+}
+
+.missing {
+  display: grid;
+  gap: 12px;
+}
+
+.missing a {
+  color: var(--trove-accent);
+}

@@ -1,0 +1,63 @@
+.title {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.status,
+.error {
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #b42318;
+}
+
+.card {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--trove-border);
+}
+
+.head h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.head span {
+  font-size: 13px;
+  color: var(--trove-muted);
+}
+
+.empty {
+  padding: 32px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--trove-border);
+  background: var(--trove-card);
+  text-align: center;
+}
+
+.empty p {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty span {
+  font-size: 14px;
+  color: var(--trove-text-sub);
+}
