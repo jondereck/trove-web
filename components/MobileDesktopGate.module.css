@@ -1,0 +1,122 @@
+.gate {
+  display: none;
+  min-height: 100vh;
+  padding: 24px 20px 32px;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    165deg,
+    var(--trove-bg) 0%,
+    var(--trove-cream) 42%,
+    #f3ebe3 100%
+  );
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 32px 32px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  box-shadow: 0 24px 60px rgba(26, 26, 26, 0.08);
+  text-align: center;
+}
+
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 999px;
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+  display: grid;
+  place-items: center;
+}
+
+.headline {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(26px, 5vw, 32px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--trove-text);
+  margin-bottom: 12px;
+}
+
+.body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--trove-text-sub);
+  margin-bottom: 24px;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 20px;
+  margin-bottom: 28px;
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--trove-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link:hover {
+  color: #a04f2f;
+}
+
+.storeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.storeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.1;
+  transition: background 0.15s ease;
+}
+
+.storeBadge:hover {
+  background: #2a2a2a;
+}
+
+.storeBadge small {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0.82;
+}
+
+.storeBadge strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.storeIcon {
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .gate {
+    display: flex;
+  }
+}

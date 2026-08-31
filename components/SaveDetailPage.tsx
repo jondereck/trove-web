@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import AppShell from '@/components/AppShell'
 import SaveDetail from '@/components/SaveDetail'
+import TroveLoader from '@/components/TroveLoader'
 import { findSaveById } from '@/lib/libraryCore'
 import { fetchCloudSaveById } from '@/lib/library'
 import { createClient } from '@/lib/supabase/client'
@@ -16,7 +17,7 @@ type Props = {
 }
 
 export default function SaveDetailPage({ id }: Props) {
-  const { loading, error, saves, mode, importFileName } = useLibrarySaves()
+  const { loading, error, saves, mode, importFileName, firstName } = useLibrarySaves()
   const [save, setSave] = useState<Save | undefined>()
   const [detailLoading, setDetailLoading] = useState(true)
   const [detailError, setDetailError] = useState('')
@@ -72,8 +73,8 @@ export default function SaveDetailPage({ id }: Props) {
   const showError = error || detailError
 
   return (
-    <AppShell mode={mode} importFileName={importFileName}>
-      {showLoading ? <p>Loading…</p> : null}
+    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
+      {showLoading ? <TroveLoader label="Loading save…" /> : null}
       {showError ? <p className={styles.error}>{showError}</p> : null}
       {!showLoading && !showError && !save ? (
         <div className={styles.missing}>

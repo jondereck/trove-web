@@ -4,13 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { LIBRARY_INITIAL_PAGE, LIBRARY_LOAD_MORE } from '@/constants/library'
 import { fetchCloudCollectionSavesPage } from '@/lib/collections'
 import { fetchCloudLibrarySavesPage } from '@/lib/library'
-import { hasMorePages, paginateLocalSaves } from '@/lib/pagination'
+import { hasMorePages, paginateFilteredSaves } from '@/lib/pagination'
 import { createClient } from '@/lib/supabase/client'
-import type { Save, SavesPageResult } from '@/lib/types'
+import type { LibraryFilter, Save, SavesPageResult } from '@/lib/types'
 import type { SessionMode } from '@/lib/sessionMode'
 
 type Options = {
   mode: SessionMode
+  filter?: LibraryFilter
   collectionId?: string
   localSaves?: Save[]
   enabled?: boolean
@@ -18,6 +19,7 @@ type Options = {
 
 export function usePaginatedSaves({
   mode,
+  filter = 'all',
   collectionId,
   localSaves = [],
   enabled = true,
@@ -34,15 +36,15 @@ export function usePaginatedSaves({
       if (mode === 'cloud') {
         const supabase = createClient()
         if (collectionId) {
-          return fetchCloudCollectionSavesPage(supabase, collectionId, offset, limit)
+          return fetchCloudCollectionSavesPage(supabase, collectionId, offset, limit, filter)
         }
-        return fetchCloudLibrarySavesPage(supabase, offset, limit)
+        return fetchCloudLibrarySavesPage(supabase, offset, limit, filter)
       }
 
-      const { page, total: localTotal } = paginateLocalSaves(localSaves, offset, limit)
+      const { page, total: localTotal } = paginateFilteredSaves(localSaves, filter, offset, limit)
       return { saves: page, total: localTotal }
     },
-    [mode, collectionId, localSaves],
+    [mode, collectionId, localSaves, filter],
   )
 
   const loadInitial = useCallback(async () => {

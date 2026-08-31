@@ -3,7 +3,8 @@ import {
   collectionCoverFields,
   coverPoolNeedsMore,
 } from './collectionCovers'
-import type { Collection, Save, SavesPageResult } from './types'
+import { postgresUrlOrFilter } from './linkSource'
+import type { Collection, LibraryFilter, Save, SavesPageResult } from './types'
 import { filterLibrarySaves } from './libraryCore'
 import { attachSaveCountsFromMap } from './collectionsCore'
 
@@ -125,22 +126,42 @@ export async function fetchCloudCollectionSavesPage(
   collectionId: string,
   offset: number,
   limit: number,
+  filter: LibraryFilter = 'all',
 ): Promise<SavesPageResult> {
-  let result = await supabase
+  if (filter === 'reminders') {
+    return { saves: [], total: 0 }
+  }
+
+  let query = supabase
     .from('saves')
     .select('*', { count: 'exact' })
     .eq('collection_id', collectionId)
-    .eq('is_vault', false)
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+
+  if (filter === 'unread') query = query.eq('is_viewed', false)
+  else if (filter === 'fav') query = query.eq('is_favorite', true)
+  else if (filter === 'github' || filter === 'docs') query = query.or(postgresUrlOrFilter(filter))
+  else if (filter !== 'all') query = query.eq('type', filter)
+
+  let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
 
   if (result.error && /is_vault/.test(result.error.message)) {
-    result = await supabase
+    query = supabase
       .from('saves')
       .select('*', { count: 'exact' })
       .eq('collection_id', collectionId)
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    if (filter === 'unread') query = query.eq('is_viewed', false)
+    else if (filter === 'fav') query = query.eq('is_favorite', true)
+    else if (filter === 'github' || filter === 'docs') query = query.or(postgresUrlOrFilter(filter))
+    else if (filter !== 'all') query = query.eq('type', filter)
+    result = await query.range(offset, offset + limit - 1)
+  }
+
+  if (result.error && /is_viewed|is_favorite/.test(result.error.message)) {
+    if (filter === 'unread' || filter === 'fav') {
+      return { saves: [], total: 0 }
+    }
   }
 
   if (result.error) throw result.error

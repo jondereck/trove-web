@@ -5,6 +5,15 @@ export type CollectionCoverSlot =
 
 export type SaveType = 'link' | 'image' | 'video' | 'note' | 'tracker'
 
+export type LibraryFilter =
+  | 'all'
+  | 'unread'
+  | 'fav'
+  | 'reminders'
+  | SaveType
+  | 'github'
+  | 'docs'
+
 export interface Save {
   id: string
   user_id: string
@@ -21,6 +30,9 @@ export interface Save {
   is_vault?: boolean
   created_at: string
   updated_at?: string
+  is_pinned?: boolean
+  is_favorite?: boolean
+  is_viewed?: boolean
 }
 
 export interface Collection {

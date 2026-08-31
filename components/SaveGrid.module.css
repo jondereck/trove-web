@@ -1,19 +1,69 @@
-.grid {
-  column-count: 2;
-  column-gap: 14px;
+.section {
+  margin-bottom: 28px;
 }
 
-.item {
-  break-inside: avoid;
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
-.empty {
+.sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--trove-muted);
+  font-weight: 700;
+}
+
+.sectionTitleAccent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--trove-accent);
+  font-weight: 700;
+}
+
+.sectionPin {
+  flex-shrink: 0;
+}
+
+.viewAll {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--trove-accent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.empty,
+.emptyInline {
   background: var(--trove-card);
   border: 1px dashed var(--trove-border);
-  border-radius: var(--radius-xl);
-  padding: 48px 24px;
+  border-radius: 16px;
+  padding: 40px 24px;
   text-align: center;
+}
+
+.emptyInline {
+  padding: 24px;
+  font-size: 14px;
+  color: var(--trove-text-sub);
 }
 
 .empty p {
@@ -26,8 +76,20 @@
   font-size: 14px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1200px) {
   .grid {
-    column-count: 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
   }
 }

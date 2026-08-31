@@ -1,0 +1,62 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip,
+.chipActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chip {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  color: var(--trove-text);
+}
+
+.chipActive {
+  border: 1px solid var(--trove-text);
+  background: var(--trove-text);
+  color: #fff;
+}
+
+.chipIcon {
+  display: grid;
+  place-items: center;
+}
+
+.viewToggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  display: grid;
+  place-items: center;
+  color: var(--trove-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}

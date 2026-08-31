@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { paginateLocalSaves, hasMorePages } from './pagination'
+import { paginateFilteredSaves, hasMorePages } from './pagination'
 import type { Save } from './types'
 
 const saves: Save[] = Array.from({ length: 30 }, (_, i) => ({
@@ -15,13 +15,13 @@ const saves: Save[] = Array.from({ length: 30 }, (_, i) => ({
 
 describe('pagination', () => {
   it('returns first page and total', () => {
-    const { page, total } = paginateLocalSaves(saves, 0, 24)
+    const { page, total } = paginateFilteredSaves(saves, 'all', 0, 24)
     assert.equal(total, 30)
     assert.equal(page.length, 24)
   })
 
   it('returns second page', () => {
-    const { page, total } = paginateLocalSaves(saves, 24, 20)
+    const { page, total } = paginateFilteredSaves(saves, 'all', 24, 20)
     assert.equal(total, 30)
     assert.equal(page.length, 6)
   })

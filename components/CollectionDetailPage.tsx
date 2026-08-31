@@ -1,13 +1,15 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import AppShell from '@/components/AppShell'
 import DemoBanner from '@/components/DemoBanner'
-import LoadMoreFooter from '@/components/LoadMoreFooter'
-import SaveGrid from '@/components/SaveGrid'
+import FilterBar, { type LibraryViewMode } from '@/components/FilterBar'
+import SaveBrowseBody from '@/components/SaveBrowseBody'
+import TroveLoader from '@/components/TroveLoader'
 import { usePaginatedSaves } from '@/hooks/usePaginatedSaves'
 import { filterSavesForCollection, findCollectionById } from '@/lib/collections'
+import type { LibraryFilter } from '@/lib/libraryFilters'
 import { useLibrarySaves } from '@/lib/useLibrarySaves'
 import styles from './CollectionDetailPage.module.css'
 
@@ -16,8 +18,11 @@ type Props = {
 }
 
 export default function CollectionDetailPage({ id }: Props) {
-  const { loading: sessionLoading, error: sessionError, saves: localSaves, collections, mode, importFileName } =
+  const { loading: sessionLoading, error: sessionError, saves: localSaves, collections, mode, importFileName, firstName } =
     useLibrarySaves()
+
+  const [filter, setFilter] = useState<LibraryFilter>('all')
+  const [viewMode, setViewMode] = useState<LibraryViewMode>('grid')
 
   const localCollectionSaves = useMemo(
     () => (mode === 'cloud' ? [] : filterSavesForCollection(localSaves, id)),
@@ -33,8 +38,10 @@ export default function CollectionDetailPage({ id }: Props) {
     loadingMore,
     error: pageError,
     loadMore,
+    hasMore,
   } = usePaginatedSaves({
     mode,
+    filter,
     collectionId: mode === 'cloud' ? id : undefined,
     localSaves: localCollectionSaves,
     enabled: !sessionLoading && !sessionError && (mode === 'cloud' || !!collection),
@@ -44,7 +51,7 @@ export default function CollectionDetailPage({ id }: Props) {
   const error = sessionError || pageError
 
   return (
-    <AppShell mode={mode} importFileName={importFileName}>
+    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
       <nav className={styles.breadcrumb}>
@@ -53,7 +60,26 @@ export default function CollectionDetailPage({ id }: Props) {
         <span>{collection?.name ?? 'Collection'}</span>
       </nav>
 
-      {loading ? <p className={styles.status}>Loading collection…</p> : null}
+      <header className={styles.header}>
+        <p className={styles.kicker}>
+          <span className={styles.kickerCount}>{total} SAVES</span>
+        </p>
+        <h1 className={`serif ${styles.title}`}>{collection?.name ?? 'Collection'}</h1>
+        {collection?.description ? (
+          <p className={styles.description}>{collection.description}</p>
+        ) : null}
+      </header>
+
+      <div className={styles.filterBar}>
+        <FilterBar
+          filter={filter}
+          onFilterChange={setFilter}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+      </div>
+
+      {loading ? <TroveLoader label="Loading collection…" /> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
 
       {!loading && !error && !collection && mode !== 'cloud' ? (
@@ -64,23 +90,16 @@ export default function CollectionDetailPage({ id }: Props) {
       ) : null}
 
       {!loading && !error && (collection || mode === 'cloud') ? (
-        <>
-          <h1 className={`serif ${styles.title}`}>{collection?.name ?? 'Collection'}</h1>
-          {collection?.description ? (
-            <p className={styles.description}>{collection.description}</p>
-          ) : null}
-          <SaveGrid
-            saves={saves}
-            emptyTitle="No saves in this collection yet."
-            emptyHint="Add saves to this folder in Trove mobile."
-          />
-          <LoadMoreFooter
-            loaded={saves.length}
-            total={total}
-            loading={loadingMore}
-            onLoadMore={loadMore}
-          />
-        </>
+        <SaveBrowseBody
+          saves={saves}
+          layout={viewMode}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          showPinned={false}
+          emptyTitle="No saves in this collection yet."
+          emptyHint="Add saves to this folder in Trove mobile."
+        />
       ) : null}
     </AppShell>
   )

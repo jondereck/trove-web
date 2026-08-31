@@ -1,17 +1,16 @@
-import type { Save } from './types'
-import { filterLibrarySaves } from './libraryCore'
+import type { LibraryFilter, Save } from './types'
+import { filterSavesByChip } from './libraryFilters'
 
-export function paginateLocalSaves(
+export function paginateFilteredSaves(
   saves: Save[],
+  filter: LibraryFilter,
   offset: number,
   limit: number,
 ): { page: Save[]; total: number } {
-  const lib = filterLibrarySaves(saves).sort((a, b) =>
-    b.created_at.localeCompare(a.created_at),
-  )
+  const filtered = filterSavesByChip(saves, filter)
   return {
-    page: lib.slice(offset, offset + limit),
-    total: lib.length,
+    page: filtered.slice(offset, offset + limit),
+    total: filtered.length,
   }
 }
 

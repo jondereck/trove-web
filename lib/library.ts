@@ -1,27 +1,56 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { LibraryStats, Save, SavesPageResult } from './types'
+import { postgresUrlOrFilter } from './linkSource'
+import type { LibraryFilter, LibraryStats, Save, SavesPageResult } from './types'
 import { filterLibrarySaves } from './libraryCore'
+
+function applyLibraryFilter<T extends {
+  eq: (col: string, val: unknown) => T
+  or: (filters: string) => T
+}>(
+  query: T,
+  filter: LibraryFilter,
+): T {
+  let q = query.eq('is_inbox', false)
+  if (filter === 'unread') return q.eq('is_viewed', false)
+  if (filter === 'fav') return q.eq('is_favorite', true)
+  if (filter === 'reminders') return q
+  if (filter === 'github' || filter === 'docs') return q.or(postgresUrlOrFilter(filter))
+  if (filter !== 'all') return q.eq('type', filter)
+  return q
+}
 
 export async function fetchCloudLibrarySavesPage(
   supabase: SupabaseClient,
   offset: number,
   limit: number,
+  filter: LibraryFilter = 'all',
 ): Promise<SavesPageResult> {
-  let result = await supabase
+  if (filter === 'reminders') {
+    return { saves: [], total: 0 }
+  }
+
+  let query = supabase
     .from('saves')
     .select('*', { count: 'exact' })
-    .eq('is_inbox', false)
-    .eq('is_vault', false)
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+
+  query = applyLibraryFilter(query, filter)
+
+  let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
 
   if (result.error && /is_vault/.test(result.error.message)) {
-    result = await supabase
+    query = supabase
       .from('saves')
       .select('*', { count: 'exact' })
-      .eq('is_inbox', false)
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+    query = applyLibraryFilter(query, filter)
+    result = await query.range(offset, offset + limit - 1)
+  }
+
+  if (result.error && /is_viewed|is_favorite/.test(result.error.message)) {
+    if (filter === 'unread' || filter === 'fav') {
+      return { saves: [], total: 0 }
+    }
   }
 
   if (result.error) throw result.error

@@ -5,8 +5,12 @@ export function greetingForHour(hour: number, firstName?: string): string {
 
 export function weekdayLabel(date = new Date()): string {
   return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
   }).toUpperCase()
+}
+
+export function libraryKicker(total: number, date = new Date()): string {
+  return `${total} SAVED • ${weekdayLabel(date)}`
 }

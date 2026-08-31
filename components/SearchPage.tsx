@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AppShell from '@/components/AppShell'
 import CollectionCard from '@/components/CollectionCard'
 import DemoBanner from '@/components/DemoBanner'
+import TroveLoader from '@/components/TroveLoader'
 import SaveList from '@/components/SaveList'
 import { attachSaveCounts } from '@/lib/collections'
 import { createClient } from '@/lib/supabase/client'
@@ -26,7 +27,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 export default function SearchPage() {
-  const { loading: sessionLoading, error: sessionError, saves, collections, mode, importFileName } =
+  const { loading: sessionLoading, error: sessionError, saves, collections, mode, importFileName, firstName } =
     useLibrarySaves()
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, 250)
@@ -105,7 +106,7 @@ export default function SearchPage() {
   }, [mode])
 
   return (
-    <AppShell mode={mode} importFileName={importFileName}>
+    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
       <h1 className={`serif ${styles.title}`}>Search</h1>
@@ -125,7 +126,7 @@ export default function SearchPage() {
 
       {sessionError ? <p className={styles.error}>{sessionError}</p> : null}
       {searchError ? <p className={styles.error}>{searchError}</p> : null}
-      {searchLoading ? <p className={styles.status}>Searching…</p> : null}
+      {searchLoading ? <TroveLoader compact label="Searching…" /> : null}
 
       {showEmpty ? (
         <div className={styles.empty}>

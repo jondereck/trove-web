@@ -1,27 +1,22 @@
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
 }
 
 .kicker {
   font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--trove-muted);
-  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.kickerCount {
+  color: var(--trove-text-sub);
 }
 
 .title {
-  font-size: clamp(32px, 5vw, 44px);
+  font-size: clamp(34px, 4vw, 44px);
   font-weight: 400;
-}
-
-.subtitle {
-  color: var(--trove-text-sub);
-  font-size: 14px;
-  margin-bottom: 24px;
+  line-height: 1.05;
 }
 
 .status,

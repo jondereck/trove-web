@@ -1,48 +1,64 @@
 import Link from 'next/link'
+import { Heart, FileText, ImageIcon, Link2, Timer, Play } from 'lucide-react'
 import type { Save } from '@/lib/types'
 import { buildNoteCardChecklistPreview } from '@/lib/noteChecklistPreview'
 import {
-  formatSaveCardDate,
+  brandTileForDomain,
+  brandTileForType,
+  faviconUrl,
   saveCardDomain,
-  saveCardSourceLabel,
-  tagChipColor,
-} from '@/lib/saveCardLayout'
+} from '@/lib/linkBrand'
+import { formatSaveCardDate, tagChipColor } from '@/lib/saveCardLayout'
 import styles from './SaveCard.module.css'
 
 type Props = {
   save: Save
+  compact?: boolean
 }
 
-export default function SaveCard({ save }: Props) {
+function TypeIcon({ type }: { type: Save['type'] }) {
+  const size = 28
+  if (type === 'note') return <FileText size={size} strokeWidth={1.5} />
+  if (type === 'image') return <ImageIcon size={size} strokeWidth={1.5} />
+  if (type === 'video') return <Play size={size} strokeWidth={1.5} />
+  if (type === 'tracker') return <Timer size={size} strokeWidth={1.5} />
+  return <Link2 size={size} strokeWidth={1.5} />
+}
+
+export default function SaveCard({ save, compact = false }: Props) {
   const domain = saveCardDomain(save.url)
+  const tile = domain ? brandTileForDomain(domain) : brandTileForType(save.type)
   const checklist = save.type === 'note' && save.content
     ? buildNoteCardChecklistPreview(save.content)
     : null
-  const imageCount = save.image_urls?.length ?? (save.image_url ? 1 : 0)
+  const showPhoto = save.type === 'image' && save.image_url
 
   return (
-    <Link href={`/library/${save.id}`} className={styles.card}>
-      {(save.image_url || save.type === 'video') && (
-        <div className={styles.heroWrap}>
-          {save.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={save.image_url} alt="" className={styles.hero} />
-          ) : (
-            <div className={styles.heroFallback}>▶</div>
-          )}
-          {save.type === 'video' ? <span className={styles.playBadge}>▶</span> : null}
-          {imageCount > 1 ? <span className={styles.galleryBadge}>{imageCount}</span> : null}
-        </div>
-      )}
+    <Link href={`/library/${save.id}`} className={`${styles.card} ${compact ? styles.compact : ''}`}>
+      <div className={styles.thumbWrap} style={{ backgroundColor: tile.bg }}>
+        {showPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={save.image_url} alt="" className={styles.thumbPhoto} />
+        ) : domain ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={faviconUrl(domain)} alt="" className={styles.thumbLogo} />
+        ) : (
+          <span className={styles.thumbIcon} style={{ color: tile.accent }}>
+            <TypeIcon type={save.type} />
+          </span>
+        )}
+        <span
+          className={save.is_favorite ? styles.heartOn : styles.heartOff}
+          aria-hidden
+        >
+          <Heart size={15} fill={save.is_favorite ? 'currentColor' : 'none'} />
+        </span>
+      </div>
 
       <div className={styles.body}>
         <div className={styles.metaRow}>
-          <span className={styles.metaLeft}>
-            {domain ? (
-              <span className={styles.domain}>{domain}</span>
-            ) : (
-              <span className={styles.source}>{saveCardSourceLabel(save.type)}</span>
-            )}
+          <span className={styles.domain}>
+            {domain || (save.type === 'note' ? 'Note' : save.type)}
           </span>
           <time className={styles.date}>{formatSaveCardDate(save.created_at)}</time>
         </div>
@@ -51,26 +67,15 @@ export default function SaveCard({ save }: Props) {
 
         {checklist ? (
           <ul className={styles.checklist}>
-            {checklist.visible.map(item => (
-              <li key={item.text}>
-                <span className={styles.tick}>○</span>
-                {item.text}
-              </li>
+            {checklist.visible.slice(0, compact ? 2 : 3).map(item => (
+              <li key={item.text}>{item.text}</li>
             ))}
-            {checklist.hiddenOpenCount > 0 ? (
-              <li className={styles.checklistMore}>+ {checklist.hiddenOpenCount} more</li>
-            ) : null}
-            {checklist.tickedLabel ? (
-              <li className={styles.checklistDone}>{checklist.tickedLabel}</li>
-            ) : null}
           </ul>
-        ) : save.description ? (
-          <p className={styles.description}>{save.description}</p>
         ) : null}
 
         {save.tags?.length ? (
           <div className={styles.tagRow}>
-            {save.tags.map(tag => {
+            {save.tags.slice(0, compact ? 2 : 4).map(tag => {
               const c = tagChipColor(tag)
               return (
                 <span

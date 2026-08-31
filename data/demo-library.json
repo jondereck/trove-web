@@ -16,16 +16,78 @@
     {
       "id": "demo-save-1",
       "user_id": "demo",
+      "title": "Bettercast",
+      "description": "Social audio and community conversations.",
+      "type": "link",
+      "url": "https://www.facebook.com/",
+      "tags": ["social-media", "networking"],
+      "is_inbox": false,
+      "is_pinned": true,
+      "is_favorite": true,
+      "created_at": "2026-08-31T08:00:00.000Z"
+    },
+    {
+      "id": "demo-save-2",
+      "user_id": "demo",
+      "title": "Stop Chasing Productivity",
+      "description": "A calmer approach to getting things done.",
+      "type": "link",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "tags": ["video", "productivity"],
+      "is_inbox": false,
+      "is_pinned": true,
+      "is_favorite": true,
+      "created_at": "2026-08-30T14:20:00.000Z"
+    },
+    {
+      "id": "demo-save-3",
+      "user_id": "demo",
+      "title": "12 Principles of Great Design",
+      "description": "Timeless guidelines for visual and product design.",
+      "type": "link",
+      "url": "https://github.com/",
+      "tags": ["design", "reference"],
+      "is_inbox": false,
+      "is_pinned": true,
+      "created_at": "2026-08-28T09:15:00.000Z"
+    },
+    {
+      "id": "demo-save-4",
+      "user_id": "demo",
+      "title": "Can this design pass a usability test?",
+      "description": "Notes on evaluating interface clarity.",
+      "type": "link",
+      "url": "https://www.figma.com/",
+      "tags": ["ux", "research"],
+      "is_inbox": false,
+      "is_pinned": true,
+      "created_at": "2026-08-27T11:05:00.000Z"
+    },
+    {
+      "id": "demo-save-5",
+      "user_id": "demo",
+      "title": "Focus playlist",
+      "description": "Instrumental tracks for deep work.",
+      "type": "link",
+      "url": "https://open.spotify.com/",
+      "tags": ["music", "focus"],
+      "is_inbox": false,
+      "is_favorite": true,
+      "created_at": "2026-08-26T18:40:00.000Z"
+    },
+    {
+      "id": "demo-save-6",
+      "user_id": "demo",
       "title": "React Native docs",
       "description": "Core concepts and guides for building native apps.",
       "type": "link",
       "url": "https://reactnative.dev/docs/getting-started",
       "tags": ["docs", "mobile"],
       "is_inbox": false,
-      "created_at": "2026-08-28T09:15:00.000Z"
+      "created_at": "2026-08-25T09:15:00.000Z"
     },
     {
-      "id": "demo-save-2",
+      "id": "demo-save-7",
       "user_id": "demo",
       "title": "Weekend groceries",
       "description": "Quick checklist for the market run.",
@@ -33,10 +95,10 @@
       "content": "- [ ] Coffee beans\n- [x] Olive oil\n- [ ] Fresh basil",
       "tags": ["personal"],
       "is_inbox": false,
-      "created_at": "2026-08-27T14:20:00.000Z"
+      "created_at": "2026-08-24T14:20:00.000Z"
     },
     {
-      "id": "demo-save-3",
+      "id": "demo-save-8",
       "user_id": "demo",
       "title": "Sunset reference",
       "description": "Warm palette inspiration for UI work.",
@@ -44,10 +106,10 @@
       "image_url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
       "tags": ["design"],
       "is_inbox": false,
-      "created_at": "2026-08-26T18:40:00.000Z"
+      "created_at": "2026-08-23T18:40:00.000Z"
     },
     {
-      "id": "demo-save-4",
+      "id": "demo-save-9",
       "user_id": "demo",
       "title": "Expo SDK release notes",
       "description": "What changed in the latest SDK.",
@@ -55,17 +117,17 @@
       "url": "https://docs.expo.dev/versions/latest/",
       "tags": ["docs", "expo"],
       "is_inbox": false,
-      "created_at": "2026-08-25T11:05:00.000Z"
+      "created_at": "2026-08-22T11:05:00.000Z"
     },
     {
-      "id": "demo-save-5",
+      "id": "demo-save-10",
       "user_id": "demo",
       "title": "Project ideas",
       "type": "note",
       "content": "Ship Trove Web Phase A first.\n\nFocus on login + read-only library.",
       "tags": ["trove"],
       "is_inbox": false,
-      "created_at": "2026-08-24T08:00:00.000Z"
+      "created_at": "2026-08-21T08:00:00.000Z"
     }
   ]
 }

@@ -1,118 +1,78 @@
+.desktopOnly {
+  display: block;
+}
+
 .shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 220px 1fr;
   background: var(--trove-bg);
 }
 
 .sidebar {
   border-right: 1px solid var(--trove-border);
-  background: var(--trove-cream);
-  padding: 24px 18px;
+  background: var(--trove-card);
+  padding: 28px 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.brandBlock {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.logoMark {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--trove-accent);
-  color: var(--trove-on-accent);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 22px;
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 28px;
 }
 
 .wordmark {
-  font-size: 20px;
-}
-
-.beta {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: var(--trove-accent-soft);
+  font-size: 28px;
   color: var(--trove-accent);
-}
-
-.subBrand {
-  font-size: 12px;
-  color: var(--trove-text-sub);
+  line-height: 1;
 }
 
 .nav {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .navActive,
 .navLink,
 .navDisabled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   font-size: 14px;
 }
 
+.navIcon {
+  display: grid;
+  place-items: center;
+  color: inherit;
+  opacity: 0.85;
+}
+
 .navLink {
-  color: var(--trove-text);
+  color: var(--trove-text-sub);
 }
 
 .navLink:hover {
-  background: var(--trove-card);
+  background: var(--trove-bg);
+  color: var(--trove-text);
 }
 
 .navActive {
-  background: var(--trove-accent);
-  color: var(--trove-on-accent);
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
   font-weight: 600;
 }
 
 .navDisabled {
   color: var(--trove-muted);
-}
-
-.navDisabled em {
-  font-style: normal;
-  font-size: 11px;
-  margin-left: 6px;
+  opacity: 0.72;
 }
 
 .sidebarFoot {
   margin-top: auto;
   display: grid;
-  gap: 12px;
-}
-
-.quickHint {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--trove-muted);
-}
-
-.toggleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--trove-text-sub);
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--trove-border);
 }
 
 .importChip {
@@ -121,9 +81,9 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   border: 1px solid var(--trove-border);
-  background: var(--trove-card);
+  background: var(--trove-bg);
   font-size: 12px;
 }
 
@@ -135,31 +95,49 @@
   font-weight: 600;
 }
 
-.signOut {
-  border: 1px solid var(--trove-border);
-  background: var(--trove-card);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 4px 2px;
   cursor: pointer;
-  font-size: 13px;
+  text-align: left;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profileName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profileChevron {
+  color: var(--trove-muted);
 }
 
 .mainWrap {
   min-width: 0;
-  padding: 28px clamp(16px, 3vw, 40px) 96px;
+  padding: 28px clamp(20px, 3vw, 36px) 96px;
+  background: var(--trove-bg);
 }
 
 @media (max-width: 900px) {
-  .shell {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--trove-border);
-  }
-
-  .nav {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .desktopOnly {
+    display: none;
   }
 }

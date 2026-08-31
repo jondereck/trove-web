@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
+import TroveLoader from '@/components/TroveLoader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -47,7 +48,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <AppShell mode="cloud">
-        <p className={styles.status}>Loading settings…</p>
+        <TroveLoader label="Loading settings…" />
       </AppShell>
     )
   }
