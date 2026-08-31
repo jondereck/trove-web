@@ -26,8 +26,8 @@ if (-not $vars['NEXT_PUBLIC_SUPABASE_URL'] -or -not $vars['NEXT_PUBLIC_SUPABASE_
   Write-Error "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in .env.local"
 }
 
-$productionUrl = Read-Host "Production URL (default: https://trove-web-opal.vercel.app)"
-if (-not $productionUrl) { $productionUrl = 'https://trove-web-opal.vercel.app' }
+$productionUrl = Read-Host "Production URL (default: https://trove-jdn.vercel.app)"
+if (-not $productionUrl) { $productionUrl = 'https://trove-jdn.vercel.app' }
 $vars['NEXT_PUBLIC_SITE_URL'] = $productionUrl
 
 foreach ($target in @('production', 'preview', 'development')) {

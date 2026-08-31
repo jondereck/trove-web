@@ -65,7 +65,9 @@ export function getSessionMode(): SessionMode {
 
 export function readSoundsEnabled(): boolean {
   if (!hasWindow()) return false
-  return localStorage.getItem(SOUNDS_KEY) === '1'
+  const raw = localStorage.getItem(SOUNDS_KEY)
+  if (raw === null) return true
+  return raw === '1'
 }
 
 export function writeSoundsEnabled(enabled: boolean): void {

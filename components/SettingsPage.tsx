@@ -28,7 +28,7 @@ import styles from './SettingsPage.module.css'
 export default function SettingsPage() {
   const router = useRouter()
   const [email, setEmail] = useState<string | null>(null)
-  const [sounds, setSounds] = useState(false)
+  const [sounds, setSounds] = useState(true)
   const [notifyState, setNotifyState] = useState<'unsupported' | NotificationPermission>('default')
   const [loading, setLoading] = useState(true)
 

@@ -10,21 +10,25 @@ function canPlay(): boolean {
   return true
 }
 
-function getAudioContext(): AudioContext | null {
+async function getAudioContext(): Promise<AudioContext | null> {
   if (!canPlay()) return null
   const Ctx = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
   if (!Ctx) return null
   if (!sharedCtx) sharedCtx = new Ctx()
   if (sharedCtx.state === 'suspended') {
-    void sharedCtx.resume()
+    try {
+      await sharedCtx.resume()
+    } catch {
+      return null
+    }
   }
   return sharedCtx
 }
 
 const MASTER_GAIN = 1.75
 
-function playTone(frequency: number, durationMs: number, volume = 0.04): void {
-  const ctx = getAudioContext()
+async function playTone(frequency: number, durationMs: number, volume = 0.04): Promise<void> {
+  const ctx = await getAudioContext()
   if (!ctx) return
 
   const level = Math.min(volume * MASTER_GAIN, 0.14)
@@ -45,20 +49,22 @@ function playTone(frequency: number, durationMs: number, volume = 0.04): void {
 }
 
 export function playNavClick(): void {
-  playTone(520, 45, 0.065)
+  void playTone(520, 45, 0.065)
 }
 
 export function playHover(): void {
-  playTone(680, 24, 0.038)
+  void playTone(680, 24, 0.038)
 }
 
 export function playCardClick(): void {
-  playTone(480, 40, 0.06)
+  void playTone(480, 40, 0.06)
 }
 
 export function playSuccess(): void {
-  playTone(440, 75, 0.07)
-  window.setTimeout(() => playTone(660, 95, 0.065), 70)
+  void playTone(440, 75, 0.07)
+  window.setTimeout(() => {
+    void playTone(660, 95, 0.065)
+  }, 70)
 }
 
 export function primeSounds(): void {

@@ -46,7 +46,12 @@ function canHoverSound(el: HTMLElement): boolean {
 }
 
 export function bindInteractionSounds(): () => void {
-  primeSounds()
+  const primeOnGesture = () => {
+    primeSounds()
+  }
+  document.addEventListener('pointerdown', primeOnGesture, { once: true, capture: true })
+  document.addEventListener('keydown', primeOnGesture, { once: true, capture: true })
+
   let lastHoverEl: HTMLElement | null = null
 
   const onPointerOver = (event: PointerEvent) => {
@@ -78,6 +83,8 @@ export function bindInteractionSounds(): () => void {
   document.addEventListener('click', onClick, true)
 
   return () => {
+    document.removeEventListener('pointerdown', primeOnGesture, true)
+    document.removeEventListener('keydown', primeOnGesture, true)
     document.removeEventListener('pointerover', onPointerOver)
     document.removeEventListener('pointerout', onPointerOut)
     document.removeEventListener('click', onClick, true)

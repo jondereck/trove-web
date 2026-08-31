@@ -41,7 +41,15 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 **OAuth (Google / Apple):** In Supabase Dashboard → Authentication → URL configuration, add:
 
 - `http://localhost:3000/auth/callback`
-- `https://<your-vercel-domain>/auth/callback`
+- `https://trove-jdn.vercel.app/auth/callback`
+
+Or run (with a [Supabase access token](https://supabase.com/dashboard/account/tokens)):
+
+```powershell
+cd C:\Users\jonde\trove-web
+$env:SUPABASE_ACCESS_TOKEN = "sbp_..."
+.\scripts\configure-supabase-oauth.ps1
+```
 
 Enable Google and Apple providers in Supabase before using those buttons.
 
