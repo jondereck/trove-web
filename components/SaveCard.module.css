@@ -18,14 +18,9 @@
   transition: border-color 0.15s ease;
 }
 
-.cardWrap:not(.compact):not(.listWrap) .card:not(.cardList) {
-  height: 100%;
-  min-height: var(--trove-grid-card-height);
-}
-
+.cardWrap:not(.compact):not(.listWrap) .card:not(.cardList),
 .cardWrap.compact:not(.listWrap) .card:not(.cardList) {
-  height: 100%;
-  min-height: var(--trove-grid-card-compact-height);
+  height: var(--trove-grid-card-height);
 }
 
 .cardNote,
@@ -126,13 +121,15 @@
 
 .thumbWrap {
   position: relative;
-  height: 112px;
+  flex: 1 1 112px;
+  min-height: 112px;
   display: grid;
   place-items: center;
 }
 
 .compact .thumbWrap {
-  height: 96px;
+  flex-basis: 96px;
+  min-height: 96px;
 }
 
 .listThumbWrap {
@@ -204,13 +201,14 @@
 }
 
 .body {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   min-height: 0;
   padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .cardList .body {

@@ -3,7 +3,7 @@
   flex-direction: column;
   min-width: 0;
   height: 100%;
-  min-height: var(--trove-grid-card-height);
+  height: var(--trove-grid-card-height);
   background: var(--trove-card);
   border: 1px solid var(--trove-border);
   border-radius: 16px;
