@@ -8,6 +8,7 @@ import {
   faviconUrl,
   saveCardDomain,
 } from '@/lib/linkBrand'
+import { saveDetailHref } from '@/lib/saveDetailCore'
 import { formatSaveCardDate, tagChipColor } from '@/lib/saveCardLayout'
 import styles from './SaveCard.module.css'
 
@@ -34,7 +35,7 @@ export default function SaveCard({ save, compact = false }: Props) {
   const showPhoto = save.type === 'image' && save.image_url
 
   return (
-    <Link href={`/library/${save.id}`} className={`${styles.card} ${compact ? styles.compact : ''}`}>
+    <Link href={saveDetailHref(save)} className={`${styles.card} ${compact ? styles.compact : ''}`}>
       <div className={styles.thumbWrap} style={{ backgroundColor: tile.bg }}>
         {showPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { FileText, ImageIcon, Link2, Play, Timer } from 'lucide-react'
 import type { Save } from '@/lib/types'
+import { saveDetailHref } from '@/lib/saveDetailCore'
 import { formatSaveDate, saveSubtitle } from '@/lib/libraryCore'
 import styles from './SaveRow.module.css'
 
@@ -20,7 +21,7 @@ type Props = {
 
 export default function SaveRow({ save }: Props) {
   return (
-    <Link href={`/library/${save.id}`} className={styles.row}>
+    <Link href={saveDetailHref(save)} className={styles.row}>
       <div className={styles.lead}>
         {save.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element

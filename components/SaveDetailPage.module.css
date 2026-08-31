@@ -1,12 +1,105 @@
+.readOnlyHint {
+  font-size: 13px;
+  color: var(--trove-text-sub);
+  background: var(--trove-accent-soft);
+  border: 1px solid var(--trove-accent-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
 .error {
-  color: #b42318;
+  color: #b91c1c;
+  padding: 16px 0;
 }
 
 .missing {
   padding: 32px 0;
+  color: var(--trove-text-sub);
 }
 
 .missing a {
   color: var(--trove-accent);
   font-weight: 600;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: min(420px, 100%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.modal h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.reminderList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.reminderList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.reminderList button {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.presetRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presetRow button {
+  text-align: left;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.presetRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modalClose {
+  margin-top: 16px;
+  width: 100%;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  cursor: pointer;
 }

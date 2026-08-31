@@ -43,12 +43,6 @@ export default function SaveDetail({ save }: Props) {
           <NoteBody content={save.content} />
         </section>
       ) : null}
-
-      {save.url ? (
-        <a href={save.url} target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>
-          Open link
-        </a>
-      ) : null}
     </article>
   )
 }

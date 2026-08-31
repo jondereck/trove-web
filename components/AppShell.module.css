@@ -3,15 +3,17 @@
 }
 
 .shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 220px 1fr;
+  height: 100vh;
+  overflow: hidden;
   background: var(--trove-bg);
 }
 
 .sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  z-index: 20;
+  width: 220px;
   height: 100vh;
   border-right: 1px solid var(--trove-border);
   background: var(--trove-card);
@@ -127,19 +129,6 @@
   text-align: left;
 }
 
-.avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: var(--trove-accent-soft);
-  color: var(--trove-accent);
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .profileName {
   flex: 1;
   font-size: 14px;
@@ -156,13 +145,26 @@
 }
 
 .mainWrap {
+  margin-left: 220px;
+  width: calc(100% - 220px);
+  height: 100vh;
   min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 28px clamp(20px, 3vw, 36px) 96px;
   background: var(--trove-bg);
+  box-sizing: border-box;
 }
 
 @media (max-width: 900px) {
   .desktopOnly {
     display: none;
+  }
+
+  .mainWrap {
+    margin-left: 0;
+    width: 100%;
+    height: auto;
+    overflow: visible;
   }
 }

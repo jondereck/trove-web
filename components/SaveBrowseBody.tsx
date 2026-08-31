@@ -30,8 +30,7 @@ export default function SaveBrowseBody({
   emptyHint,
 }: Props) {
   const { pinned, rest } = partitionPinnedSaves(saves)
-  const pinnedPreview = pinned.slice(0, 4)
-  const hasPinned = showPinned && pinnedPreview.length > 0
+  const hasPinned = showPinned && pinned.length > 0
 
   const sentinelRef = useInfiniteScroll({
     enabled: hasMore,
@@ -55,11 +54,10 @@ export default function SaveBrowseBody({
     <>
       {hasPinned ? (
         <SaveGrid
-          saves={pinnedPreview}
+          saves={pinned}
           layout={layout}
           title="PINNED"
           titleTone="accent"
-          viewAllHref="/library"
         />
       ) : null}
 

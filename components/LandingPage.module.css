@@ -3,23 +3,65 @@
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(340px, 420px);
-  gap: clamp(28px, 4vw, 64px);
-  align-items: stretch;
   padding: clamp(24px, 3.5vh, 40px) clamp(28px, 5vw, 72px);
   background: var(--trove-bg);
   box-sizing: border-box;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(280px, 520px) minmax(340px, 420px);
+  justify-content: center;
+  gap: clamp(40px, 5vw, 72px);
+  align-items: stretch;
+}
+
+.wavesWrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  width: 100%;
+  height: min(42vh, 380px);
+  pointer-events: none;
+  opacity: 0.82;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 28%,
+    rgba(0, 0, 0, 0.5) 52%,
+    rgba(0, 0, 0, 0) 72%
+  );
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 28%,
+    rgba(0, 0, 0, 0.5) 52%,
+    rgba(0, 0, 0, 0) 72%
+  );
 }
 
 .waves {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: min(70vw, 720px);
-  height: min(46vh, 380px);
-  pointer-events: none;
-  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.waveSparkle {
+  position: absolute;
+  bottom: 36%;
+  left: clamp(72px, 10vw, 140px);
+  width: 11px;
+  height: 11px;
+  fill: var(--trove-accent);
+  color: var(--trove-accent);
+  opacity: 0.55;
 }
 
 .left {
@@ -32,12 +74,15 @@
 }
 
 .wordmark {
+  position: absolute;
+  top: clamp(24px, 3.5vh, 40px);
+  left: clamp(28px, 5vw, 72px);
+  z-index: 2;
   font-family: var(--font-serif), Georgia, serif;
   font-size: clamp(34px, 4.4vw, 46px);
   font-weight: 400;
   color: var(--trove-accent);
   line-height: 1;
-  flex-shrink: 0;
 }
 
 .hero {
@@ -114,13 +159,6 @@
   font-weight: 500;
   color: var(--trove-text);
   cursor: default;
-}
-
-.footerNote {
-  font-size: 12px;
-  color: var(--trove-muted);
-  line-height: 1.5;
-  flex-shrink: 0;
 }
 
 .card {
@@ -388,9 +426,18 @@
     height: auto;
     max-height: none;
     overflow: auto;
-    grid-template-columns: 1fr;
     padding-top: 24px;
     padding-bottom: 24px;
+  }
+
+  .wordmark {
+    position: static;
+    margin-bottom: 12px;
+  }
+
+  .shell {
+    height: auto;
+    grid-template-columns: 1fr;
   }
 
   .hero {
@@ -402,8 +449,19 @@
     max-width: 100%;
   }
 
-  .waves {
-    width: 100%;
+  .wavesWrap {
     height: 32vh;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.75) 40%,
+      rgba(0, 0, 0, 0) 85%
+    );
+    mask-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.75) 40%,
+      rgba(0, 0, 0, 0) 85%
+    );
   }
 }

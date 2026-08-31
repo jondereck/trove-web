@@ -6,6 +6,8 @@ import {
 import { postgresUrlOrFilter } from './linkSource'
 import type { Collection, LibraryFilter, Save, SavesPageResult } from './types'
 import { filterLibrarySaves } from './libraryCore'
+import { sortByPinnedThenCreated } from './libraryFilters'
+import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
 import { attachSaveCountsFromMap } from './collectionsCore'
 
 export type CollectionWithCount = Collection & { save_count: number }
@@ -132,11 +134,11 @@ export async function fetchCloudCollectionSavesPage(
     return { saves: [], total: 0 }
   }
 
-  let query = supabase
-    .from('saves')
-    .select('*', { count: 'exact' })
-    .eq('collection_id', collectionId)
-    .order('created_at', { ascending: false })
+  const pinOk = await hasPinColumns(supabase)
+
+  let query = supabase.from('saves').select('*', { count: 'exact' }).eq('collection_id', collectionId)
+  if (pinOk) query = query.order('is_pinned', { ascending: false })
+  query = query.order('created_at', { ascending: false })
 
   if (filter === 'unread') query = query.eq('is_viewed', false)
   else if (filter === 'fav') query = query.eq('is_favorite', true)
@@ -145,12 +147,24 @@ export async function fetchCloudCollectionSavesPage(
 
   let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
 
-  if (result.error && /is_vault/.test(result.error.message)) {
+  if (result.error && missingPinColumn(result.error)) {
+    markPinColumnsUnavailable()
     query = supabase
       .from('saves')
       .select('*', { count: 'exact' })
       .eq('collection_id', collectionId)
       .order('created_at', { ascending: false })
+    if (filter === 'unread') query = query.eq('is_viewed', false)
+    else if (filter === 'fav') query = query.eq('is_favorite', true)
+    else if (filter === 'github' || filter === 'docs') query = query.or(postgresUrlOrFilter(filter))
+    else if (filter !== 'all') query = query.eq('type', filter)
+    result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+  }
+
+  if (result.error && /is_vault/.test(result.error.message)) {
+    query = supabase.from('saves').select('*', { count: 'exact' }).eq('collection_id', collectionId)
+    if (pinOk) query = query.order('is_pinned', { ascending: false })
+    query = query.order('created_at', { ascending: false })
     if (filter === 'unread') query = query.eq('is_viewed', false)
     else if (filter === 'fav') query = query.eq('is_favorite', true)
     else if (filter === 'github' || filter === 'docs') query = query.or(postgresUrlOrFilter(filter))
@@ -166,7 +180,7 @@ export async function fetchCloudCollectionSavesPage(
 
   if (result.error) throw result.error
   return {
-    saves: filterLibrarySaves((result.data ?? []) as Save[]),
+    saves: sortByPinnedThenCreated(filterLibrarySaves((result.data ?? []) as Save[])),
     total: result.count ?? 0,
   }
 }

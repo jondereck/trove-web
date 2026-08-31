@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import {
   ChevronDown,
   FolderOpen,
@@ -15,8 +16,10 @@ import {
   clearImportSession,
   type SessionMode,
 } from '@/lib/sessionMode'
+import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
 import MobileDesktopGate from '@/components/MobileDesktopGate'
 import TroveMark from '@/components/TroveMark'
+import UserAvatar from '@/components/UserAvatar'
 import styles from './AppShell.module.css'
 
 type NavItem = {
@@ -36,14 +39,32 @@ const NAV: NavItem[] = [
 type Props = {
   mode: SessionMode
   importFileName?: string
-  firstName?: string
   children: React.ReactNode
 }
 
-export default function AppShell({ mode, importFileName, firstName, children }: Props) {
+const GUEST_PROFILE: SidebarProfile = { displayName: 'Guest', initials: 'G' }
+
+export default function AppShell({ mode, importFileName, children }: Props) {
   const router = useRouter()
   const pathname = usePathname()
-  const displayName = firstName?.trim() || 'Guest'
+  const [profile, setProfile] = useState<SidebarProfile>(GUEST_PROFILE)
+
+  useEffect(() => {
+    if (mode !== 'cloud') {
+      setProfile(GUEST_PROFILE)
+      return
+    }
+
+    let cancelled = false
+    const supabase = createClient()
+    fetchSidebarProfile(supabase).then(next => {
+      if (!cancelled) setProfile(next)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [mode])
 
   const isActive = (href: string) => {
     if (href === '/library') return pathname === '/library' || pathname.startsWith('/library/')
@@ -106,8 +127,11 @@ export default function AppShell({ mode, importFileName, firstName, children }: 
                 </div>
               ) : null}
               <button type="button" className={styles.profileBtn} onClick={signOut}>
-                <span className={styles.avatar}>{displayName.slice(0, 1).toUpperCase()}</span>
-                <span className={styles.profileName}>{displayName}</span>
+                <UserAvatar
+                  imageUrl={profile.avatarUrl}
+                  initials={profile.initials}
+                />
+                <span className={styles.profileName}>{profile.displayName}</span>
                 <ChevronDown size={16} className={styles.profileChevron} />
               </button>
             </div>

@@ -1,0 +1,76 @@
+.bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin: 0 -4px;
+  padding: 12px 4px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--trove-bg) 70%, transparent);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  background: var(--trove-card);
+  box-shadow: 0 8px 24px rgba(26, 26, 26, 0.06);
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--trove-text-sub);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--trove-cream);
+  color: var(--trove-text);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--trove-border);
+  margin: 0 4px;
+}
+
+.iconBtn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .btnLabel {
+    display: none;
+  }
+
+  .btn {
+    padding: 8px 10px;
+  }
+}

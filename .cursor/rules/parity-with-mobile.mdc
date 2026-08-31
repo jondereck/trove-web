@@ -1,0 +1,49 @@
+---
+description: Trove Web must stay aligned with the mobile Trove app in the Trove Mobile workspace folder.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Trove Web ↔ Mobile parity
+
+This repo is the **browser companion** to **Trove Mobile** (`../trove` or the **Trove Mobile** root in `trove.code-workspace`).
+
+## Source of truth
+
+| Concern | Mobile (wins) | Web (follows) |
+|---------|---------------|---------------|
+| Save types, schema | `trove/types/index.ts` | `trove-web/lib/types.ts` |
+| Library filters, chips | `trove/lib/libraryFilterChips.ts` | `trove-web/lib/libraryFilterChips.ts` |
+| Save card layout | `trove/components/SaveCard.tsx` | `trove-web/components/SaveCard.tsx` |
+| Checklist UI | `trove/components/NoteBodyEditor.tsx` | Never show raw `- [ ]` on web |
+| Design tokens | `trove/constants/theme.ts` | `trove-web/lib/theme.ts` + `--trove-*` |
+| Supabase project | `trove/.env.local` | Same URL + anon key (`scripts/sync-web-env.ps1`) |
+
+When mobile and web disagree on Library / Collections / save detail UX, **update web, not mobile** (see `trove/AGENTS.md` § Trove Web).
+
+## Before porting a feature
+
+1. Read the mobile screen (`trove/app/…`) and its `lib/` helpers.
+2. Port **pure** logic first (no React Native imports); add `node:test` in `trove-web/lib/`.
+3. Match existing web chrome (`AppShell`, `FilterBar`, `SaveCard`, tokens) — no one-off layouts.
+
+## Graphify
+
+Mobile repo has `graphify-out/` — run `graphify query` from **Trove Mobile** root before cross-file exploration. Web repo has no graph yet; use mobile graph for architecture questions.
+
+## Dev commands
+
+```powershell
+# Mobile (device / Expo)
+cd trove
+npx expo start --web   # layout preview only in VM
+
+# Web
+cd trove-web
+npm run dev            # http://localhost:3000
+
+# Shared Supabase keys (from mobile .env.local)
+cd trove
+.\scripts\sync-web-env.ps1
+```

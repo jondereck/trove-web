@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Cloud, CloudDownload, FileText, Info } from 'lucide-react'
+import { Cloud, CloudDownload, FileText, Info, Sparkle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseImportFile } from '@/lib/import'
@@ -56,31 +56,62 @@ function PlayStoreLogo() {
 
 function PeachWaves() {
   return (
-    <svg
-      className={styles.waves}
-      viewBox="0 0 900 420"
-      preserveAspectRatio="xMinYMax meet"
-      aria-hidden
-    >
-      <path
-        fill="none"
-        stroke="#e8c8b8"
-        strokeWidth="1.4"
-        d="M-20,280 C80,220 160,330 280,260 C400,190 470,300 580,250 C700,200 780,280 920,230"
-      />
-      <path
-        fill="none"
-        stroke="#f0d4c6"
-        strokeWidth="1.2"
-        d="M-20,320 C90,270 180,360 300,300 C420,240 510,340 640,290 C760,240 840,310 920,270"
-      />
-      <path
-        fill="none"
-        stroke="#edd0c2"
-        strokeWidth="1.1"
-        d="M-20,360 C70,330 150,390 280,340 C410,290 500,380 630,340 C760,300 840,360 920,330"
-      />
-    </svg>
+    <div className={styles.wavesWrap} aria-hidden>
+      <svg
+        className={styles.waves}
+        viewBox="0 0 1200 520"
+        preserveAspectRatio="xMinYMax meet"
+      >
+        <defs>
+          <linearGradient id="waveFillA" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#f3e4dc" stopOpacity="0.3" />
+            <stop offset="55%" stopColor="#f3e4dc" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#f3e4dc" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="waveFillB" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#edd4c8" stopOpacity="0.18" />
+            <stop offset="50%" stopColor="#edd4c8" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#edd4c8" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="waveFillC" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#f6ece6" stopOpacity="0.24" />
+            <stop offset="60%" stopColor="#f6ece6" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#f6ece6" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="waveStrokeFade" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#e8c8b8" stopOpacity="0.55" />
+            <stop offset="70%" stopColor="#e8c8b8" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#e8c8b8" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          fill="url(#waveFillA)"
+          d="M0,320 C180,220 280,380 460,280 C600,200 680,360 900,300 C1020,260 1100,340 1200,310 L1200,520 L0,520 Z"
+        />
+        <path
+          fill="url(#waveFillB)"
+          d="M0,400 C140,340 240,460 400,400 C560,340 660,440 860,390 C980,360 1080,420 1200,400 L1200,520 L0,520 Z"
+        />
+        <path
+          fill="url(#waveFillC)"
+          d="M0,460 C120,420 200,500 360,470 C520,440 620,500 820,480 C960,460 1080,500 1200,490 L1200,520 L0,520 Z"
+        />
+        <path
+          fill="none"
+          stroke="url(#waveStrokeFade)"
+          strokeWidth="1"
+          d="M40,430 C160,360 240,470 380,400 C520,330 620,430 820,380 C960,340 1040,400 1200,370"
+        />
+        <path
+          fill="none"
+          stroke="url(#waveStrokeFade)"
+          strokeWidth="0.9"
+          d="M20,470 C140,410 230,500 370,450 C510,400 620,480 820,430 C980,390 1080,450 1200,420"
+        />
+        <circle cx="248" cy="404" r="2.5" fill="#c0613c" fillOpacity="0.28" />
+      </svg>
+      <Sparkle className={styles.waveSparkle} strokeWidth={0} />
+    </div>
   )
 }
 
@@ -159,12 +190,13 @@ export default function LandingPage() {
     <div className={styles.page} data-landing-page>
       <PeachWaves />
 
-      <section className={styles.left}>
-        <p className={styles.wordmark}>{BRAND.name}</p>
+      <p className={styles.wordmark}>{BRAND.name}</p>
 
-        <div className={styles.hero}>
+      <div className={styles.shell}>
+        <section className={styles.left}>
+          <div className={styles.hero}>
           <div className={styles.titleRow}>
-            <TroveMark size={56} variant="mark" />
+            <TroveMark size={72} />
             <h1 className={styles.productName}>{BRAND.webName}</h1>
             <span className={styles.beta}>{BRAND.beta}</span>
           </div>
@@ -190,10 +222,6 @@ export default function LandingPage() {
             </span>
           </div>
         </div>
-
-        <p className={styles.footerNote}>
-          Trove Web is in active development. Same Supabase backend as the mobile app.
-        </p>
       </section>
 
       <section className={styles.card}>
@@ -298,6 +326,7 @@ export default function LandingPage() {
           Explore sample links, notes, and images without signing in.
         </p>
       </section>
+      </div>
     </div>
   )
 }

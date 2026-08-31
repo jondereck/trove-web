@@ -1,0 +1,139 @@
+.card {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  align-self: start;
+  position: sticky;
+  top: 24px;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+}
+
+.heroRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.heroMain {
+  min-width: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-cream);
+  min-height: 160px;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.heroButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.thumbStrip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 56px;
+}
+
+.thumbBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
+  background: var(--trove-cream);
+  cursor: pointer;
+}
+
+.thumbBtn:hover {
+  border-color: var(--trove-accent-border);
+}
+
+.thumbActive {
+  border-color: var(--trove-accent);
+}
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--trove-text-sub);
+}
+
+.meta {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--trove-muted);
+}
+
+.meta strong {
+  color: var(--trove-text-sub);
+  font-weight: 500;
+}
+
+.openBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-cream);
+  color: var(--trove-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.openBtn:hover {
+  border-color: var(--trove-accent-border);
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+}
+
+.emptyHero {
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  color: var(--trove-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 960px) {
+  .card {
+    position: static;
+  }
+}

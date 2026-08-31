@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: 'Browse your Trove Cloud library in the browser.',
   icons: {
     icon: '/trove-app-icon.svg',
-    apple: '/trove-app-icon.svg',
+    apple: '/trove-app-icon.png',
   },
 }
 

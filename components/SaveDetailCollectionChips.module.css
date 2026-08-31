@@ -1,0 +1,83 @@
+.section {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  color: var(--trove-text);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: #ddd9d2;
+}
+
+.chipActive {
+  border-color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+}
+
+.chipMuted {
+  color: var(--trove-muted);
+}
+
+.addChip {
+  border-style: dashed;
+  color: var(--trove-accent);
+  background: transparent;
+}
+
+.addChip:hover {
+  border-color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+}
+
+.hiddenSelect {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+.chipText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

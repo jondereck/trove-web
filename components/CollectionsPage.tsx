@@ -12,7 +12,7 @@ export default function CollectionsPage() {
     useLibrarySaves()
 
   return (
-    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
+    <AppShell mode={mode} importFileName={importFileName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
       <header className={styles.header}>

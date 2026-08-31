@@ -1,5 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { postgresUrlOrFilter } from './linkSource'
+import { sortByPinnedThenCreated } from './libraryFilters'
+import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
+import { parseSaveRow } from './saves'
 import type { LibraryFilter, LibraryStats, Save, SavesPageResult } from './types'
 import { filterLibrarySaves } from './libraryCore'
 
@@ -29,20 +32,27 @@ export async function fetchCloudLibrarySavesPage(
     return { saves: [], total: 0 }
   }
 
-  let query = supabase
-    .from('saves')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
+  const pinOk = await hasPinColumns(supabase)
+
+  let query = supabase.from('saves').select('*', { count: 'exact' })
+  if (pinOk) query = query.order('is_pinned', { ascending: false })
+  query = query.order('created_at', { ascending: false })
 
   query = applyLibraryFilter(query, filter)
 
   let result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
 
+  if (result.error && missingPinColumn(result.error)) {
+    markPinColumnsUnavailable()
+    query = supabase.from('saves').select('*', { count: 'exact' }).order('created_at', { ascending: false })
+    query = applyLibraryFilter(query, filter)
+    result = await query.eq('is_vault', false).range(offset, offset + limit - 1)
+  }
+
   if (result.error && /is_vault/.test(result.error.message)) {
-    query = supabase
-      .from('saves')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
+    query = supabase.from('saves').select('*', { count: 'exact' })
+    if (pinOk) query = query.order('is_pinned', { ascending: false })
+    query = query.order('created_at', { ascending: false })
     query = applyLibraryFilter(query, filter)
     result = await query.range(offset, offset + limit - 1)
   }
@@ -55,7 +65,7 @@ export async function fetchCloudLibrarySavesPage(
 
   if (result.error) throw result.error
   return {
-    saves: filterLibrarySaves((result.data ?? []) as Save[]),
+    saves: sortByPinnedThenCreated(filterLibrarySaves((result.data ?? []).map(parseSaveRow))),
     total: result.count ?? 0,
   }
 }
@@ -99,7 +109,7 @@ export async function fetchCloudSaveById(
   const { data, error } = await supabase.from('saves').select('*').eq('id', id).maybeSingle()
   if (error) throw error
   if (!data) return null
-  const save = data as Save
+  const save = parseSaveRow(data as Save)
   if (save.is_inbox || save.is_vault) return null
   return save
 }

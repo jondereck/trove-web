@@ -1,0 +1,503 @@
+.readOnlyHint {
+  font-size: 13px;
+  color: var(--trove-text-sub);
+  background: var(--trove-accent-soft);
+  border: 1px solid var(--trove-accent-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #b91c1c;
+  padding: 16px 0;
+}
+
+.missing {
+  padding: 32px 0;
+  color: var(--trove-text-sub);
+}
+
+.missing a {
+  color: var(--trove-accent);
+  font-weight: 600;
+}
+
+.wrap {
+  max-width: 720px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status {
+  font-size: 12px;
+  color: var(--trove-muted);
+}
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--trove-text);
+}
+
+.iconBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.iconBtnActive {
+  color: var(--trove-accent);
+  border-color: var(--trove-accent-border);
+  background: var(--trove-accent-soft);
+}
+
+.iconBtnDanger {
+  color: #b91c1c;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.typeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+
+.autoLogBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+
+.titleButton,
+.tipButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.titleButton:disabled,
+.tipButton:disabled {
+  cursor: default;
+}
+
+.title {
+  font-size: 32px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+
+.titleInput {
+  width: 100%;
+  font-size: 32px;
+  line-height: 1.15;
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--trove-card);
+  resize: vertical;
+}
+
+.tip {
+  color: var(--trove-text-sub);
+  font-size: 15px;
+  margin: 0 0 16px;
+}
+
+.tipInput {
+  width: 100%;
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  background: var(--trove-card);
+  resize: vertical;
+}
+
+.tipPlaceholder {
+  border: none;
+  background: transparent;
+  color: var(--trove-muted);
+  font-size: 14px;
+  padding: 0;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--trove-muted);
+  margin: 16px 0 8px;
+}
+
+.overviewCard {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.overviewSplit {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.overviewCol {
+  min-width: 0;
+}
+
+.overviewDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--trove-border);
+}
+
+.overviewCaption {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+  margin: 0 0 4px;
+}
+
+.overviewHero {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.overviewSub,
+.overviewNote {
+  font-size: 13px;
+  color: var(--trove-text-sub);
+  margin: 6px 0 0;
+}
+
+.overviewEmpty .overviewSub {
+  margin-top: 4px;
+}
+
+.statusOverdue {
+  color: #b91c1c;
+}
+
+.statusSoon {
+  color: var(--trove-accent);
+}
+
+.statusOk {
+  color: #2a7a4f;
+}
+
+.statusMuted {
+  color: var(--trove-text);
+}
+
+.recordsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recordsActions {
+  display: flex;
+  gap: 8px;
+}
+
+.quickLogBtn,
+.addRecordBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--trove-accent);
+  cursor: pointer;
+}
+
+.emptyRecords {
+  width: 100%;
+  border: 1px dashed var(--trove-border);
+  border-radius: var(--radius-lg);
+  background: var(--trove-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--trove-muted);
+  cursor: pointer;
+}
+
+.emptyRecords:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.timeline {
+  display: grid;
+  gap: 0;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.recordRow {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+  border: none;
+  border-bottom: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  text-align: left;
+  cursor: pointer;
+}
+
+.recordRow:last-child {
+  border-bottom: none;
+}
+
+.recordRow:disabled {
+  cursor: default;
+}
+
+.timelineRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.timelineDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--trove-border);
+}
+
+.timelineDotActive {
+  background: var(--trove-accent);
+}
+
+.timelineLine {
+  flex: 1;
+  width: 2px;
+  background: var(--trove-border);
+  margin-top: 4px;
+  min-height: 24px;
+}
+
+.recordTopRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recordLabel {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.currentTag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.recordMeta {
+  font-size: 13px;
+  color: var(--trove-text-sub);
+  margin: 4px 0 0;
+}
+
+.recordNote {
+  font-size: 13px;
+  color: var(--trove-muted);
+  margin: 4px 0 0;
+}
+
+.sinceBox {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--trove-border);
+}
+
+.sinceCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sinceValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2a7a4f;
+}
+
+.sinceLabel {
+  font-size: 11px;
+  color: var(--trove-muted);
+}
+
+.savedDate {
+  font-size: 12px;
+  color: var(--trove-muted);
+  margin: 20px 0 8px;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: min(420px, 100%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.modal h2 {
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--trove-text-sub);
+}
+
+.field input,
+.field textarea {
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 14px;
+  background: var(--trove-bg);
+  color: var(--trove-text);
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.modalRight {
+  display: flex;
+  gap: 8px;
+}
+
+.modalPrimary,
+.modalSecondary,
+.modalDanger {
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modalPrimary {
+  border: none;
+  background: var(--trove-accent);
+  color: #fff;
+}
+
+.modalSecondary {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+}
+
+.modalDanger {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .overviewSplit {
+    grid-template-columns: 1fr;
+  }
+
+  .overviewDivider {
+    display: none;
+  }
+}

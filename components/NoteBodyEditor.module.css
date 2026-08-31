@@ -1,0 +1,128 @@
+.block {
+  display: grid;
+  gap: 4px;
+}
+
+.input,
+.preambleInput,
+.rowInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--trove-text);
+  resize: none;
+  outline: none;
+}
+
+.input {
+  min-height: 160px;
+}
+
+.placeholderWrap {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.placeholder {
+  font-size: 16px;
+  color: var(--trove-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.line {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--trove-text);
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+}
+
+.lineButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  min-height: 36px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: var(--trove-accent);
+  cursor: pointer;
+}
+
+.checkbox:disabled {
+  cursor: default;
+}
+
+.rowText {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--trove-text);
+}
+
+.rowTextDone {
+  color: var(--trove-muted);
+  text-decoration: line-through;
+}
+
+.rowInput {
+  flex: 1;
+}
+
+.addRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: var(--trove-muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.addRow:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.checkedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--trove-border);
+  border: none;
+  background: none;
+  color: var(--trove-text-sub);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}

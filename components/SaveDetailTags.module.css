@@ -1,0 +1,95 @@
+.section {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--trove-muted);
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.removeBtn {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.removeBtn:hover {
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.addForm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addInput {
+  width: 120px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px dashed var(--trove-border);
+  background: var(--trove-card);
+  font-size: 12px;
+  outline: none;
+}
+
+.addInput:focus {
+  border-color: var(--trove-accent);
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px dashed var(--trove-border);
+  background: transparent;
+  color: var(--trove-accent);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.addBtn:hover:not(:disabled) {
+  border-color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--trove-muted);
+  margin-top: 6px;
+}

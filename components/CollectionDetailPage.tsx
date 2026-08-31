@@ -51,7 +51,7 @@ export default function CollectionDetailPage({ id }: Props) {
   const error = sessionError || pageError
 
   return (
-    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
+    <AppShell mode={mode} importFileName={importFileName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
       <nav className={styles.breadcrumb}>
@@ -96,7 +96,6 @@ export default function CollectionDetailPage({ id }: Props) {
           loadingMore={loadingMore}
           hasMore={hasMore}
           onLoadMore={loadMore}
-          showPinned={false}
           emptyTitle="No saves in this collection yet."
           emptyHint="Add saves to this folder in Trove mobile."
         />

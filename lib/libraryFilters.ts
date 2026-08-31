@@ -3,14 +3,19 @@ import type { LibraryFilter, Save } from './types'
 
 export type { LibraryFilter } from './types'
 
-function byPinnedThenCreated(a: Save, b: Save): number {
+export function byPinnedThenCreated(a: Save, b: Save): number {
   const pinDiff = Number(!!b.is_pinned) - Number(!!a.is_pinned)
   return pinDiff !== 0 ? pinDiff : b.created_at.localeCompare(a.created_at)
 }
 
+export function sortByPinnedThenCreated(saves: Save[]): Save[] {
+  return [...saves].sort(byPinnedThenCreated)
+}
+
 export function partitionPinnedSaves(saves: Save[]): { pinned: Save[]; rest: Save[] } {
-  const pinned = saves.filter(s => s.is_pinned)
-  const rest = saves.filter(s => !s.is_pinned)
+  const sorted = sortByPinnedThenCreated(saves)
+  const pinned = sorted.filter(s => s.is_pinned)
+  const rest = sorted.filter(s => !s.is_pinned)
   return { pinned, rest }
 }
 

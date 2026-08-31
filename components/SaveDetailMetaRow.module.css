@@ -1,0 +1,80 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.reminderPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+  border: 1px solid var(--trove-accent-border);
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  color: var(--trove-accent);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  border-color: var(--trove-accent-border);
+  background: var(--trove-accent-soft);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--trove-accent-border);
+  border-top-color: var(--trove-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.domainWrap {
+  margin-left: auto;
+}
+
+@media (max-width: 700px) {
+  .domainWrap {
+    margin-left: 0;
+    width: 100%;
+  }
+}

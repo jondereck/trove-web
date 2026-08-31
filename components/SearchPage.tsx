@@ -106,7 +106,7 @@ export default function SearchPage() {
   }, [mode])
 
   return (
-    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
+    <AppShell mode={mode} importFileName={importFileName}>
       {mode === 'demo' ? <DemoBanner /> : null}
 
       <h1 className={`serif ${styles.title}`}>Search</h1>

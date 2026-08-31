@@ -2,14 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AppShell from '@/components/AppShell'
-import SaveDetail from '@/components/SaveDetail'
+import SaveDetailShell from '@/components/SaveDetailShell'
 import TroveLoader from '@/components/TroveLoader'
-import { findSaveById } from '@/lib/libraryCore'
-import { fetchCloudSaveById } from '@/lib/library'
-import { createClient } from '@/lib/supabase/client'
-import { useLibrarySaves } from '@/lib/useLibrarySaves'
-import type { Save } from '@/lib/types'
+import { useSaveDetail } from '@/hooks/useSaveDetail'
 import styles from './SaveDetailPage.module.css'
 
 type Props = {
@@ -17,72 +14,137 @@ type Props = {
 }
 
 export default function SaveDetailPage({ id }: Props) {
-  const { loading, error, saves, mode, importFileName, firstName } = useLibrarySaves()
-  const [save, setSave] = useState<Save | undefined>()
-  const [detailLoading, setDetailLoading] = useState(true)
-  const [detailError, setDetailError] = useState('')
+  const router = useRouter()
+  const detail = useSaveDetail(id)
+  const [titleDraft, setTitleDraft] = useState('')
+  const [bodyDraft, setBodyDraft] = useState('')
+  const [showReminder, setShowReminder] = useState(false)
 
   useEffect(() => {
-    if (loading || error) return
-
-    let cancelled = false
-
-    async function load() {
-      setDetailLoading(true)
-      setDetailError('')
-
-      const local = findSaveById(saves, id)
-      if (local) {
-        if (!cancelled) {
-          setSave(local)
-          setDetailLoading(false)
-        }
-        return
-      }
-
-      if (mode === 'cloud') {
-        try {
-          const supabase = createClient()
-          const row = await fetchCloudSaveById(supabase, id)
-          if (!cancelled) {
-            setSave(row ?? undefined)
-            setDetailLoading(false)
-          }
-        } catch (e) {
-          if (!cancelled) {
-            setDetailError(e instanceof Error ? e.message : 'Could not load save.')
-            setDetailLoading(false)
-          }
-        }
-        return
-      }
-
-      if (!cancelled) {
-        setSave(undefined)
-        setDetailLoading(false)
-      }
+    if (detail.save?.type === 'tracker') {
+      router.replace(`/tracker/${id}`)
     }
+  }, [detail.save, id, router])
 
-    void load()
-    return () => {
-      cancelled = true
-    }
-  }, [loading, error, saves, mode, id])
+  useEffect(() => {
+    if (detail.save) setTitleDraft(detail.save.title)
+  }, [detail.save?.title, detail.save])
 
-  const showLoading = loading || detailLoading
-  const showError = error || detailError
+  if (detail.loading) {
+    return (
+      <AppShell mode={detail.mode} importFileName={detail.importFileName}>
+        <TroveLoader label="Loading save…" />
+      </AppShell>
+    )
+  }
 
-  return (
-    <AppShell mode={mode} importFileName={importFileName} firstName={firstName}>
-      {showLoading ? <TroveLoader label="Loading save…" /> : null}
-      {showError ? <p className={styles.error}>{showError}</p> : null}
-      {!showLoading && !showError && !save ? (
+  if (detail.error) {
+    return (
+      <AppShell mode={detail.mode} importFileName={detail.importFileName}>
+        <p className={styles.error}>{detail.error}</p>
+      </AppShell>
+    )
+  }
+
+  if (!detail.save || detail.save.type === 'tracker') {
+    return (
+      <AppShell mode={detail.mode} importFileName={detail.importFileName}>
         <div className={styles.missing}>
           <p>Save not found.</p>
           <Link href="/library">Back to library</Link>
         </div>
+      </AppShell>
+    )
+  }
+
+  const save = detail.save
+
+  return (
+    <AppShell mode={detail.mode} importFileName={detail.importFileName}>
+      {!detail.canEdit ? (
+        <p className={styles.readOnlyHint}>Sign in with Trove Cloud to edit saves on web.</p>
       ) : null}
-      {!showLoading && !showError && save ? <SaveDetail save={save} /> : null}
+
+      <SaveDetailShell
+        save={{ ...save, title: titleDraft || save.title }}
+        collections={detail.collections}
+        reminders={detail.reminders}
+        canEdit={detail.canEdit}
+        saveStatus={detail.saveStatus}
+        editingTitle={detail.editingTitle}
+        editingBody={detail.editingBody}
+        refreshingPreview={detail.refreshingPreview}
+        onSetEditingTitle={detail.setEditingTitle}
+        onSetEditingBody={detail.setEditingBody}
+        onTitleChange={setTitleDraft}
+        onTitleSave={() => void detail.updateTitle(titleDraft)}
+        onBodyChange={next => {
+          setBodyDraft(next)
+          void detail.updateBody(next)
+        }}
+        onToggleChecklist={lineIndex => void detail.toggleChecklistItem(lineIndex)}
+        onMoveToCollection={collectionId => void detail.moveToCollection(collectionId)}
+        onTagsChange={tags => void detail.setTags(tags)}
+        onTogglePin={() => void detail.togglePin()}
+        onDelete={() => {
+          if (window.confirm('Delete this save?')) void detail.removeSave()
+        }}
+        onRefreshPreview={() => void detail.refreshPreview()}
+        onReminder={() => setShowReminder(true)}
+        onChangeCover={() => {
+          const next = prompt(
+            'Paper color (hex, e.g. #fdf6ef):',
+            save.editor_style?.paperColor ?? '',
+          )
+          if (next === null || !detail.canEdit) return
+          void detail.updatePaperColor(next.trim() || null)
+        }}
+      />
+
+      {showReminder ? (
+        <div className={styles.modalBackdrop} role="presentation" onClick={() => setShowReminder(false)}>
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-labelledby="reminder-title"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="reminder-title" className="serif">
+              Remind me later
+            </h2>
+            {detail.reminders.length > 0 ? (
+              <ul className={styles.reminderList}>
+                {detail.reminders.map(row => (
+                  <li key={row.id}>
+                    <span>{detail.formatReminder(row.fireAt)}</span>
+                    <button type="button" onClick={() => void detail.cancelReminder(row.id)}>
+                      Cancel
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <div className={styles.presetRow}>
+              {detail.reminderPresets().map(preset => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  disabled={!detail.canEdit}
+                  onClick={() => {
+                    void detail.addReminder(preset.fireAt)
+                    setShowReminder(false)
+                  }}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <button type="button" className={styles.modalClose} onClick={() => setShowReminder(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </AppShell>
   )
 }

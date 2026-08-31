@@ -2,6 +2,25 @@
 
 Browser companion for [Trove](https://github.com/jondereck/trove) — sign in with your Cloud account and browse your synced library on a second PC.
 
+## Cursor workspace (Mobile + Web)
+
+Open both repos in one Cursor window:
+
+```powershell
+cursor C:\Users\jonde\trove.code-workspace
+```
+
+Or **File → Open Workspace from File…** → `trove.code-workspace` (in your `jonde` folder).
+
+Sync Supabase keys from mobile:
+
+```powershell
+cd C:\Users\jonde\trove
+.\scripts\sync-web-env.ps1
+```
+
+See `trove/docs/superpowers/specs/2026-08-31-cursor-dual-repo-workspace.md`.
+
 Phase A: email login, read-only library, demo mode, JSON import preview, future-ready shell (OAuth stubs, FAB, sounds toggle, disabled nav).
 
 ## Setup
