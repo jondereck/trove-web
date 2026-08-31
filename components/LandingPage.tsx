@@ -1,8 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseBackupJson } from '@/lib/importJson'
 import { setDemoMode, setImportSession } from '@/lib/sessionMode'
 import { BRAND } from '@/lib/branding'
@@ -10,11 +11,18 @@ import styles from './LandingPage.module.css'
 
 export default function LandingPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthProvider, setOauthProvider] = useState<OAuthProvider | null>(null)
   const [error, setError] = useState('')
   const [importMessage, setImportMessage] = useState('')
+
+  useEffect(() => {
+    const authError = searchParams.get('error')
+    if (authError) setError(authError)
+  }, [searchParams])
 
   const handleSignIn = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -33,6 +41,16 @@ export default function LandingPage() {
     }
     router.push('/library')
     router.refresh()
+  }
+
+  const handleOAuth = async (provider: OAuthProvider) => {
+    setError('')
+    setOauthProvider(provider)
+    const { error: oauthError } = await signInWithOAuth(provider)
+    if (oauthError) {
+      setOauthProvider(null)
+      setError(oauthError)
+    }
   }
 
   const handleDemo = () => {
@@ -118,17 +136,27 @@ export default function LandingPage() {
               />
             </label>
             {error ? <p className={styles.error}>{error}</p> : null}
-            <button type="submit" className={styles.primaryBtn} disabled={loading}>
+            <button type="submit" className={styles.primaryBtn} disabled={loading || oauthProvider !== null}>
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
           <div className={styles.oauthRow}>
-            <button type="button" className={styles.oauthBtn} disabled title="Coming soon">
-              Sign in with Google <span className={styles.soon}>Soon</span>
+            <button
+              type="button"
+              className={styles.oauthBtn}
+              disabled={loading || oauthProvider !== null}
+              onClick={() => handleOAuth('google')}
+            >
+              {oauthProvider === 'google' ? 'Redirecting…' : 'Sign in with Google'}
             </button>
-            <button type="button" className={styles.oauthBtnDark} disabled title="Coming soon">
-              Sign in with Apple <span className={styles.soonDark}>Soon</span>
+            <button
+              type="button"
+              className={styles.oauthBtnDark}
+              disabled={loading || oauthProvider !== null}
+              onClick={() => handleOAuth('apple')}
+            >
+              {oauthProvider === 'apple' ? 'Redirecting…' : 'Sign in with Apple'}
             </button>
           </div>
         </div>

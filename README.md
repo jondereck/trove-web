@@ -11,13 +11,20 @@ cd C:\Users\jonde\trove-web
 copy .env.local.example .env.local
 ```
 
-Fill `.env.local` with the **same** Supabase project as mobile:
+Fill `.env.local` with the **same** Supabase project as mobile (`EXPO_PUBLIC_*` names work too):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+**OAuth (Google / Apple):** In Supabase Dashboard → Authentication → URL configuration, add:
+
+- `http://localhost:3000/auth/callback`
+- `https://<your-vercel-domain>/auth/callback`
+
+Enable Google and Apple providers in Supabase before using those buttons.
 
 ```powershell
 npm install
@@ -26,7 +33,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Scripts
+## Tech stack
+
+Next.js 16, Supabase SSR auth, CSS Modules (Phase A screens) + **Tailwind CSS v4 + shadcn/ui** (foundation for Phase B/C).
 
 | Command | Purpose |
 |---------|---------|

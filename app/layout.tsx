@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, Hanken_Grotesk } from 'next/font/google'
 import './globals.css'
+import { cn } from '@/lib/utils'
 
 const serif = Instrument_Serif({
   subsets: ['latin'],
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en" className={cn(serif.variable, sans.variable)}>
       <body>{children}</body>
     </html>
   )
