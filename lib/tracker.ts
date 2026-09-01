@@ -521,6 +521,92 @@ export function formatDate(iso: string): string {
   return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 }
 
+const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+/** e.g. "Sep 2, 2026 (Tue)" */
+export function formatDateWithWeekday(iso: string): string {
+  const ms = Date.parse(iso)
+  if (!Number.isFinite(ms)) return ''
+  const d = new Date(ms)
+  return `${formatDate(iso)} (${WEEKDAYS_SHORT[d.getDay()]})`
+}
+
+/** Relative day badge for next due: Today / Tomorrow / null */
+export function relativeDayBadge(iso: string, now: Date = new Date()): string | null {
+  const ms = Date.parse(iso)
+  if (!Number.isFinite(ms)) return null
+  const due = new Date(ms)
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startDue = new Date(due.getFullYear(), due.getMonth(), due.getDate())
+  const diffDays = Math.round((startDue.getTime() - startToday.getTime()) / DAY_MS)
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Tomorrow'
+  return null
+}
+
+export interface TrackerGapStats {
+  totalRecords: number
+  longestGapMs: number | null
+  longestGapFrom: string | null
+  longestGapTo: string | null
+  averageGapMs: number | null
+  sincePreviousMs: number | null
+}
+
+/** Gap stats between consecutive records (chronological). */
+export function computeRecordGapStats(data: TrackerData): TrackerGapStats {
+  const chronological = sortRecords(data.records).slice().reverse()
+  const totalRecords = chronological.length
+  if (totalRecords < 2) {
+    return {
+      totalRecords,
+      longestGapMs: null,
+      longestGapFrom: null,
+      longestGapTo: null,
+      averageGapMs: null,
+      sincePreviousMs: null,
+    }
+  }
+
+  let longestGapMs = 0
+  let longestGapFrom: string | null = null
+  let longestGapTo: string | null = null
+  let sum = 0
+  let count = 0
+
+  for (let i = 1; i < chronological.length; i++) {
+    const prev = chronological[i - 1]
+    const curr = chronological[i]
+    const a = Date.parse(prev.at)
+    const b = Date.parse(curr.at)
+    if (!Number.isFinite(a) || !Number.isFinite(b)) continue
+    const gap = Math.abs(b - a)
+    sum += gap
+    count++
+    if (gap >= longestGapMs) {
+      longestGapMs = gap
+      longestGapFrom = prev.at
+      longestGapTo = curr.at
+    }
+  }
+
+  const newest = chronological[chronological.length - 1]
+  const previous = chronological[chronological.length - 2]
+  const sincePreviousMs =
+    newest && previous
+      ? Math.abs(Date.parse(newest.at) - Date.parse(previous.at))
+      : null
+
+  return {
+    totalRecords,
+    longestGapMs: count ? longestGapMs : null,
+    longestGapFrom,
+    longestGapTo,
+    averageGapMs: count ? sum / count : null,
+    sincePreviousMs: Number.isFinite(sincePreviousMs ?? NaN) ? sincePreviousMs : null,
+  }
+}
+
 // ── Small numeric guards ─────────────────────────────────────────────────────
 
 function daysInMonth(year: number, month: number): number {

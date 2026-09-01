@@ -21,6 +21,7 @@ import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
 import QuickSaveFab from '@/components/QuickSaveFab'
 import ReminderSync from '@/components/ReminderSync'
 import TroveMark from '@/components/TroveMark'
+import { BRAND } from '@/lib/branding'
 import UserAvatar from '@/components/UserAvatar'
 import styles from './AppShell.module.css'
 
@@ -125,7 +126,8 @@ export default function AppShell({ mode, importFileName, children }: Props) {
           <aside className={styles.sidebar}>
             <Link href="/library" className={styles.brand}>
               <TroveMark size={32} className={styles.brandIcon} />
-              <span className={`serif ${styles.wordmark}`}>Trove</span>
+              <span className={`serif ${styles.wordmark}`}>{BRAND.name}</span>
+              <span className={styles.beta}>{BRAND.beta}</span>
             </Link>
 
             <nav className={styles.nav}>

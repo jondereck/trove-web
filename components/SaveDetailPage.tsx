@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import SaveDetailShell from '@/components/SaveDetailShell'
 import TroveLoader from '@/components/TroveLoader'
 import { useSaveDetail } from '@/hooks/useSaveDetail'
+import { libraryBackHref } from '@/lib/libraryFilterUrl'
 import styles from './SaveDetailPage.module.css'
 
 type Props = {
@@ -15,16 +16,19 @@ type Props = {
 
 export default function SaveDetailPage({ id }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const detail = useSaveDetail(id)
   const [titleDraft, setTitleDraft] = useState('')
   const [bodyDraft, setBodyDraft] = useState('')
   const [showReminder, setShowReminder] = useState(false)
+  const fromFilter = searchParams.get('from')
 
   useEffect(() => {
     if (detail.save?.type === 'tracker') {
-      router.replace(`/tracker/${id}`)
+      const qs = fromFilter ? `?from=${encodeURIComponent(fromFilter)}` : ''
+      router.replace(`/tracker/${id}${qs}`)
     }
-  }, [detail.save, id, router])
+  }, [detail.save, id, router, fromFilter])
 
   useEffect(() => {
     if (detail.save) setTitleDraft(detail.save.title)
@@ -99,6 +103,7 @@ export default function SaveDetailPage({ id }: Props) {
           if (next === null || !detail.canEdit) return
           void detail.updatePaperColor(next.trim() || null)
         }}
+        backHref={libraryBackHref(fromFilter, save.type)}
       />
 
       {showReminder ? (

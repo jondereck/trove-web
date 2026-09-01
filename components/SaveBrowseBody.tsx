@@ -1,6 +1,6 @@
 'use client'
 
-import type { Save } from '@/lib/types'
+import type { LibraryFilter, Save } from '@/lib/types'
 import type { LibraryViewMode } from '@/components/FilterBar'
 import SaveGrid from '@/components/SaveGrid'
 import TroveLoader from '@/components/TroveLoader'
@@ -18,6 +18,7 @@ type Props = {
   emptyTitle?: string
   emptyHint?: string
   canEdit?: boolean
+  fromFilter?: LibraryFilter
 }
 
 export default function SaveBrowseBody({
@@ -30,6 +31,7 @@ export default function SaveBrowseBody({
   emptyTitle,
   emptyHint,
   canEdit = false,
+  fromFilter,
 }: Props) {
   const { pinned, rest } = partitionPinnedSaves(saves)
   const hasPinned = showPinned && pinned.length > 0
@@ -49,6 +51,7 @@ export default function SaveBrowseBody({
         emptyTitle={emptyTitle}
         emptyHint={emptyHint}
         canEdit={canEdit}
+        fromFilter={fromFilter}
       />
     )
   }
@@ -62,15 +65,22 @@ export default function SaveBrowseBody({
           title="PINNED"
           titleTone="accent"
           canEdit={canEdit}
+          fromFilter={fromFilter}
         />
       ) : null}
 
       {hasPinned ? (
         rest.length > 0 ? (
-          <SaveGrid saves={rest} layout={layout} title="ALL SAVES" canEdit={canEdit} />
+          <SaveGrid
+            saves={rest}
+            layout={layout}
+            title="ALL SAVES"
+            canEdit={canEdit}
+            fromFilter={fromFilter}
+          />
         ) : null
       ) : (
-        <SaveGrid saves={saves} layout={layout} canEdit={canEdit} />
+        <SaveGrid saves={saves} layout={layout} canEdit={canEdit} fromFilter={fromFilter} />
       )}
 
       <div ref={sentinelRef} className={styles.sentinel} aria-hidden />

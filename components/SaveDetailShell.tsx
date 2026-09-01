@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { ArrowLeft, Pin, Trash2 } from 'lucide-react'
+import { ArrowLeft, EllipsisVertical, Pin } from 'lucide-react'
 import type { Save, Collection } from '@/lib/types'
 import type { StoredSaveReminder } from '@/lib/saveRemindersCore'
 import type { SaveStatus } from '@/hooks/useSaveDetail'
@@ -17,7 +17,7 @@ import GalleryStrip from '@/components/GalleryStrip'
 import SaveDetailCollectionChips from '@/components/SaveDetailCollectionChips'
 import SaveDetailTags from '@/components/SaveDetailTags'
 import SaveDetailPreviewCard from '@/components/SaveDetailPreviewCard'
-import SaveDetailToolbar from '@/components/SaveDetailToolbar'
+
 import SaveDetailMoreSheet from '@/components/SaveDetailMoreSheet'
 import MediaLightbox from '@/components/MediaLightbox'
 import styles from './SaveDetailShell.module.css'
@@ -151,12 +151,11 @@ export default function SaveDetailShell({
           </button>
           <button
             type="button"
-            className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-            onClick={onDelete}
-            disabled={!canEdit}
-            aria-label="Delete save"
+            className={styles.iconBtn}
+            onClick={() => setMoreOpen(true)}
+            aria-label="More actions"
           >
-            <Trash2 size={18} strokeWidth={2} />
+            <EllipsisVertical size={18} strokeWidth={2} />
           </button>
         </div>
       </header>
@@ -260,16 +259,6 @@ export default function SaveDetailShell({
         />
       </div>
 
-      <SaveDetailToolbar
-        canEdit={canEdit}
-        hasUrl={!!save.url}
-        onAddNote={() => onSetEditingBody(true)}
-        onChangeCover={onChangeCover}
-        onAdjustTitle={() => onSetEditingTitle(true)}
-        onShare={handleShare}
-        onOpen={openLink}
-        onMore={() => setMoreOpen(true)}
-      />
 
       <SaveDetailMoreSheet
         open={moreOpen}

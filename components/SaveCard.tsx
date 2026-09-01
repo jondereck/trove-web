@@ -8,7 +8,7 @@ import MediaLightbox from '@/components/MediaLightbox'
 import DomainBrand from '@/components/DomainBrand'
 import ReminderActiveStatus from '@/components/ReminderActiveStatus'
 import SaveCardSnippet from '@/components/SaveCardSnippet'
-import type { Save } from '@/lib/types'
+import type { LibraryFilter, Save } from '@/lib/types'
 import {
   brandTileForDomain,
   brandTileForType,
@@ -17,6 +17,7 @@ import {
 } from '@/lib/linkBrand'
 import { classifyLinkSource } from '@/lib/linkSource'
 import { saveDetailHref } from '@/lib/saveDetailCore'
+import { detailHrefWithFrom } from '@/lib/libraryFilterUrl'
 import { getSaveImageUrls } from '@/lib/saveImages'
 import {
   formatSaveCardDate,
@@ -36,6 +37,7 @@ type Props = {
   compact?: boolean
   canEdit?: boolean
   layout?: 'grid' | 'list'
+  fromFilter?: LibraryFilter
 }
 
 function TypeIcon({ type, size = 28 }: { type: Save['type']; size?: number }) {
@@ -121,8 +123,10 @@ export default function SaveCard({
   compact = false,
   canEdit = false,
   layout = 'grid',
+  fromFilter,
 }: Props) {
   const router = useRouter()
+  const href = detailHrefWithFrom(saveDetailHref(save), fromFilter)
   const [isFav, setIsFav] = useState(!!save.is_favorite)
   const [isUnread, setIsUnread] = useState(save.is_viewed === false)
   const [lightbox, setLightbox] = useState<{ url: string; kind: 'image' | 'video' } | null>(null)
@@ -212,7 +216,7 @@ export default function SaveCard({
       })
       return
     }
-    router.push(saveDetailHref(save))
+    router.push(href)
   }
 
   const handleOpenLink = () => {
@@ -309,7 +313,7 @@ export default function SaveCard({
       className={`${styles.cardWrap} ${compact ? styles.compact : ''} ${layout === 'list' ? styles.listWrap : ''}`}
       style={paperColor ? { ['--card-paper' as string]: paperColor } : undefined}
     >
-      <Link href={saveDetailHref(save)} className={cardClass} onClick={handleNavigate}>
+      <Link href={href} className={cardClass} onClick={handleNavigate}>
         {isUnread ? <span className={styles.unreadStripe} aria-hidden /> : null}
         {isUnread ? <span className={styles.newBadge}>NEW</span> : null}
 

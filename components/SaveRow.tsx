@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { FileText, ImageIcon, Link2, Play, Timer } from 'lucide-react'
-import type { Save } from '@/lib/types'
+import type { LibraryFilter, Save } from '@/lib/types'
 import { saveDetailHref } from '@/lib/saveDetailCore'
+import { detailHrefWithFrom } from '@/lib/libraryFilterUrl'
 import { formatSaveDate, saveSubtitle } from '@/lib/libraryCore'
 import styles from './SaveRow.module.css'
 
@@ -17,11 +18,12 @@ function TypeIcon({ type }: { type: Save['type'] }) {
 
 type Props = {
   save: Save
+  fromFilter?: LibraryFilter
 }
 
-export default function SaveRow({ save }: Props) {
+export default function SaveRow({ save, fromFilter }: Props) {
   return (
-    <Link href={saveDetailHref(save)} className={styles.row}>
+    <Link href={detailHrefWithFrom(saveDetailHref(save), fromFilter)} className={styles.row}>
       <div className={styles.lead}>
         {save.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -27,6 +27,8 @@ import {
   sortRecords,
   trackerHasDateDue,
   upsertRecord,
+  computeRecordGapStats,
+  relativeDayBadge,
 } from './tracker'
 
 const now = new Date(2026, 7, 22, 9, 0, 0) // Aug 22, 2026
@@ -357,5 +359,30 @@ describe('autoLog and quick record', () => {
     assert.equal(quick.metricValue, 50000)
     assert.equal(quick.label, 'Oil change')
     assert.equal(quick.note, 'Mobil 1')
+  })
+})
+
+describe('computeRecordGapStats', () => {
+  it('computes longest and average gaps', () => {
+    const data = tracker({
+      records: [
+        { id: 'a', at: '2026-08-27T00:00:00.000Z' },
+        { id: 'b', at: '2026-08-28T00:00:00.000Z' },
+        { id: 'c', at: '2026-08-30T00:00:00.000Z' },
+        { id: 'd', at: '2026-09-01T00:00:00.000Z' },
+      ],
+    })
+    const stats = computeRecordGapStats(data)
+    assert.equal(stats.totalRecords, 4)
+    assert.equal(stats.longestGapMs, 2 * 86_400_000)
+    assert.equal(stats.averageGapMs, ((1 + 2 + 2) * 86_400_000) / 3)
+    assert.equal(stats.sincePreviousMs, 2 * 86_400_000)
+  })
+
+  it('relativeDayBadge returns Today/Tomorrow', () => {
+    const base = new Date(2026, 8, 1, 12, 0, 0)
+    assert.equal(relativeDayBadge(new Date(2026, 8, 1, 18, 0, 0).toISOString(), base), 'Today')
+    assert.equal(relativeDayBadge(new Date(2026, 8, 2, 9, 0, 0).toISOString(), base), 'Tomorrow')
+    assert.equal(relativeDayBadge(new Date(2026, 8, 5, 9, 0, 0).toISOString(), base), null)
   })
 })

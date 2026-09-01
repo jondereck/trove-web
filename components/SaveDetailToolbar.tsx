@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  EllipsisVertical,
   ExternalLink,
   ImageIcon,
   Pencil,
@@ -18,7 +17,6 @@ type Props = {
   onAdjustTitle?: () => void
   onShare?: () => void
   onOpen?: () => void
-  onMore?: () => void
 }
 
 export default function SaveDetailToolbar({
@@ -29,7 +27,6 @@ export default function SaveDetailToolbar({
   onAdjustTitle,
   onShare,
   onOpen,
-  onMore,
 }: Props) {
   return (
     <div className={styles.bar}>
@@ -79,15 +76,6 @@ export default function SaveDetailToolbar({
           >
             <ExternalLink size={16} strokeWidth={2} />
             <span className={styles.btnLabel}>Open</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.btn} ${styles.iconBtn}`}
-            onClick={onMore}
-            disabled={!onMore}
-            aria-label="More actions"
-          >
-            <EllipsisVertical size={18} strokeWidth={2} />
           </button>
         </div>
       </div>
