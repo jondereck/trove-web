@@ -63,7 +63,7 @@ async function fireWebReminder(row: StoredSaveReminder): Promise<void> {
   if (notificationsSupported() && Notification.permission === 'granted') {
     const notification = new Notification(content.title, {
       body: content.body,
-      icon: '/trove-icon-mark.png',
+      icon: '/trove-app-icon.png',
       tag: row.id,
       data: content.data,
     })

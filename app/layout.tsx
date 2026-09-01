@@ -21,11 +21,12 @@ export const metadata: Metadata = {
   description: 'Browse your Trove Cloud library in the browser.',
   icons: {
     icon: [
-      { url: '/trove-icon-mark.svg', type: 'image/svg+xml' },
-      { url: '/trove-icon-mark.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/trove-app-icon.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: '/trove-app-icon.png',
-    shortcut: '/trove-icon-mark.png',
+    shortcut: '/favicon.png',
   },
 }
 

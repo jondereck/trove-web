@@ -1,10 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Bell,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   Eye,
   Inbox,
@@ -20,6 +22,7 @@ import {
   syncPresentedNotifications,
 } from '@/lib/notificationLog'
 import type { NotificationLogEntry } from '@/lib/notificationLogCore'
+import { groupUpcomingReminders } from '@/lib/reminderBuckets'
 import { promptCancelReminder } from '@/lib/reminderCancel'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -71,8 +74,10 @@ export default function NotificationsPanel({ open, onClose }: Props) {
   const [entries, setEntries] = useState<NotificationLogEntry[]>([])
   const [upcoming, setUpcoming] = useState<StoredSaveReminder[]>([])
   const [history, setHistory] = useState<StoredSaveReminder[]>([])
+  const [completedOpen, setCompletedOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const upcomingBuckets = useMemo(() => groupUpcomingReminders(upcoming), [upcoming])
 
   const saveTitle = useCallback(
     (saveId: string) => findSaveById(saves, saveId)?.title,
@@ -149,7 +154,7 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     }, { supabase, userId, row })
   }
 
-  const showClear = tab === 'inbox' ? entries.length > 0 : history.length > 0
+  const showClear = tab === 'inbox' && entries.length > 0
   const reminderEmpty = upcoming.length === 0 && history.length === 0
 
   if (!open) return null
@@ -204,75 +209,95 @@ export default function NotificationsPanel({ open, onClose }: Props) {
           ) : (
             <>
               <p className={styles.sectionLabel}>Upcoming</p>
-              {upcoming.length === 0 ? (
+              {upcomingBuckets.length === 0 ? (
                 <p className={styles.sectionEmpty}>Nothing upcoming</p>
               ) : (
-                <ul className={styles.list}>
-                  {upcoming.map(row => {
-                    const title = reminderDisplayTitle(row, saveTitle(row.saveId))
-                    const subtitle = formatUpcomingReminderSubtitle(row)
-                    return (
-                      <li key={row.id}>
-                        <div className={styles.rowWrap}>
-                          <button
-                            type="button"
-                            className={styles.row}
-                            onClick={() => navigate(`/library/${row.saveId}`)}
-                          >
-                            <span className={styles.rowIcon}>
-                              <Clock3 size={16} />
-                            </span>
-                            <span className={styles.rowText}>
-                              <span className={styles.rowTitle}>{title}</span>
-                              {subtitle ? <span className={styles.rowSub}>{subtitle}</span> : null}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.rowAction}
-                            aria-label="Cancel reminder"
-                            onClick={() => handleCancelReminder(row)}
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
+                upcomingBuckets.map(bucket => (
+                  <div key={bucket.id} className={styles.bucketBlock}>
+                    <span className={styles.bucketChip}>{bucket.label}</span>
+                    <ul className={styles.list}>
+                      {bucket.items.map(row => {
+                        const title = reminderDisplayTitle(row, saveTitle(row.saveId))
+                        const subtitle = formatUpcomingReminderSubtitle(row)
+                        return (
+                          <li key={row.id}>
+                            <div className={styles.rowWrap}>
+                              <button
+                                type="button"
+                                className={styles.row}
+                                onClick={() => navigate(`/library/${row.saveId}`)}
+                              >
+                                <span className={styles.rowIcon}>
+                                  <Clock3 size={16} />
+                                </span>
+                                <span className={styles.rowText}>
+                                  <span className={styles.rowTitle}>{title}</span>
+                                  {subtitle ? <span className={styles.rowSub}>{subtitle}</span> : null}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.rowAction}
+                                aria-label="Cancel reminder"
+                                onClick={() => handleCancelReminder(row)}
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                ))
               )}
 
               {history.length > 0 ? (
                 <>
                   <div className={styles.sectionHeader}>
-                    <p className={styles.sectionLabel}>History</p>
-                    <button type="button" className={styles.clearBtn} onClick={handleClearAll}>
-                      Clear
+                    <button
+                      type="button"
+                      className={styles.completedToggle}
+                      aria-expanded={completedOpen}
+                      onClick={() => setCompletedOpen(open => !open)}
+                    >
+                      <span className={styles.sectionLabelInline}>Completed</span>
+                      <span className={styles.countBadge}>{history.length}</span>
+                      {completedOpen
+                        ? <ChevronUp size={14} aria-hidden />
+                        : <ChevronDown size={14} aria-hidden />}
                     </button>
+                    {completedOpen ? (
+                      <button type="button" className={styles.clearBtn} onClick={handleClearAll}>
+                        Clear
+                      </button>
+                    ) : null}
                   </div>
-                  <ul className={styles.list}>
-                    {history.map((row, index) => {
-                      const title = reminderDisplayTitle(row, saveTitle(row.saveId))
-                      const cancelled = isCancelledReminder(row)
-                      return (
-                        <li key={`${row.id}:${row.firedAt ?? row.fireAt}:${index}`}>
-                          <button
-                            type="button"
-                            className={styles.row}
-                            onClick={() => navigate(`/library/${row.saveId}`)}
-                          >
-                            <span className={styles.rowIcon}>
-                              {cancelled ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
-                            </span>
-                            <span className={styles.rowText}>
-                              <span className={styles.rowTitle}>{title}</span>
-                              <span className={styles.rowSub}>{formatHistorySubtitle(row)}</span>
-                            </span>
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
+                  {completedOpen ? (
+                    <ul className={styles.list}>
+                      {history.map((row, index) => {
+                        const title = reminderDisplayTitle(row, saveTitle(row.saveId))
+                        const cancelled = isCancelledReminder(row)
+                        return (
+                          <li key={`${row.id}:${row.firedAt ?? row.fireAt}:${index}`}>
+                            <button
+                              type="button"
+                              className={styles.row}
+                              onClick={() => navigate(`/library/${row.saveId}`)}
+                            >
+                              <span className={styles.rowIcon}>
+                                {cancelled ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+                              </span>
+                              <span className={styles.rowText}>
+                                <span className={styles.rowTitle}>{title}</span>
+                                <span className={styles.rowSub}>{formatHistorySubtitle(row)}</span>
+                              </span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  ) : null}
                 </>
               ) : null}
             </>

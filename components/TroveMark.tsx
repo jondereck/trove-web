@@ -9,7 +9,7 @@ export default function TroveMark({ size = 40, className }: Props) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/trove-icon-mark.png"
+      src="/trove-app-icon.png"
       alt=""
       width={size}
       height={size}
