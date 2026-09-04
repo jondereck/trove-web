@@ -48,10 +48,67 @@
   background: var(--trove-accent-soft);
 }
 
+.iconBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .iconBtnActive {
   color: var(--trove-accent);
   border-color: var(--trove-accent);
   background: var(--trove-accent-soft);
+}
+
+.iconBtnDanger:hover {
+  color: var(--destructive);
+  border-color: #fecdca;
+  background: #fef3f2;
+}
+
+.shortcutGuide {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-cream);
+}
+
+.shortcutGuideTitle {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--trove-muted);
+}
+
+.shortcutList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.shortcutList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--trove-text);
+}
+
+.shortcutList kbd {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--trove-text-sub);
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  white-space: nowrap;
 }
 
 .iconBtnDanger:hover {

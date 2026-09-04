@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { ArrowLeft, EllipsisVertical, Pin } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, EllipsisVertical, Keyboard, Pin, Redo2, Undo2 } from 'lucide-react'
 import type { Save, Collection } from '@/lib/types'
 import type { StoredSaveReminder } from '@/lib/saveRemindersCore'
 import type { SaveStatus } from '@/hooks/useSaveDetail'
@@ -11,6 +11,11 @@ import { readSaveBody } from '@/lib/saveDetailCore'
 import { getSaveImageUrls } from '@/lib/saveImages'
 import { openSaveLink, shareSave } from '@/lib/openLink'
 import { formatNoteForCopy } from '@/lib/noteChecklist'
+import { formatTextStyle } from '@/lib/editorStyle'
+import {
+  EDITOR_SHORTCUT_GUIDE,
+  matchEditorShortcut,
+} from '@/lib/editorShortcuts'
 import SaveDetailMetaRow from '@/components/SaveDetailMetaRow'
 import NoteBodyEditor from '@/components/NoteBodyEditor'
 import GalleryStrip from '@/components/GalleryStrip'
@@ -31,6 +36,11 @@ export type SaveDetailShellProps = {
   editingTitle: boolean
   editingBody: boolean
   refreshingPreview: boolean
+  canUndo?: boolean
+  canRedo?: boolean
+  onUndo?: () => void
+  onRedo?: () => void
+  onToggleFormat?: (key: 'bold' | 'italic' | 'underline') => void
   onSetEditingTitle: (value: boolean) => void
   onSetEditingBody: (value: boolean) => void
   onTitleChange: (title: string) => void
@@ -58,6 +68,11 @@ export default function SaveDetailShell({
   editingTitle,
   editingBody,
   refreshingPreview,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
+  onToggleFormat,
   onSetEditingTitle,
   onSetEditingBody,
   onTitleChange,
@@ -77,6 +92,7 @@ export default function SaveDetailShell({
 }: SaveDetailShellProps) {
   const router = useRouter()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
   const [previewIndex, setPreviewIndex] = useState(0)
   const [lightbox, setLightbox] = useState<{ url: string; kind: 'image' | 'video' } | null>(null)
 
@@ -84,6 +100,30 @@ export default function SaveDetailShell({
   const isNote = save.type === 'note'
   const galleryUrls = getSaveImageUrls(save)
   const showGallery = save.type === 'image' && galleryUrls.length > 0
+  const bodyStyle = formatTextStyle(save.editor_style?.bodyFormat, isNote ? 16 : 15, 'var(--trove-text)')
+
+  useEffect(() => {
+    if (!canEdit) return
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const tag = target?.tagName
+      const typing =
+        tag === 'INPUT' || tag === 'TEXTAREA' || !!target?.isContentEditable
+      const action = matchEditorShortcut(e)
+      if (!action) return
+      if (action === 'undo' || action === 'redo') {
+        e.preventDefault()
+        if (action === 'undo') onUndo?.()
+        else onRedo?.()
+        return
+      }
+      if (!typing && !editingBody && !editingTitle) return
+      e.preventDefault()
+      onToggleFormat?.(action)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [canEdit, editingBody, editingTitle, onUndo, onRedo, onToggleFormat])
 
   const statusLabel =
     saveStatus === 'saving'
@@ -140,6 +180,40 @@ export default function SaveDetailShell({
               {statusLabel}
             </span>
           ) : null}
+          {canEdit ? (
+            <>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                onClick={() => onUndo?.()}
+                disabled={!canUndo}
+                aria-label="Undo"
+                title="Undo (Ctrl/⌘ Z)"
+              >
+                <Undo2 size={18} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                onClick={() => onRedo?.()}
+                disabled={!canRedo}
+                aria-label="Redo"
+                title="Redo (Ctrl/⌘ Shift Z)"
+              >
+                <Redo2 size={18} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className={`${styles.iconBtn} ${guideOpen ? styles.iconBtnActive : ''}`}
+                onClick={() => setGuideOpen(o => !o)}
+                aria-label="Keyboard shortcuts"
+                aria-expanded={guideOpen}
+                title="Keyboard shortcuts"
+              >
+                <Keyboard size={18} strokeWidth={2} />
+              </button>
+            </>
+          ) : null}
           <button
             type="button"
             className={`${styles.iconBtn} ${save.is_pinned ? styles.iconBtnActive : ''}`}
@@ -159,6 +233,20 @@ export default function SaveDetailShell({
           </button>
         </div>
       </header>
+
+      {guideOpen ? (
+        <div className={styles.shortcutGuide} role="region" aria-label="Keyboard shortcuts">
+          <p className={styles.shortcutGuideTitle}>Shortcuts</p>
+          <ul className={styles.shortcutList}>
+            {EDITOR_SHORTCUT_GUIDE.map(row => (
+              <li key={row.keys}>
+                <kbd>{row.keys}</kbd>
+                <span>{row.action}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className={styles.grid}>
         <div className={styles.left}>
@@ -205,7 +293,7 @@ export default function SaveDetailShell({
             </div>
           ) : null}
 
-          <div className={styles.bodySection}>
+          <div className={styles.bodySection} style={isNote ? bodyStyle : undefined}>
             {isNote ? (
               <NoteBodyEditor
                 body={body}
@@ -258,7 +346,6 @@ export default function SaveDetailShell({
           }}
         />
       </div>
-
 
       <SaveDetailMoreSheet
         open={moreOpen}

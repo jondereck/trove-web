@@ -257,6 +257,18 @@ export function useSaveDetail(id: string) {
     [persist, save],
   )
 
+  const updateBodyFormat = useCallback(
+    async (key: 'bold' | 'italic' | 'underline') => {
+      if (!save) return false
+      const { toggleFormatFlag } = await import('@/lib/editorStyle')
+      const bodyFormat = toggleFormatFlag(save.editor_style?.bodyFormat, key)
+      return persist({
+        editor_style: { ...(save.editor_style ?? {}), bodyFormat },
+      })
+    },
+    [persist, save],
+  )
+
   return {
     save,
     collections,
@@ -284,6 +296,7 @@ export function useSaveDetail(id: string) {
     cancelReminder,
     findCollection,
     updatePaperColor,
+    updateBodyFormat,
     reminderPresets: () => reminderPresets(),
     formatReminder: formatCurrentReminder,
   }

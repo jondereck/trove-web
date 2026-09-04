@@ -64,24 +64,55 @@
   min-height: 36px;
 }
 
-.checkbox {
-  width: 18px;
-  height: 18px;
-  margin-top: 3px;
+.tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: -2px 0 0;
+  padding: 0;
   flex-shrink: 0;
-  accent-color: var(--trove-accent);
+  border: none;
+  background: none;
+  color: var(--trove-text-sub);
   cursor: pointer;
+  border-radius: 6px;
 }
 
-.checkbox:disabled {
+.tick:hover:not(:disabled) {
+  color: var(--trove-accent);
+  background: var(--trove-accent-soft);
+}
+
+.tick:disabled {
   cursor: default;
+  opacity: 0.55;
 }
 
-.rowText {
+.tick[aria-pressed='true'] {
+  color: var(--trove-muted);
+}
+
+.rowText,
+.rowTextButton {
   flex: 1;
   font-size: 16px;
   line-height: 1.5;
   color: var(--trove-text);
+  text-align: left;
+}
+
+.rowTextButton {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.rowTextButton:disabled {
+  cursor: default;
 }
 
 .rowTextDone {

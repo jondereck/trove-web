@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
+import { CheckSquare, ChevronDown, ChevronRight, Plus, Square } from 'lucide-react'
 import {
   insertChecklistItem,
   parseChecklistLines,
@@ -9,8 +9,6 @@ import {
   toggleChecklistAt,
 } from '@/lib/noteChecklist'
 import styles from './NoteBodyEditor.module.css'
-
-const CHECK_RE = /^(\s*)([-*]|\d+\.)\s+\[([ xX])\]\s*(.*)$/
 
 type Props = {
   body: string
@@ -87,6 +85,43 @@ export default function NoteBodyEditor({
     }
   }
 
+  const renderRow = (item: { index: number; text: string }, done: boolean) => (
+    <div key={`${done ? 'c' : 'u'}-${item.index}`} className={styles.row}>
+      <button
+        type="button"
+        className={styles.tick}
+        disabled={!canEdit}
+        onClick={() => handleToggle(item.index)}
+        aria-pressed={done}
+        aria-label={done ? 'Mark incomplete' : 'Mark complete'}
+      >
+        {done ? (
+          <CheckSquare size={20} strokeWidth={1.75} />
+        ) : (
+          <Square size={20} strokeWidth={1.75} />
+        )}
+      </button>
+      {editing && canEdit ? (
+        <input
+          className={`${styles.rowInput} ${done ? styles.rowTextDone : ''}`}
+          value={item.text}
+          onChange={e => onChangeBody(setChecklistTextAt(body, item.index, e.target.value))}
+          onFocus={onStartEdit}
+          placeholder="List item"
+        />
+      ) : (
+        <button
+          type="button"
+          className={`${styles.rowTextButton} ${done ? styles.rowTextDone : ''}`}
+          onClick={() => (canEdit ? onStartEdit() : undefined)}
+          disabled={!canEdit}
+        >
+          {item.text || 'List item'}
+        </button>
+      )}
+    </div>
+  )
+
   return (
     <div className={styles.block}>
       {preamble ? (
@@ -109,28 +144,7 @@ export default function NoteBodyEditor({
         )
       ) : null}
 
-      {unchecked.map(item => (
-        <label key={`u-${item.index}`} className={styles.row}>
-          <input
-            type="checkbox"
-            className={styles.checkbox}
-            checked={false}
-            disabled={!canEdit}
-            onChange={() => handleToggle(item.index)}
-          />
-          {editing && canEdit ? (
-            <input
-              className={styles.rowInput}
-              value={item.text}
-              onChange={e => onChangeBody(setChecklistTextAt(body, item.index, e.target.value))}
-              onFocus={onStartEdit}
-              placeholder="List item"
-            />
-          ) : (
-            <span className={styles.rowText}>{item.text || 'List item'}</span>
-          )}
-        </label>
-      ))}
+      {unchecked.map(item => renderRow(item, false))}
 
       {canEdit ? (
         <button
@@ -156,32 +170,7 @@ export default function NoteBodyEditor({
             {checkedOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             {checked.length} checked {checked.length === 1 ? 'item' : 'items'}
           </button>
-          {checkedOpen
-            ? checked.map(item => (
-                <label key={`c-${item.index}`} className={styles.row}>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked
-                    disabled={!canEdit}
-                    onChange={() => handleToggle(item.index)}
-                  />
-                  {editing && canEdit ? (
-                    <input
-                      className={`${styles.rowInput} ${styles.rowTextDone}`}
-                      value={item.text}
-                      onChange={e => onChangeBody(setChecklistTextAt(body, item.index, e.target.value))}
-                      onFocus={onStartEdit}
-                      placeholder="List item"
-                    />
-                  ) : (
-                    <span className={`${styles.rowText} ${styles.rowTextDone}`}>
-                      {item.text || 'List item'}
-                    </span>
-                  )}
-                </label>
-              ))
-            : null}
+          {checkedOpen ? checked.map(item => renderRow(item, true)) : null}
         </>
       ) : null}
     </div>
