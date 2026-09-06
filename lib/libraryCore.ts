@@ -17,6 +17,14 @@ export function findSaveById(saves: Save[], id: string): Save | undefined {
   return saves.find(s => s.id === id)
 }
 
+/** Detail routes may open inbox items (Quick Save); Vault stays locked out on web. */
+export function canOpenCloudSaveDetail(save: {
+  is_inbox?: boolean
+  is_vault?: boolean
+}): boolean {
+  return !save.is_vault
+}
+
 export function formatSaveDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     month: 'short',

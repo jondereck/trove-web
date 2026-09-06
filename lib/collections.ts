@@ -253,3 +253,48 @@ export function attachSaveCountsWithCovers(
     cover_slots: collectionCoverFields(c.cover_image_url, byCollection[c.id] ?? []).cover_slots,
   }))
 }
+
+/** Find or create a non-vault collection by name (Quick Save AI filing). */
+export async function upsertCollectionByName(
+  supabase: SupabaseClient,
+  userId: string,
+  name: string,
+): Promise<string | null> {
+  const trimmed = name.trim()
+  if (!trimmed) return null
+
+  const existing = await fetchCloudCollections(supabase)
+  const match = existing.find(c => c.name.toLowerCase() === trimmed.toLowerCase())
+  if (match) return match.id
+
+  const { data, error } = await supabase
+    .from('collections')
+    .insert({
+      user_id: userId,
+      name: trimmed,
+      icon: 'folder-outline',
+      color: '#c0613c',
+      is_vault: false,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    if (/is_vault/.test(error.message)) {
+      const fallback = await supabase
+        .from('collections')
+        .insert({
+          user_id: userId,
+          name: trimmed,
+          icon: 'folder-outline',
+          color: '#c0613c',
+        })
+        .select('id')
+        .single()
+      if (fallback.error) throw fallback.error
+      return fallback.data?.id ?? null
+    }
+    throw error
+  }
+  return data?.id ?? null
+}

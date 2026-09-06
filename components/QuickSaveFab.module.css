@@ -26,7 +26,9 @@
 }
 
 .sheet {
-  width: min(460px, 100%);
+  width: min(480px, 100%);
+  max-height: min(90vh, 760px);
+  overflow: auto;
   background: var(--trove-card);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -35,45 +37,14 @@
 
 .sheet h2 {
   font-size: 22px;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 
 .hint {
   color: var(--trove-text-sub);
   line-height: 1.5;
-  margin-bottom: 16px;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.tab,
-.tabActive {
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.tab {
-  border: 1px solid var(--trove-border);
-  background: var(--trove-bg);
-  color: var(--trove-text-sub);
-}
-
-.tabActive {
-  border: 1px solid var(--trove-accent);
-  background: var(--trove-accent-soft);
-  color: var(--trove-accent);
-}
-
-.form {
-  display: grid;
-  gap: 12px;
+  margin: 0 0 16px;
+  font-size: 14px;
 }
 
 .field {
@@ -81,16 +52,231 @@
   gap: 6px;
   font-size: 13px;
   color: var(--trove-text-sub);
+  margin-bottom: 12px;
+}
+
+.fieldTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kindBadge {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.tagInput {
   border: 1px solid var(--trove-border);
   border-radius: var(--radius-md);
   padding: 10px 12px;
   font-size: 14px;
   background: var(--trove-bg);
   color: var(--trove-text);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.45;
+}
+
+.attachSectionLabel {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--trove-text);
+  text-align: center;
+}
+
+.attachRow {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.attachOptionBtn {
+  flex: 1;
+  max-width: 88px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  color: var(--trove-accent);
+  cursor: pointer;
+}
+
+.attachOptionBtn:hover {
+  background: var(--trove-accent-soft);
+}
+
+.fileInput {
+  display: none;
+}
+
+.previewRow {
+  position: relative;
+  margin: 0 auto 12px;
+  width: fit-content;
+}
+
+.previewThumb {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--trove-border);
+  display: block;
+  background: var(--trove-bg);
+}
+
+.clearImage {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 999px;
+  background: var(--trove-text);
+  color: var(--trove-card);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.fileChip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 12px;
+  padding: 8px 12px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  color: var(--trove-text-sub);
+  font-size: 13px;
+}
+
+.fileChip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.fileChip button {
+  border: none;
+  background: transparent;
+  color: var(--trove-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.analyzing {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 48px 16px;
+  gap: 8px;
+}
+
+.analyzingOrb {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--trove-accent);
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+}
+
+.analyzingTitle {
+  margin: 0 !important;
+  font-size: 20px !important;
+}
+
+.heroImage {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  border: 1px solid var(--trove-border);
+}
+
+.sectionLabel {
+  margin: 8px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--trove-muted);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.chip,
+.chipOn,
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  color: var(--trove-text-sub);
+}
+
+.chipOn {
+  border: 1px solid var(--trove-accent);
+  background: var(--trove-accent);
+  color: var(--trove-on-accent);
+}
+
+.tagChip {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+}
+
+.tagInput {
+  width: 120px;
+}
+
+.status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--trove-accent);
 }
 
 .error {
@@ -120,7 +306,8 @@
   color: var(--trove-on-accent);
 }
 
-.primaryBtn:disabled {
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

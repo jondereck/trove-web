@@ -6,7 +6,7 @@ import { sortByPinnedThenCreated } from './libraryFilters'
 import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
 import { parseSaveRow } from './saves'
 import type { LibraryFilter, LibraryStats, Save, SavesPageResult } from './types'
-import { filterLibrarySaves } from './libraryCore'
+import { canOpenCloudSaveDetail, filterLibrarySaves } from './libraryCore'
 
 function applyLibraryFilter<T extends {
   eq: (col: string, val: unknown) => T
@@ -143,7 +143,7 @@ export async function fetchCloudSaveById(
   if (error) throw error
   if (!data) return null
   const save = parseSaveRow(data as Save)
-  if (save.is_inbox || save.is_vault) return null
+  if (!canOpenCloudSaveDetail(save)) return null
   return save
 }
 

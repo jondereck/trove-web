@@ -12,6 +12,7 @@ import {
   Search,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { signOutLocal } from '@/lib/auth/oauth'
 import {
   clearDemoMode,
   clearImportSession,
@@ -111,8 +112,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
     clearDemoMode()
     await clearImportSession()
     if (mode === 'cloud') {
-      const supabase = createClient()
-      await supabase.auth.signOut()
+      await signOutLocal()
     }
     router.push('/')
     router.refresh()

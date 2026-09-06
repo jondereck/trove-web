@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
+import { signOutLocal } from '@/lib/auth/oauth'
 import {
   clearDemoMode,
   clearImportSession,
@@ -49,8 +50,7 @@ export default function SettingsPage() {
   const signOut = async () => {
     clearDemoMode()
     await clearImportSession()
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await signOutLocal()
     router.push('/')
     router.refresh()
   }
