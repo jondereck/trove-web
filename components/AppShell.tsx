@@ -9,7 +9,6 @@ import {
   FolderOpen,
   Inbox,
   LayoutGrid,
-  Search,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signOutLocal } from '@/lib/auth/oauth'
@@ -36,7 +35,6 @@ type NavItem = {
 const NAV: NavItem[] = [
   { label: 'Library', href: '/library', icon: <LayoutGrid size={18} strokeWidth={1.75} /> },
   { label: 'Collections', href: '/collections', icon: <FolderOpen size={18} strokeWidth={1.75} /> },
-  { label: 'Search', href: '/search', icon: <Search size={18} strokeWidth={1.75} /> },
   { label: 'Statistics', href: '/statistics', icon: <BarChart3 size={18} strokeWidth={1.75} /> },
   { label: 'Unsorted', icon: <Inbox size={18} strokeWidth={1.75} />, soon: true },
 ]

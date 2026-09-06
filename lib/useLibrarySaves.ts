@@ -7,6 +7,7 @@ import { attachSaveCountsWithCovers, fetchCloudCollections } from '@/lib/collect
 import { getDemoLibrary } from '@/lib/demo'
 import { readImport } from '@/lib/importStore'
 import { fetchProfileFirstName } from '@/lib/library'
+import { createInitialCloudLibraryState } from '@/lib/initialLibraryState'
 import { cacheSessionMetadata, peekLibrarySessionCache } from '@/lib/libraryCache'
 import {
   getImportSession,
@@ -27,26 +28,25 @@ export type LibraryState = {
   firstName?: string
 }
 
-function initialCloudState(): LibraryState {
-  const cached = peekLibrarySessionCache()
-  return {
-    loading: !cached,
-    error: '',
-    saves: [],
-    collections: cached?.collections ?? [],
-    mode: 'cloud',
-    firstName: cached?.firstName,
-  }
-}
-
 export function useLibrarySaves(): LibraryState {
   const router = useRouter()
-  const [state, setState] = useState<LibraryState>(initialCloudState)
+  const [state, setState] = useState<LibraryState>(createInitialCloudLibraryState)
 
   useEffect(() => {
     let cancelled = false
 
     async function load() {
+      // Apply cache only after mount so SSR HTML matches the first client paint.
+      const warmed = peekLibrarySessionCache()
+      if (warmed && !cancelled) {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          collections: warmed.collections,
+          firstName: warmed.firstName,
+        }))
+      }
+
       const mode = getSessionMode()
       if (mode === 'demo' || isDemoMode()) {
         const demo = getDemoLibrary()

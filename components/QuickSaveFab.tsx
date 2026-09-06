@@ -74,6 +74,12 @@ export default function QuickSaveFab({ mode }: Props) {
   const [tagDraft, setTagDraft] = useState('')
   const [showTagInput, setShowTagInput] = useState(false)
 
+  useEffect(() => {
+    const openFromToolbar = () => setOpen(true)
+    window.addEventListener('trove:open-quick-save', openFromToolbar)
+    return () => window.removeEventListener('trove:open-quick-save', openFromToolbar)
+  }, [])
+
   const canSave = mode === 'cloud'
   const detected = attachment
     ? attachment.kind === 'pdf'
@@ -422,14 +428,7 @@ export default function QuickSaveFab({ mode }: Props) {
 
   return (
     <>
-      <button
-        type="button"
-        className={styles.fab}
-        aria-label="Quick Save"
-        onClick={() => setOpen(true)}
-      >
-        +
-      </button>
+      {/* FAB hidden — Quick Save opens from toolbar "Add new" via trove:open-quick-save */}
 
       {open ? (
         <div className={styles.backdrop} onClick={close}>

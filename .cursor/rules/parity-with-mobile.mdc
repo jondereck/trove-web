@@ -11,11 +11,15 @@ This repo is the **browser companion** to **Trove Mobile** (`../trove` or the **
 
 ## Source of truth
 
+**Always check Trove Mobile first** before changing Library / Collections / Quick Save /
+selection UX on web. Mobile wins; web follows.
+
 | Concern | Mobile (wins) | Web (follows) |
 |---------|---------------|---------------|
 | Save types, schema | `trove/types/index.ts` | `trove-web/lib/types.ts` |
 | Library filters, chips | `trove/lib/libraryFilterChips.ts` | `trove-web/lib/libraryFilterChips.ts` |
 | Save card layout | `trove/components/SaveCard.tsx` | `trove-web/components/SaveCard.tsx` |
+| Long-press mass selection | `SelectionModeHeader` + `SelectionActionBar` | Same on Library + collection detail |
 | Checklist UI | `trove/components/NoteBodyEditor.tsx` | Never show raw `- [ ]` on web |
 | Design tokens | `trove/constants/theme.ts` | `trove-web/lib/theme.ts` + `--trove-*` |
 | Supabase project | `trove/.env.local` | Same URL + anon key (`scripts/sync-web-env.ps1`) |

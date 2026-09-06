@@ -1,62 +1,159 @@
-.bar {
+.toolbar {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-.chips {
+.search {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--trove-muted);
+  pointer-events: none;
+}
+
+.search input {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  padding: 0 16px 0 38px;
+  font-size: 14px;
+  color: var(--trove-text);
+  outline: none;
+}
+
+.search input::placeholder {
+  color: var(--trove-muted);
+}
+
+.search input:focus {
+  border-color: var(--trove-accent-border, #e8c4b4);
+}
+
+.filters {
   display: flex;
-  flex: 1;
+  align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
+  flex-wrap: wrap;
 }
 
-.chips::-webkit-scrollbar {
-  display: none;
+.menuWrap {
+  position: relative;
 }
 
-.chip,
-.chipActive {
+.menuBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  height: 36px;
+  padding: 0 12px;
   border-radius: 999px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  color: var(--trove-text);
   font-size: 13px;
   font-weight: 500;
-  white-space: nowrap;
   cursor: pointer;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.chip {
-  border: 1px solid var(--trove-border);
+.menuBtn:hover {
+  border-color: #ddd9d2;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 160px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
   background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(30, 20, 10, 0.12);
+}
+
+.menuItem,
+.menuItemActive {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
   color: var(--trove-text);
 }
 
-.chipActive {
-  border: 1px solid var(--trove-text);
-  background: var(--trove-text);
-  color: #fff;
+.menuItem:hover {
+  background: var(--trove-bg);
 }
 
-.chipIcon {
-  display: grid;
-  place-items: center;
+.menuItemActive {
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
 }
 
 .viewToggle {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   border: 1px solid var(--trove-border);
-  background: var(--trove-card);
+  background: var(--trove-bg);
+  color: var(--trove-text);
   display: grid;
   place-items: center;
-  color: var(--trove-text);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.viewToggle:hover {
+  border-color: #ddd9d2;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--trove-accent);
+  color: var(--trove-on-accent, #fff);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  filter: brightness(0.97);
+}
+
+@media (max-width: 820px) {
+  .toolbar {
+    gap: 8px;
+  }
+
+  .search {
+    flex: 1 1 100%;
+  }
 }

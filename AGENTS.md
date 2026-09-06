@@ -8,7 +8,32 @@ hand-drawn SVGs or CSS shapes. Use `react-icons/si` for monochrome marks and
 `components/StoreBadgeLinks.tsx`. UI chrome uses Lucide. Never use emoji as icons in
 product UI.
 
-See `trove/AGENTS.md` for mobile ↔ web parity (Library, Collections, tokens).
+## Mobile is the source of truth (hard rule)
+
+**Always check Trove Mobile first** (`../trove` / **Trove Mobile** workspace root)
+before designing or changing Library, Collections, Quick Save, selection mode, or
+save detail on web.
+
+| Concern | Mobile (wins) | Web (follows) |
+|---------|---------------|---------------|
+| Save types, schema | `trove/types/index.ts` | `trove-web/lib/types.ts` |
+| Library filters, chips | `trove/lib/libraryFilterChips.ts` | `trove-web/lib/libraryFilterChips.ts` |
+| Save card layout | `trove/components/SaveCard.tsx` | `trove-web/components/SaveCard.tsx` |
+| Long-press → mass selection | Library / collection `SelectionModeHeader` + `SelectionActionBar` | Same flow on web Library + collection detail |
+| Checklist UI | `trove/components/NoteBodyEditor.tsx` | Never show raw `- [ ]` on web |
+| Quick Save steps | input → Analyzing → preview confirm | Match mobile; do not skip confirm |
+| Design tokens | `trove/constants/theme.ts` | `trove-web/lib/theme.ts` + `--trove-*` |
+| Supabase project | `trove/.env.local` | Same URL + anon key (`scripts/sync-web-env.ps1`) |
+
+When mobile and web disagree on UX, **update web, not mobile** (see `trove/AGENTS.md` § Trove Web).
+
+Before porting a feature:
+
+1. Read the mobile screen (`trove/app/…`) and shared components (`SelectionActionBar`, `QuickSave`, etc.).
+2. Port **pure** logic first (no React Native imports); add `node:test` in `trove-web/lib/`.
+3. Match existing web chrome (`AppShell`, `FilterBar`, `SaveCard`, tokens) — no one-off layouts.
+
+See also `.cursor/rules/parity-with-mobile.mdc`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

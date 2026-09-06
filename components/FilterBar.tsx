@@ -1,37 +1,41 @@
 'use client'
 
+import { useEffect, useId, useRef, useState } from 'react'
 import {
-  Bell,
-  BookOpen,
-  FileText,
-  Code2,
-  ImageIcon,
+  ChevronDown,
   LayoutGrid,
-  Link2,
   List,
-  Mail,
-  Star,
-  Timer,
-  Video,
+  Plus,
+  Search,
 } from 'lucide-react'
 import type { LibraryFilter } from '@/lib/types'
-import { visibleLibraryFilterChips } from '@/lib/libraryFilterChips'
 import styles from './FilterBar.module.css'
 
-const CHIP_ICONS: Partial<Record<LibraryFilter, React.ReactNode>> = {
-  unread: <Mail size={14} />,
-  fav: <Star size={14} />,
-  reminders: <Bell size={14} />,
-  link: <Link2 size={14} />,
-  github: <Code2 size={14} />,
-  docs: <BookOpen size={14} />,
-  image: <ImageIcon size={14} />,
-  video: <Video size={14} />,
-  note: <FileText size={14} />,
-  tracker: <Timer size={14} />,
-}
-
 export type LibraryViewMode = 'grid' | 'list'
+
+type MenuOption = { id: LibraryFilter | 'all-time'; label: string }
+
+const STATUS_OPTIONS: MenuOption[] = [
+  { id: 'all', label: 'All' },
+  { id: 'unread', label: 'Unread' },
+  { id: 'fav', label: 'Favorites' },
+  { id: 'reminders', label: 'Reminders' },
+]
+
+const TYPE_OPTIONS: MenuOption[] = [
+  { id: 'all', label: 'All types' },
+  { id: 'link', label: 'Links' },
+  { id: 'note', label: 'Notes' },
+  { id: 'image', label: 'Images' },
+  { id: 'video', label: 'Videos' },
+  { id: 'tracker', label: 'Trackers' },
+  { id: 'github', label: 'GitHub' },
+  { id: 'docs', label: 'Docs' },
+]
+
+const DATE_OPTIONS: MenuOption[] = [
+  { id: 'all-time', label: 'Any time' },
+]
 
 type Props = {
   filter: LibraryFilter
@@ -39,6 +43,80 @@ type Props = {
   viewMode?: LibraryViewMode
   onViewModeChange?: (mode: LibraryViewMode) => void
   showViewToggle?: boolean
+  onAddNew?: () => void
+  searchQuery?: string
+  onSearchQueryChange?: (query: string) => void
+}
+
+function statusLabel(filter: LibraryFilter): string {
+  return STATUS_OPTIONS.find(o => o.id === filter)?.label
+    ?? (TYPE_OPTIONS.some(o => o.id === filter) ? 'All' : 'All')
+}
+
+function typeLabel(filter: LibraryFilter): string {
+  const hit = TYPE_OPTIONS.find(o => o.id === filter && o.id !== 'all')
+  return hit?.label ?? 'Type'
+}
+
+function FilterMenu({
+  label,
+  options,
+  activeId,
+  onPick,
+}: {
+  label: string
+  options: MenuOption[]
+  activeId: string
+  onPick: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (event: MouseEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  return (
+    <div className={styles.menuWrap} ref={ref}>
+      <button
+        type="button"
+        className={styles.menuBtn}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpen(v => !v)}
+      >
+        <span>{label}</span>
+        <ChevronDown size={14} strokeWidth={2} />
+      </button>
+      {open ? (
+        <ul id={menuId} className={styles.menu} role="listbox">
+          {options.map(opt => (
+            <li key={opt.id}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={activeId === opt.id}
+                className={activeId === opt.id ? styles.menuItemActive : styles.menuItem}
+                onClick={() => {
+                  onPick(opt.id)
+                  setOpen(false)
+                }}
+              >
+                {opt.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  )
 }
 
 export default function FilterBar({
@@ -47,27 +125,44 @@ export default function FilterBar({
   viewMode = 'grid',
   onViewModeChange,
   showViewToggle = true,
+  onAddNew,
+  searchQuery = '',
+  onSearchQueryChange,
 }: Props) {
-  const chips = visibleLibraryFilterChips()
+  const isTypeFilter = TYPE_OPTIONS.some(o => o.id === filter && o.id !== 'all')
 
   return (
-    <div className={styles.bar}>
-      <div className={styles.chips} role="tablist" aria-label="Filter saves">
-        {chips.map(chip => (
-          <button
-            key={chip.id}
-            type="button"
-            role="tab"
-            aria-selected={filter === chip.id}
-            className={filter === chip.id ? styles.chipActive : styles.chip}
-            onClick={() => onFilterChange(chip.id)}
-          >
-            {CHIP_ICONS[chip.id] ? (
-              <span className={styles.chipIcon}>{CHIP_ICONS[chip.id]}</span>
-            ) : null}
-            {chip.label}
-          </button>
-        ))}
+    <div className={styles.toolbar}>
+      <div className={styles.search}>
+        <Search size={16} strokeWidth={1.75} aria-hidden className={styles.searchIcon} />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={e => onSearchQueryChange?.(e.target.value)}
+          placeholder="Search notes, links, images, and more…"
+          aria-label="Search library"
+        />
+      </div>
+
+      <div className={styles.filters}>
+        <FilterMenu
+          label={statusLabel(filter)}
+          options={STATUS_OPTIONS}
+          activeId={isTypeFilter ? 'all' : filter}
+          onPick={id => onFilterChange(id as LibraryFilter)}
+        />
+        <FilterMenu
+          label={typeLabel(filter)}
+          options={TYPE_OPTIONS}
+          activeId={isTypeFilter ? filter : 'all'}
+          onPick={id => onFilterChange((id === 'all' ? 'all' : id) as LibraryFilter)}
+        />
+        <FilterMenu
+          label="Date added"
+          options={DATE_OPTIONS}
+          activeId="all-time"
+          onPick={() => {}}
+        />
       </div>
 
       {showViewToggle && onViewModeChange ? (
@@ -77,9 +172,21 @@ export default function FilterBar({
           aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
           onClick={() => onViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
         >
-          {viewMode === 'grid' ? <List size={18} /> : <LayoutGrid size={18} />}
+          {viewMode === 'grid' ? <List size={16} strokeWidth={1.75} /> : <LayoutGrid size={16} strokeWidth={1.75} />}
         </button>
       ) : null}
+
+      <button
+        type="button"
+        className={styles.addBtn}
+        onClick={() => {
+          if (onAddNew) onAddNew()
+          else window.dispatchEvent(new Event('trove:open-quick-save'))
+        }}
+      >
+        <Plus size={16} strokeWidth={2.25} />
+        Add new
+      </button>
     </div>
   )
 }

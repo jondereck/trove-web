@@ -7,6 +7,13 @@ import type { LibraryViewMode } from '@/components/FilterBar'
 import SaveCard from './SaveCard'
 import styles from './SaveGrid.module.css'
 
+type SelectionProps = {
+  selectedIds?: ReadonlySet<string>
+  selectionActive?: boolean
+  onToggleSelect?: (id: string) => void
+  onEnterSelection?: (id: string) => void
+}
+
 type Props = {
   saves: Save[]
   layout?: LibraryViewMode
@@ -17,19 +24,23 @@ type Props = {
   emptyHint?: string
   canEdit?: boolean
   fromFilter?: LibraryFilter
-}
+} & SelectionProps
 
 function CardGrid({
   saves,
   compact = false,
   canEdit = false,
   fromFilter,
+  selectionActive,
+  selectedIds,
+  onToggleSelect,
+  onEnterSelection,
 }: {
   saves: Save[]
   compact?: boolean
   canEdit?: boolean
   fromFilter?: LibraryFilter
-}) {
+} & SelectionProps) {
   return (
     <div className={styles.grid}>
       {saves.map(save => (
@@ -39,6 +50,9 @@ function CardGrid({
           compact={compact}
           canEdit={canEdit}
           fromFilter={fromFilter}
+          selected={selectionActive ? selectedIds?.has(save.id) : undefined}
+          onToggleSelect={onToggleSelect}
+          onEnterSelection={onEnterSelection}
         />
       ))}
     </div>
@@ -55,6 +69,10 @@ export default function SaveGrid({
   emptyHint = 'Save items in Trove mobile, or try the demo on the sign-in page.',
   canEdit = false,
   fromFilter,
+  selectionActive,
+  selectedIds,
+  onToggleSelect,
+  onEnterSelection,
 }: Props) {
   if (saves.length === 0 && !title) {
     return (
@@ -63,6 +81,13 @@ export default function SaveGrid({
         <span>{emptyHint}</span>
       </div>
     )
+  }
+
+  const selection = {
+    selectionActive,
+    selectedIds,
+    onToggleSelect,
+    onEnterSelection,
   }
 
   return (
@@ -94,6 +119,9 @@ export default function SaveGrid({
               layout="list"
               canEdit={canEdit}
               fromFilter={fromFilter}
+              selected={selectionActive ? selectedIds?.has(save.id) : undefined}
+              onToggleSelect={onToggleSelect}
+              onEnterSelection={onEnterSelection}
             />
           ))}
         </div>
@@ -103,6 +131,7 @@ export default function SaveGrid({
           compact={titleTone === 'accent'}
           canEdit={canEdit}
           fromFilter={fromFilter}
+          {...selection}
         />
       )}
     </section>

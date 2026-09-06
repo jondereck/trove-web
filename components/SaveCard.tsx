@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Eye, Heart, ImageIcon, Link2, Play, Timer } from 'lucide-react'
+import { Check, Eye, Heart, ImageIcon, Link2, Play, Timer } from 'lucide-react'
 import MediaLightbox from '@/components/MediaLightbox'
 import DomainBrand from '@/components/DomainBrand'
 import ReminderActiveStatus from '@/components/ReminderActiveStatus'
 import SaveCardSnippet from '@/components/SaveCardSnippet'
+import { useLongPress } from '@/hooks/useLongPress'
 import type { LibraryFilter, Save } from '@/lib/types'
 import {
   brandTileForDomain,
@@ -38,6 +39,10 @@ type Props = {
   canEdit?: boolean
   layout?: 'grid' | 'list'
   fromFilter?: LibraryFilter
+  /** undefined = not in selection mode; true/false = selected state */
+  selected?: boolean
+  onToggleSelect?: (id: string) => void
+  onEnterSelection?: (id: string) => void
 }
 
 function TypeIcon({ type, size = 28 }: { type: Save['type']; size?: number }) {
@@ -124,6 +129,9 @@ export default function SaveCard({
   canEdit = false,
   layout = 'grid',
   fromFilter,
+  selected,
+  onToggleSelect,
+  onEnterSelection,
 }: Props) {
   const router = useRouter()
   const href = detailHrefWithFrom(saveDetailHref(save), fromFilter)
@@ -132,6 +140,12 @@ export default function SaveCard({
   const [lightbox, setLightbox] = useState<{ url: string; kind: 'image' | 'video' } | null>(null)
   const [imgError, setImgError] = useState(false)
   const [imageUrl, setImageUrl] = useState(save.image_url)
+  const inSelectionMode = selected !== undefined
+
+  const longPress = useLongPress({
+    disabled: !canEdit || inSelectionMode || !onEnterSelection,
+    onLongPress: () => onEnterSelection?.(save.id),
+  })
 
   useEffect(() => {
     setIsFav(!!save.is_favorite)
@@ -229,12 +243,33 @@ export default function SaveCard({
     void markViewed()
   }
 
+  const handleCardActivate = (event: React.MouseEvent | React.KeyboardEvent) => {
+    if (longPress.didLongPress()) {
+      event.preventDefault()
+      return
+    }
+    if (inSelectionMode) {
+      event.preventDefault()
+      onToggleSelect?.(save.id)
+      return
+    }
+    handleNavigate()
+  }
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    if (!canEdit || !onEnterSelection) return
+    event.preventDefault()
+    if (inSelectionMode) onToggleSelect?.(save.id)
+    else onEnterSelection(save.id)
+  }
+
   const cardClass = [
     styles.card,
     layout === 'list' ? styles.cardList : '',
     noThumb ? styles.cardNoThumb : '',
     isUnread ? styles.cardUnread : '',
     save.type === 'note' && !isUnread ? styles.cardNote : '',
+    inSelectionMode && selected ? styles.cardSelected : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -308,51 +343,87 @@ export default function SaveCard({
     </div>
   )
 
+  const cardInner = (
+    <>
+      {isUnread ? <span className={styles.unreadStripe} aria-hidden /> : null}
+      {isUnread ? <span className={styles.newBadge}>NEW</span> : null}
+
+      {layout === 'list' ? (
+        <div className={styles.listRow}>
+          {hasThumb ? thumb : (
+            <div className={`${styles.listThumbWrap} ${styles.listThumbFallback}`}>
+              <TypeIcon type={save.type} size={24} />
+            </div>
+          )}
+          {body}
+        </div>
+      ) : (
+        <>
+          {hasThumb ? thumb : null}
+          {body}
+        </>
+      )}
+    </>
+  )
+
   return (
     <article
       className={`${styles.cardWrap} ${compact ? styles.compact : ''} ${layout === 'list' ? styles.listWrap : ''}`}
       style={paperColor ? { ['--card-paper' as string]: paperColor } : undefined}
     >
-      <Link href={href} className={cardClass} onClick={handleNavigate}>
-        {isUnread ? <span className={styles.unreadStripe} aria-hidden /> : null}
-        {isUnread ? <span className={styles.newBadge}>NEW</span> : null}
-
-        {layout === 'list' ? (
-          <div className={styles.listRow}>
-            {hasThumb ? thumb : (
-              <div className={`${styles.listThumbWrap} ${styles.listThumbFallback}`}>
-                <TypeIcon type={save.type} size={24} />
-              </div>
-            )}
-            {body}
-          </div>
-        ) : (
-          <>
-            {hasThumb ? thumb : null}
-            {body}
-          </>
-        )}
-      </Link>
-
-      <div className={styles.actionBtns}>
+      {inSelectionMode ? (
         <button
           type="button"
-          className={styles.actionBtn}
-          aria-label="Quick view"
-          onClick={handleQuickView}
+          className={cardClass}
+          onClick={handleCardActivate}
+          onContextMenu={handleContextMenu}
+          {...longPress.bind}
+          aria-pressed={!!selected}
+          aria-label={selected ? `Deselect ${save.title}` : `Select ${save.title}`}
         >
-          <Eye size={16} strokeWidth={1.75} />
+          {cardInner}
+          <span
+            className={`${styles.selectionOverlay} ${selected ? styles.selectionOverlayActive : ''}`}
+            aria-hidden
+          >
+            <span className={`${styles.checkCircle} ${selected ? styles.checkCircleOn : ''}`}>
+              {selected ? <Check size={13} strokeWidth={3} color="#fff" /> : null}
+            </span>
+          </span>
         </button>
-        <button
-          type="button"
-          className={`${styles.actionBtn} ${isFav ? styles.actionBtnFav : ''}`}
-          aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-          aria-pressed={isFav}
-          onClick={handleFavorite}
+      ) : (
+        <Link
+          href={href}
+          className={cardClass}
+          onClick={handleCardActivate}
+          onContextMenu={handleContextMenu}
+          {...longPress.bind}
         >
-          <Heart size={16} strokeWidth={1.75} fill={isFav ? 'currentColor' : 'none'} />
-        </button>
-      </div>
+          {cardInner}
+        </Link>
+      )}
+
+      {!inSelectionMode ? (
+        <div className={styles.actionBtns}>
+          <button
+            type="button"
+            className={styles.actionBtn}
+            aria-label="Quick view"
+            onClick={handleQuickView}
+          >
+            <Eye size={16} strokeWidth={1.75} />
+          </button>
+          <button
+            type="button"
+            className={`${styles.actionBtn} ${isFav ? styles.actionBtnFav : ''}`}
+            aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+            aria-pressed={isFav}
+            onClick={handleFavorite}
+          >
+            <Heart size={16} strokeWidth={1.75} fill={isFav ? 'currentColor' : 'none'} />
+          </button>
+        </div>
+      ) : null}
 
       <MediaLightbox
         url={lightbox?.url ?? null}

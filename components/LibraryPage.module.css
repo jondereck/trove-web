@@ -6,3 +6,7 @@
 .error {
   color: #b42318;
 }
+
+.selectionPad {
+  padding-bottom: 96px;
+}

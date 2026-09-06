@@ -138,5 +138,12 @@ export function usePaginatedSaves({
     loadMore,
     hasMore: hasMorePages(saves.length, total),
     reload: () => loadInitial(saves.length === 0),
+    removeSaves: (ids: ReadonlySet<string>) => {
+      setSaves(prev => prev.filter(s => !ids.has(s.id)))
+      setTotal(prev => Math.max(0, prev - ids.size))
+    },
+    patchSaves: (ids: ReadonlySet<string>, patch: Partial<Save>) => {
+      setSaves(prev => prev.map(s => (ids.has(s.id) ? { ...s, ...patch } : s)))
+    },
   }
 }

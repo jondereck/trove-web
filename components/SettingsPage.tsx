@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Info, LogOut, Settings2, Shield, User } from 'lucide-react'
 import AppShell from '@/components/AppShell'
 import TroveLoader from '@/components/TroveLoader'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
 import { signOutLocal } from '@/lib/auth/oauth'
 import {
@@ -65,86 +62,143 @@ export default function SettingsPage() {
 
   return (
     <AppShell mode="cloud">
-      <h1 className={`serif ${styles.title}`}>Settings</h1>
-      <p className={styles.subtitle}>Trove Web · browse and Quick Save on this device</p>
+      <div className={styles.page}>
+        <h1 className={`serif ${styles.title}`}>Settings</h1>
+        <p className={styles.subtitle}>Customize your Trove Web experience.</p>
 
-      <Card className={styles.card}>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>Signed in with your Trove Cloud account.</CardDescription>
-        </CardHeader>
-        <CardContent className={styles.row}>
-          <span className={styles.label}>Email</span>
-          <span>{email ?? '—'}</span>
-        </CardContent>
-      </Card>
-
-      <Card className={styles.card}>
-        <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-        </CardHeader>
-        <CardContent className={styles.switchRow}>
-          <div>
-            <p className={styles.switchLabel}>Interaction sounds</p>
-            <p className={styles.switchHint}>Subtle taps on navigation and sign-in when enabled.</p>
-          </div>
-          <Switch
-            checked={sounds}
-            onCheckedChange={value => {
-              setSounds(value)
-              writeSoundsEnabled(value)
-            }}
-          />
-        </CardContent>
-        <CardContent className={styles.switchRow}>
-          <div>
-            <p className={styles.switchLabel}>Browser reminders</p>
-            <p className={styles.switchHint}>
-              {notifyState === 'unsupported'
-                ? 'This browser does not support desktop notifications.'
-                : notifyState === 'granted'
-                  ? 'Reminders from Trove mobile sync here and notify on this device.'
-                  : notifyState === 'denied'
-                    ? 'Notifications are blocked in your browser settings.'
-                    : 'Allow notifications to get save reminders on this computer.'}
-            </p>
-          </div>
-          {notifyState === 'unsupported' ? null : notifyState === 'granted' ? (
-            <span className={styles.enabledBadge}>On</span>
-          ) : (
-            <Button
+        <section className={styles.card}>
+          <header className={styles.cardHead}>
+            <span className={styles.iconWrap} aria-hidden>
+              <User size={18} strokeWidth={1.75} />
+            </span>
+            <div>
+              <h2 className={`serif ${styles.cardTitle}`}>Account</h2>
+              <p className={styles.cardDesc}>Manage your account details</p>
+            </div>
+          </header>
+          <div className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Email</p>
+              <p className={styles.rowHint}>{email ?? '—'}</p>
+            </div>
+            <button
               type="button"
-              variant="outline"
-              disabled={notifyState === 'denied'}
-              onClick={() => {
-                void ensureNotificationPermission().then(granted => {
-                  setNotifyState(notificationPermission())
-                  if (granted) {
-                    rescheduleWebReminders(hydrateSaveReminderStore(loadReminderStore()))
-                  }
-                })
-              }}
+              className={styles.outlineBtn}
+              onClick={() =>
+                window.alert('Change your email in Trove mobile or your Trove Cloud account.')
+              }
             >
-              Enable
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+              Change
+            </button>
+          </div>
+        </section>
 
-      <Card className={styles.card}>
-        <CardHeader>
-          <CardTitle>About</CardTitle>
-          <CardDescription>
-            Trove Web is in active development. Vault and advanced editing arrive in later phases.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+        <section className={styles.card}>
+          <header className={styles.cardHead}>
+            <span className={styles.iconWrap} aria-hidden>
+              <Settings2 size={18} strokeWidth={1.75} />
+            </span>
+            <div>
+              <h2 className={`serif ${styles.cardTitle}`}>Preferences</h2>
+              <p className={styles.cardDesc}>Customize how Trove works for you</p>
+            </div>
+          </header>
 
-      <Separator className={styles.sep} />
+          <div className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Interaction sounds</p>
+              <p className={styles.rowHint}>Subtle taps on navigation and sign-in</p>
+            </div>
+            <label className={styles.switch}>
+              <input
+                type="checkbox"
+                checked={sounds}
+                onChange={e => {
+                  setSounds(e.target.checked)
+                  writeSoundsEnabled(e.target.checked)
+                }}
+                aria-label="Interaction sounds"
+              />
+              <span className={styles.switchTrack} aria-hidden />
+            </label>
+          </div>
 
-      <Button variant="outline" onClick={signOut}>
-        Sign out
-      </Button>
+          <div className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Browser reminders</p>
+              <p className={styles.rowHint}>
+                {notifyState === 'unsupported'
+                  ? 'Not supported in this browser'
+                  : notifyState === 'granted'
+                    ? 'Notifications enabled on this device'
+                    : notifyState === 'denied'
+                      ? 'Blocked in browser settings'
+                      : 'Get save reminders on this computer'}
+              </p>
+            </div>
+            {notifyState === 'unsupported' ? null : notifyState === 'granted' ? (
+              <span className={styles.statusMuted}>On</span>
+            ) : (
+              <button
+                type="button"
+                className={styles.neutralBtn}
+                disabled={notifyState === 'denied'}
+                onClick={() => {
+                  void ensureNotificationPermission().then(granted => {
+                    setNotifyState(notificationPermission())
+                    if (granted) {
+                      rescheduleWebReminders(hydrateSaveReminderStore(loadReminderStore()))
+                    }
+                  })
+                }}
+              >
+                Enable
+              </button>
+            )}
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <header className={styles.cardHead}>
+            <span className={styles.iconWrap} aria-hidden>
+              <Info size={18} strokeWidth={1.75} />
+            </span>
+            <div>
+              <h2 className={`serif ${styles.cardTitle}`}>About</h2>
+              <p className={styles.cardDesc}>App information and updates</p>
+            </div>
+          </header>
+          <div className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Version</p>
+              <p className={styles.rowHint}>Trove Web (Beta)</p>
+            </div>
+            <span className={styles.statusMuted}>In development</span>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <header className={styles.cardHead}>
+            <span className={styles.iconWrap} aria-hidden>
+              <Shield size={18} strokeWidth={1.75} />
+            </span>
+            <div>
+              <h2 className={`serif ${styles.cardTitle}`}>Security</h2>
+              <p className={styles.cardDesc}>Manage your session</p>
+            </div>
+          </header>
+          <div className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Sign out</p>
+              <p className={styles.rowHint}>Sign out of your Trove account on this device</p>
+            </div>
+            <button type="button" className={styles.signOutBtn} onClick={signOut}>
+              <LogOut size={15} strokeWidth={2} aria-hidden />
+              Sign out
+            </button>
+          </div>
+        </section>
+      </div>
     </AppShell>
   )
 }

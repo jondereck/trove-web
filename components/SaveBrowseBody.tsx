@@ -19,6 +19,10 @@ type Props = {
   emptyHint?: string
   canEdit?: boolean
   fromFilter?: LibraryFilter
+  selectionActive?: boolean
+  selectedIds?: ReadonlySet<string>
+  onToggleSelect?: (id: string) => void
+  onEnterSelection?: (id: string) => void
 }
 
 export default function SaveBrowseBody({
@@ -32,9 +36,19 @@ export default function SaveBrowseBody({
   emptyHint,
   canEdit = false,
   fromFilter,
+  selectionActive,
+  selectedIds,
+  onToggleSelect,
+  onEnterSelection,
 }: Props) {
   const { pinned, rest } = partitionPinnedSaves(saves)
   const hasPinned = showPinned && pinned.length > 0
+  const selection = {
+    selectionActive,
+    selectedIds,
+    onToggleSelect,
+    onEnterSelection,
+  }
 
   const sentinelRef = useInfiniteScroll({
     enabled: hasMore,
@@ -52,6 +66,7 @@ export default function SaveBrowseBody({
         emptyHint={emptyHint}
         canEdit={canEdit}
         fromFilter={fromFilter}
+        {...selection}
       />
     )
   }
@@ -66,6 +81,7 @@ export default function SaveBrowseBody({
           titleTone="accent"
           canEdit={canEdit}
           fromFilter={fromFilter}
+          {...selection}
         />
       ) : null}
 
@@ -77,10 +93,17 @@ export default function SaveBrowseBody({
             title="ALL SAVES"
             canEdit={canEdit}
             fromFilter={fromFilter}
+            {...selection}
           />
         ) : null
       ) : (
-        <SaveGrid saves={saves} layout={layout} canEdit={canEdit} fromFilter={fromFilter} />
+        <SaveGrid
+          saves={saves}
+          layout={layout}
+          canEdit={canEdit}
+          fromFilter={fromFilter}
+          {...selection}
+        />
       )}
 
       <div ref={sentinelRef} className={styles.sentinel} aria-hidden />

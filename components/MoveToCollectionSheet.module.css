@@ -1,0 +1,98 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(26, 26, 26, 0.35);
+  display: grid;
+  place-items: end center;
+  padding: 20px;
+}
+
+.sheet {
+  width: min(420px, 100%);
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  background: var(--trove-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--trove-border);
+  padding: 20px;
+}
+
+.sheet h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.hint {
+  margin: 0 0 12px;
+  color: var(--trove-text-sub);
+  font-size: 14px;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.row {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--trove-text);
+  cursor: pointer;
+}
+
+.row:hover {
+  border-color: var(--trove-accent);
+}
+
+.close {
+  margin-top: 14px;
+  width: 100%;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--trove-text);
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--trove-accent);
+}
+
+.primary {
+  margin-top: 14px;
+  width: 100%;
+  border: 1px solid var(--trove-accent);
+  background: var(--trove-accent);
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}

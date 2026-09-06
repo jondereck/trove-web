@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import NotificationsMenu from '@/components/NotificationsMenu'
@@ -15,6 +16,8 @@ type Props = {
   onFilterChange: (filter: LibraryFilter) => void
   viewMode: LibraryViewMode
   onViewModeChange: (mode: LibraryViewMode) => void
+  searchQuery?: string
+  onSearchQueryChange?: (query: string) => void
   showFilters?: boolean
   settingsHref?: string
 }
@@ -26,9 +29,16 @@ export default function LibraryHeader({
   onFilterChange,
   viewMode,
   onViewModeChange,
+  searchQuery,
+  onSearchQueryChange,
   showFilters = true,
   settingsHref = '/settings',
 }: Props) {
+  const [dateLabel, setDateLabel] = useState('')
+  useEffect(() => {
+    setDateLabel(weekdayLabel())
+  }, [])
+
   return (
     <header className={styles.header}>
       <div className={styles.topRow}>
@@ -37,7 +47,7 @@ export default function LibraryHeader({
           <p className={styles.kicker}>
             <span className={styles.kickerCount}>{saveTotal} SAVED</span>
             <span className={styles.kickerSep}> • </span>
-            <span className={styles.kickerDate}>{weekdayLabel()}</span>
+            <span className={styles.kickerDate}>{dateLabel}</span>
           </p>
         </div>
         <div className={styles.actions}>
@@ -54,6 +64,8 @@ export default function LibraryHeader({
           onFilterChange={onFilterChange}
           viewMode={viewMode}
           onViewModeChange={onViewModeChange}
+          searchQuery={searchQuery}
+          onSearchQueryChange={onSearchQueryChange}
         />
       ) : null}
     </header>

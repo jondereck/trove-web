@@ -1,0 +1,44 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: transparent;
+}
+
+.menu {
+  position: absolute;
+  right: 34px;
+  bottom: 96px;
+  min-width: 200px;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 32px rgba(30, 20, 10, 0.14);
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--trove-text);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--trove-bg);
+}
+
+.item[data-destructive='true'] {
+  color: #e53e3e;
+}
