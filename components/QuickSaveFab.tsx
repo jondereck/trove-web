@@ -38,6 +38,7 @@ import type { SessionMode } from '@/lib/sessionMode'
 import type { Collection, SaveType } from '@/lib/types'
 import MoveToCollectionSheet from './MoveToCollectionSheet'
 import SaveToDestination from './SaveToDestination'
+import TroveLoader from './TroveLoader'
 import styles from './QuickSaveFab.module.css'
 
 type Step = 'input' | 'analyzing' | 'preview'
@@ -266,6 +267,7 @@ export default function QuickSaveFab({ mode }: Props) {
     }
 
     setError('')
+    setStatus('Working…')
     setStep('analyzing')
     try {
       const supabase = createClient()
@@ -486,14 +488,15 @@ export default function QuickSaveFab({ mode }: Props) {
                 </button>
               </>
             ) : step === 'analyzing' ? (
-              <div className={styles.analyzing}>
+              <div className={styles.analyzing} role="status" aria-live="polite" aria-busy="true">
                 <div className={styles.analyzingOrb} aria-hidden>
                   <Sparkles size={20} color="#fff" />
                 </div>
                 <h2 id="quick-save-title" className={styles.analyzingTitle}>
                   Analyzing
                 </h2>
-                <p className={styles.status}>{status || 'Working…'}</p>
+                <p className={styles.analyzingStatus}>{status || 'Working…'}</p>
+                <TroveLoader compact />
               </div>
             ) : step === 'preview' && draft ? (
               <>

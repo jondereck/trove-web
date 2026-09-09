@@ -20,6 +20,7 @@ import {
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
 import QuickSaveFab from '@/components/QuickSaveFab'
 import ReminderSync from '@/components/ReminderSync'
+import CloudRealtimeSync from '@/components/CloudRealtimeSync'
 import TroveMark from '@/components/TroveMark'
 import { BRAND } from '@/lib/branding'
 import UserAvatar from '@/components/UserAvatar'
@@ -119,6 +120,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
   return (
     <>
       <ReminderSync mode={mode} />
+      <CloudRealtimeSync mode={mode} />
       <div className={styles.desktopOnly}>
         <div className={styles.shell}>
           <aside className={styles.sidebar}>

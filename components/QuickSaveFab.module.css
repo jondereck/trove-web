@@ -199,18 +199,28 @@
 }
 
 .analyzingOrb {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 999px;
   background: var(--trove-accent);
   display: grid;
   place-items: center;
   margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(192, 97, 60, 0.4);
 }
 
 .analyzingTitle {
   margin: 0 !important;
-  font-size: 20px !important;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 18px !important;
+  font-weight: 400 !important;
+  color: var(--trove-text);
+}
+
+.analyzingStatus {
+  margin: 0;
+  font-size: 13px;
+  color: var(--trove-text-sub);
 }
 
 .heroImage {

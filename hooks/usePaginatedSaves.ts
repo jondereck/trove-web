@@ -7,6 +7,7 @@ import { fetchCloudLibrarySavesPage } from '@/lib/library'
 import { cachePageSnapshot, peekPageCache } from '@/lib/libraryCache'
 import { hasMorePages, paginateFilteredSaves } from '@/lib/pagination'
 import { createClient } from '@/lib/supabase/client'
+import { subscribeCloudDataChanges } from '@/lib/cloudRealtime'
 import type { LibraryFilter, Save, SavesPageResult } from '@/lib/types'
 import type { SessionMode } from '@/lib/sessionMode'
 
@@ -108,6 +109,14 @@ export function usePaginatedSaves({
 
     void loadInitial(!hasCache)
   }, [enabled, filter, collectionId, mode, localSaves, loadInitial])
+
+  useEffect(() => {
+    if (!enabled || mode !== 'cloud') return
+    return subscribeCloudDataChanges(change => {
+      if (change !== 'saves') return
+      void loadInitial(false)
+    })
+  }, [enabled, mode, loadInitial])
 
   const loadMore = useCallback(async () => {
     if (loadingMoreRef.current || !hasMorePages(saves.length, total)) return
