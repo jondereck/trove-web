@@ -27,10 +27,17 @@ import {
   buildQuickSaveCollectionChips,
   WEB_UNSORTED_LABEL,
 } from '@/lib/quickSavePreview'
+import {
+  getRecentCollectionIds,
+  recentFolderSlice,
+  recordCollectionUse,
+} from '@/lib/recentCollections'
 import { saveDetailHref } from '@/lib/saveDetailCore'
 import { playSuccess } from '@/lib/sounds'
 import type { SessionMode } from '@/lib/sessionMode'
 import type { Collection, SaveType } from '@/lib/types'
+import MoveToCollectionSheet from './MoveToCollectionSheet'
+import SaveToDestination from './SaveToDestination'
 import styles from './QuickSaveFab.module.css'
 
 type Step = 'input' | 'analyzing' | 'preview'
@@ -73,6 +80,8 @@ export default function QuickSaveFab({ mode }: Props) {
   const [saving, setSaving] = useState(false)
   const [tagDraft, setTagDraft] = useState('')
   const [showTagInput, setShowTagInput] = useState(false)
+  const [showMoveTo, setShowMoveTo] = useState(false)
+  const [recentIds, setRecentIds] = useState<string[]>([])
 
   useEffect(() => {
     const openFromToolbar = () => setOpen(true)
@@ -107,8 +116,36 @@ export default function QuickSaveFab({ mode }: Props) {
       }),
     [collections, draft?.collection],
   )
-  const picked = collChips.find(c => c.id === selectedCollection)
+  const picked = collChips.find(c => c.id === selectedCollection) ?? collChips[0]
   const saveLabel = picked?.label ? `Save to ${picked.label}` : `Save to ${WEB_UNSORTED_LABEL}`
+
+  const pickedDest = picked
+    ? {
+        id: picked.id,
+        label: picked.label,
+        color: collections.find(c => c.name === picked.id || c.id === picked.collectionId)?.color,
+      }
+    : { id: '', label: WEB_UNSORTED_LABEL }
+
+  const destSubtitle = (() => {
+    if (!picked || picked.id === '') return 'Default destination'
+    if (picked.recommended) return 'Suggested for you'
+    if (picked.isNew) return 'New folder'
+    return 'Collection'
+  })()
+
+  const recentFolders = useMemo(() => {
+    const excludeId = picked?.collectionId
+    return recentFolderSlice(collections, recentIds, excludeId).map(c => ({
+      id: c.id,
+      label: c.name,
+      color: c.color,
+    }))
+  }, [collections, recentIds, picked?.collectionId])
+
+  useEffect(() => {
+    if (open && step === 'preview') setRecentIds(getRecentCollectionIds())
+  }, [open, step])
 
   const clearAttachment = () => {
     setAttachment(current => {
@@ -484,23 +521,19 @@ export default function QuickSaveFab({ mode }: Props) {
                   />
                 </label>
 
-                <p className={styles.sectionLabel}>Save to</p>
-                <div className={styles.chipRow}>
-                  {collChips.map(chip => {
-                    const on = selectedCollection === chip.id
-                    return (
-                      <button
-                        key={chip.id || 'unsorted'}
-                        type="button"
-                        className={on ? styles.chipOn : styles.chip}
-                        onClick={() => setSelectedCollection(chip.id)}
-                      >
-                        {chip.recommended ? <Sparkles size={12} /> : null}
-                        {chip.label}
-                      </button>
-                    )
-                  })}
-                </div>
+                <SaveToDestination
+                  destination={pickedDest}
+                  subtitle={destSubtitle}
+                  fallbackLabel={WEB_UNSORTED_LABEL}
+                  recentFolders={recentFolders}
+                  onOpenPicker={() => setShowMoveTo(true)}
+                  onPickRecent={folder => {
+                    recordCollectionUse(folder.id)
+                    setRecentIds(getRecentCollectionIds())
+                    const col = collections.find(c => c.id === folder.id)
+                    if (col) setSelectedCollection(col.name)
+                  }}
+                />
 
                 <p className={styles.sectionLabel}>Tags</p>
                 <div className={styles.chipRow}>
@@ -714,6 +747,24 @@ export default function QuickSaveFab({ mode }: Props) {
           </div>
         </div>
       ) : null}
+
+      <MoveToCollectionSheet
+        visible={showMoveTo}
+        title="Save to…"
+        showUnsorted
+        onClose={() => setShowMoveTo(false)}
+        onSelect={id => {
+          const col = collections.find(c => c.id === id)
+          if (col) setSelectedCollection(col.name)
+          setRecentIds(getRecentCollectionIds())
+        }}
+        onCreated={col => {
+          setCollections(prev => (prev.some(c => c.id === col.id) ? prev : [...prev, col]))
+          setSelectedCollection(col.name)
+          setRecentIds(getRecentCollectionIds())
+        }}
+        onSelectUnsorted={() => setSelectedCollection('')}
+      />
     </>
   )
 }

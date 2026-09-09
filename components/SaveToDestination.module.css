@@ -1,0 +1,135 @@
+.wrap {
+  margin-bottom: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 8px;
+}
+
+.label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--trove-muted);
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--trove-accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.card:hover {
+  border-color: var(--trove-accent);
+}
+
+.iconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--trove-accent-soft, #fde8d8);
+  color: var(--trove-accent);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--trove-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--trove-muted);
+}
+
+.chevron {
+  color: var(--trove-muted);
+  flex-shrink: 0;
+}
+
+.recentBlock {
+  margin-bottom: 8px;
+}
+
+.recentLabel {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--trove-muted);
+}
+
+.recentRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.recentRow::-webkit-scrollbar {
+  display: none;
+}
+
+.recentChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 200px;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-card);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--trove-text);
+  cursor: pointer;
+}
+
+.recentChip span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recentChip:hover {
+  border-color: var(--trove-accent);
+}
