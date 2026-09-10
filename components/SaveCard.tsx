@@ -37,6 +37,8 @@ type Props = {
   save: Save
   compact?: boolean
   canEdit?: boolean
+  /** When true, card is presentational (no library detail link). Domain brand may still open save.url. */
+  disableLink?: boolean
   layout?: 'grid' | 'list'
   fromFilter?: LibraryFilter
   /** undefined = not in selection mode; true/false = selected state */
@@ -127,6 +129,7 @@ export default function SaveCard({
   save,
   compact = false,
   canEdit = false,
+  disableLink = false,
   layout = 'grid',
   fromFilter,
   selected,
@@ -230,6 +233,7 @@ export default function SaveCard({
       })
       return
     }
+    if (disableLink) return
     router.push(href)
   }
 
@@ -251,6 +255,10 @@ export default function SaveCard({
     if (inSelectionMode) {
       event.preventDefault()
       onToggleSelect?.(save.id)
+      return
+    }
+    if (disableLink) {
+      event.preventDefault()
       return
     }
     handleNavigate()
@@ -391,6 +399,10 @@ export default function SaveCard({
             </span>
           </span>
         </button>
+      ) : disableLink ? (
+        <div className={cardClass}>
+          {cardInner}
+        </div>
       ) : (
         <Link
           href={href}
@@ -403,7 +415,7 @@ export default function SaveCard({
         </Link>
       )}
 
-      {!inSelectionMode ? (
+      {!inSelectionMode && !disableLink ? (
         <div className={styles.actionBtns}>
           <button
             type="button"

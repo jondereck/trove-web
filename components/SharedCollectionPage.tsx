@@ -114,6 +114,7 @@ export default function SharedCollectionPage(props: Props) {
         <SaveGrid
           saves={saves}
           canEdit={false}
+          disableLink
           emptyTitle="No items in this collection yet."
           emptyHint="Check back later, or open Trove on your phone."
         />

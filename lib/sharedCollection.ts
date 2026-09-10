@@ -47,7 +47,10 @@ export async function fetchSharedCollection(
       next: { revalidate: 30 },
     },
   )
-  if (res.status === 404) return null
   if (!res.ok) return null
-  return (await res.json()) as SharedCollectionPayload
+  try {
+    return (await res.json()) as SharedCollectionPayload
+  } catch {
+    return null
+  }
 }
