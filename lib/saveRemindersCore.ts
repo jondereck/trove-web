@@ -552,17 +552,20 @@ export function formatNextRunIn(fireAtIso: string, now = new Date()): string {
   return `Next run in ${days} ${days === 1 ? 'day' : 'days'}`
 }
 
+/** Absolute date + time for reminder lists (esp. Later), e.g. `Sep 12, 2026 • 2:00 pm`. */
+export function formatReminderListWhen(fireAtIso: string): string {
+  const at = new Date(fireAtIso)
+  if (!Number.isFinite(at.getTime())) return ''
+  return `${MONTHS_SHORT[at.getMonth()]} ${at.getDate()}, ${at.getFullYear()} • ${formatReminderClock(at)}`
+}
+
 export function formatUpcomingReminderSubtitle(
   row: Pick<StoredSaveReminder, 'fireAt' | 'repeat'>,
-  now = new Date(),
+  _now = new Date(),
 ): string {
-  const nextRun = formatNextRunIn(row.fireAt, now)
-  if (row.repeat) {
-    const cadence = formatRepeatCadenceLabel(row.repeat)
-    return nextRun ? `${cadence} • ${nextRun}` : cadence
-  }
-  if (nextRun) return nextRun
-  return formatUpcomingWhen(row.fireAt, now)
+  const when = formatReminderListWhen(row.fireAt)
+  const cadence = row.repeat ? formatRepeatCadenceLabel(row.repeat) : 'One-time'
+  return when ? `${when} • ${cadence}` : cadence
 }
 
 export function formatReminderScheduleLabels(
