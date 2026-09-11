@@ -2,7 +2,7 @@
   min-height: 100dvh;
   background: var(--trove-bg);
   color: var(--trove-text);
-  padding: 24px clamp(20px, 4vw, 48px) 64px;
+  padding: 24px clamp(16px, 4vw, 48px) 64px;
   box-sizing: border-box;
 }
 
