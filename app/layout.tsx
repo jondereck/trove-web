@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, Hanken_Grotesk } from 'next/font/google'
 import InteractionSounds from '@/components/InteractionSounds'
-import MobileDesktopGate from '@/components/MobileDesktopGate'
+import ViewportShell from '@/components/ViewportShell'
 import './globals.css'
 import { cn } from '@/lib/utils'
 
@@ -35,8 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={cn(serif.variable, sans.variable)}>
       <body>
         <InteractionSounds />
-        <div className="desktopOnly">{children}</div>
-        <MobileDesktopGate />
+        <ViewportShell>{children}</ViewportShell>
       </body>
     </html>
   )

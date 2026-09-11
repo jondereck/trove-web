@@ -23,6 +23,7 @@ type Props = {
   emptyTitle?: string
   emptyHint?: string
   canEdit?: boolean
+  disableLink?: boolean
   fromFilter?: LibraryFilter
 } & SelectionProps
 
@@ -30,6 +31,7 @@ function CardGrid({
   saves,
   compact = false,
   canEdit = false,
+  disableLink = false,
   fromFilter,
   selectionActive,
   selectedIds,
@@ -39,6 +41,7 @@ function CardGrid({
   saves: Save[]
   compact?: boolean
   canEdit?: boolean
+  disableLink?: boolean
   fromFilter?: LibraryFilter
 } & SelectionProps) {
   return (
@@ -49,6 +52,7 @@ function CardGrid({
           save={save}
           compact={compact}
           canEdit={canEdit}
+          disableLink={disableLink}
           fromFilter={fromFilter}
           selected={selectionActive ? selectedIds?.has(save.id) : undefined}
           onToggleSelect={onToggleSelect}
@@ -68,6 +72,7 @@ export default function SaveGrid({
   emptyTitle = 'No saves in your library yet.',
   emptyHint = 'Save items in Trove mobile, or try the demo on the sign-in page.',
   canEdit = false,
+  disableLink = false,
   fromFilter,
   selectionActive,
   selectedIds,
@@ -118,6 +123,7 @@ export default function SaveGrid({
               save={save}
               layout="list"
               canEdit={canEdit}
+              disableLink={disableLink}
               fromFilter={fromFilter}
               selected={selectionActive ? selectedIds?.has(save.id) : undefined}
               onToggleSelect={onToggleSelect}
@@ -130,6 +136,7 @@ export default function SaveGrid({
           saves={saves}
           compact={titleTone === 'accent'}
           canEdit={canEdit}
+          disableLink={disableLink}
           fromFilter={fromFilter}
           {...selection}
         />
