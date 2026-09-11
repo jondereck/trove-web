@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import SaveGrid from '@/components/SaveGrid'
+import SharedCollectionAttach from '@/components/SharedCollectionAttach'
 import StoreBadgeLinks from '@/components/StoreBadgeLinks'
 import UserAvatar from '@/components/UserAvatar'
 import TroveMark from '@/components/TroveMark'
@@ -67,6 +68,7 @@ export default function SharedCollectionPage(props: Props) {
 
   return (
     <div className={styles.page}>
+      <SharedCollectionAttach token={token} />
       <header className={styles.topBar}>
         <Link href="/" className={styles.brand} aria-label="Trove home">
           <TroveMark size={28} />
