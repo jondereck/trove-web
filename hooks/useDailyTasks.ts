@@ -34,6 +34,7 @@ import {
 import { loadReminderStore, saveReminderStore } from '@/lib/reminderStore'
 import { subscribeUpcomingReminderIndex } from '@/lib/upcomingReminderIndex'
 import { getSessionMode } from '@/lib/sessionMode'
+import { subscribeCloudDataChanges } from '@/lib/cloudRealtime'
 
 export type TodayReminderRow = StoredSaveReminder & { displayTitle: string }
 
@@ -112,11 +113,17 @@ export function useDailyTasks() {
     }
     window.addEventListener('focus', onFocus)
 
+    const unsubRealtime = subscribeCloudDataChanges(change => {
+      if (change !== 'dailyTasks') return
+      void pullCloud(true)
+    })
+
     return () => {
       cancelled = true
       mountedRef.current = false
       unsub()
       unsubReminders()
+      unsubRealtime()
       window.removeEventListener('focus', onFocus)
     }
   }, [refreshReminders, pullCloud])

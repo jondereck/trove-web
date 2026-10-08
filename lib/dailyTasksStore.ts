@@ -99,13 +99,13 @@ export async function syncDailyTasksCloud(
   cloudSyncedOnce = true
   try {
     const { syncDailyTasksWithCloud } = await import('./dailyTasksDb')
+    const beforeFp = dailyTasksFingerprint(local)
     const merged = await syncDailyTasksWithCloud(supabase, userId, local)
-    const changed = merged !== local
     cache = merged
     persistLocal(merged)
     // Only notify when the document actually changed — avoids cascading
-    // setState into remounting subscribers during Strict Mode / HMR.
-    if (changed) {
+    // setState into remounting subscribers during Strict Mode / HMR / Realtime echo.
+    if (dailyTasksFingerprint(merged) !== beforeFp) {
       listeners.forEach(listener => listener(merged))
     }
     return merged
@@ -124,6 +124,20 @@ export async function syncDailyTasksCloudOnce(
 
 export function invalidateDailyTasksCloudSync(): void {
   cloudSyncedOnce = false
+}
+
+/** Fingerprint for skipping no-op realtime echoes of our own upserts. */
+export function dailyTasksFingerprint(state: DailyTasksState): string {
+  return JSON.stringify({
+    enabled: state.enabled,
+    updatedAt: state.updatedAt,
+    summaryEnabled: state.summaryEnabled,
+    summaryHour: state.summaryHour,
+    summaryMinute: state.summaryMinute,
+    tasks: state.tasks,
+    completed: state.completed,
+    obligationDays: state.obligationDays,
+  })
 }
 
 export async function pushDailyTasksCloud(

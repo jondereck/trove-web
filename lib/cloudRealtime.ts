@@ -1,6 +1,6 @@
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 
-export type CloudDataChange = 'saves' | 'collections'
+export type CloudDataChange = 'saves' | 'collections' | 'dailyTasks'
 
 type Listener = (change: CloudDataChange) => void
 
@@ -34,7 +34,7 @@ export function subscribeCloudDataChanges(listener: Listener): () => void {
   }
 }
 
-/** Cross-device sync for Trove Web Library / Collections. */
+/** Cross-device sync for Trove Web Library / Collections / Daily Tasks. */
 export function startCloudRealtime(supabase: SupabaseClient, userId: string): void {
   if (!userId) {
     stopCloudRealtime(supabase)
@@ -55,6 +55,11 @@ export function startCloudRealtime(supabase: SupabaseClient, userId: string): vo
       'postgres_changes',
       { event: '*', schema: 'public', table: 'collections', filter: `user_id=eq.${userId}` },
       () => schedule('collections'),
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'daily_tasks', filter: `user_id=eq.${userId}` },
+      () => schedule('dailyTasks'),
     )
     .subscribe()
 }
