@@ -136,6 +136,37 @@ describe('dailyTasksCloudSync', () => {
     assert.equal(merged.enabled, true)
   })
 
+  it('does not resurrect a completed entry after local uncomplete (stale remote)', () => {
+    const local = base({
+      updatedAt: '2026-10-08T16:00:00.000Z',
+      tasks: [{
+        id: 't1',
+        title: 'Buy milk',
+        hour: null,
+        minute: null,
+        sortOrder: 0,
+        createdAt: '2026-10-08T10:00:00.000Z',
+        updatedAt: '2026-10-08T16:00:00.000Z',
+        scheduledOn: '2026-10-08',
+      }],
+      completed: [],
+      clearedCompletedIds: { t1: '2026-10-08T16:00:00.000Z' },
+    })
+    const remote = base({
+      updatedAt: '2026-10-08T15:00:00.000Z',
+      tasks: [],
+      completed: [{
+        id: 't1',
+        title: 'Buy milk',
+        completedOn: '2026-10-08',
+        completedAt: '2026-10-08T15:00:00.000Z',
+      }],
+    })
+    const merged = mergeDailyTasksState(local, remote)
+    assert.equal(merged.completed.some(c => c.id === 't1'), false)
+    assert.equal(merged.tasks.some(t => t.id === 't1'), true)
+  })
+
   it('does not resurrect a task removed on the other device', () => {
     const desktop = base({
       updatedAt: '2026-10-08T15:00:00.000Z',

@@ -68,6 +68,11 @@ export type DailyTasksState = {
    * Used for multi-device merge so a delete is not resurrected by an older peer.
    */
   removedTaskIds: Record<string, string>
+  /**
+   * Completed-entry ids unchecked on this device → ISO clearedAt.
+   * Stops stale remote `completed` rows from resurrecting after uncomplete.
+   */
+  clearedCompletedIds: Record<string, string>
   /** ISO timestamp for cloud LWW merge (bumped on every local write). */
   updatedAt?: string
 }
@@ -169,6 +174,7 @@ export function emptyDailyTasksState(): DailyTasksState {
     history: {},
     obligationDays: {},
     removedTaskIds: {},
+    clearedCompletedIds: {},
   }
 }
 
@@ -180,6 +186,10 @@ function normalizeRemovedTaskIds(value: unknown): Record<string, string> {
     out[id] = at
   }
   return out
+}
+
+function normalizeClearedCompletedIds(value: unknown): Record<string, string> {
+  return normalizeRemovedTaskIds(value)
 }
 
 function toClockHour(value: unknown): number | null {
@@ -382,6 +392,7 @@ export function normalizeDailyTasksState(value: unknown): DailyTasksState {
   const summaryHour = toClockHour(row.summaryHour)
   const summaryMinute = toClockMinute(row.summaryMinute)
   const removedTaskIds = normalizeRemovedTaskIds(row.removedTaskIds)
+  const clearedCompletedIds = normalizeClearedCompletedIds(row.clearedCompletedIds)
   const openTasks = sortTasks(
     tasks.filter(task => {
       const removedAt = removedTaskIds[task.id]
@@ -389,16 +400,22 @@ export function normalizeDailyTasksState(value: unknown): DailyTasksState {
       return (Date.parse(task.updatedAt) || 0) > (Date.parse(removedAt) || 0)
     }),
   )
+  const filteredCompleted = trimmed.filter(entry => {
+    const clearedAt = clearedCompletedIds[entry.id]
+    if (!clearedAt) return true
+    return (Date.parse(entry.completedAt) || 0) > (Date.parse(clearedAt) || 0)
+  })
   const state: DailyTasksState = {
     enabled: row.enabled === true,
     summaryEnabled: row.summaryEnabled === true,
     summaryHour: summaryHour ?? base.summaryHour,
     summaryMinute: row.summaryMinute == null ? base.summaryMinute : summaryMinute,
     tasks: openTasks,
-    completed: trimmed,
-    history: rebuildHistoryFromCompleted(trimmed),
+    completed: filteredCompleted,
+    history: rebuildHistoryFromCompleted(filteredCompleted),
     obligationDays: normalizeObligationDays(row.obligationDays),
     removedTaskIds,
+    clearedCompletedIds,
     updatedAt: typeof row.updatedAt === 'string' && row.updatedAt ? row.updatedAt : undefined,
   }
   return markObligationDay(state)
@@ -543,6 +560,8 @@ export function completeTask(
       seriesId: task.id,
     }
     if (task.weekdays) entry.weekdays = task.weekdays
+    const clearedCompletedIds = { ...state.clearedCompletedIds }
+    delete clearedCompletedIds[occurrenceId]
     const completed = [entry, ...state.completed].slice(0, MAX_COMPLETED)
     const tasks = state.tasks.map(row =>
       row.id === task.id
@@ -554,6 +573,7 @@ export function completeTask(
       tasks,
       completed,
       history: rebuildHistoryFromCompleted(completed),
+      clearedCompletedIds,
     }, now)
   }
   const entry: CompletedDailyTask = {
@@ -566,12 +586,15 @@ export function completeTask(
     source: 'task',
   }
   if (task.weekdays) entry.weekdays = task.weekdays
+  const clearedCompletedIds = { ...state.clearedCompletedIds }
+  delete clearedCompletedIds[task.id]
   const completed = [entry, ...state.completed].slice(0, MAX_COMPLETED)
   const next: DailyTasksState = {
     ...state,
     tasks: state.tasks.filter(t => t.id !== id),
     completed,
     history: rebuildHistoryFromCompleted(completed),
+    clearedCompletedIds,
   }
   return markObligationDay(next, now)
 }
@@ -636,9 +659,13 @@ export function uncompleteTask(
   if (!entry) return state
   const completed = state.completed.filter(c => c.id !== id)
   const history = rebuildHistoryFromCompleted(completed)
+  const clearedCompletedIds = {
+    ...state.clearedCompletedIds,
+    [entry.id]: now.toISOString(),
+  }
 
   if (entry.source === 'reminder') {
-    return { ...state, completed, history }
+    return { ...state, completed, history, clearedCompletedIds }
   }
 
   if (entry.seriesId) {
@@ -647,11 +674,11 @@ export function uncompleteTask(
         ? { ...task, scheduledOn: entry.completedOn, updatedAt: now.toISOString() }
         : task,
     )
-    return markObligationDay({ ...state, tasks, completed, history }, now)
+    return markObligationDay({ ...state, tasks, completed, history, clearedCompletedIds }, now)
   }
 
   if (state.tasks.some(t => t.id === entry.id)) {
-    return { ...state, completed, history }
+    return { ...state, completed, history, clearedCompletedIds }
   }
 
   const maxOrder = state.tasks.reduce((max, t) => Math.max(max, t.sortOrder), -1)
@@ -673,6 +700,7 @@ export function uncompleteTask(
       tasks: sortTasks([...state.tasks, task]),
       completed,
       history,
+      clearedCompletedIds,
     },
     now,
   )

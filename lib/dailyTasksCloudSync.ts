@@ -34,15 +34,21 @@ export function dailyTasksFingerprint(state: DailyTasksState): string {
     completed: state.completed,
     obligationDays: state.obligationDays,
     removedTaskIds: state.removedTaskIds,
+    clearedCompletedIds: state.clearedCompletedIds,
   })
 }
 
 function mergeCompleted(
   a: CompletedDailyTask[],
   b: CompletedDailyTask[],
+  clearedCompletedIds: Record<string, string>,
 ): CompletedDailyTask[] {
   const byId = new Map<string, CompletedDailyTask>()
   for (const entry of [...a, ...b]) {
+    const clearedAt = clearedCompletedIds[entry.id]
+    if (clearedAt && (Date.parse(clearedAt) || 0) >= (Date.parse(entry.completedAt) || 0)) {
+      continue
+    }
     const prev = byId.get(entry.id)
     if (!prev) {
       byId.set(entry.id, entry)
@@ -115,7 +121,8 @@ export function isShellDailyTasksState(state: DailyTasksState): boolean {
     state.tasks.length === 0 &&
     state.completed.length === 0 &&
     Object.keys(state.obligationDays).length === 0 &&
-    Object.keys(state.removedTaskIds).length === 0
+    Object.keys(state.removedTaskIds).length === 0 &&
+    Object.keys(state.clearedCompletedIds).length === 0
   )
 }
 
@@ -156,10 +163,14 @@ export function mergeDailyTasksState(
     settingsOther = remote
   }
 
-  const completed = mergeCompleted(local.completed, remote.completed)
+  const clearedCompletedIds = mergeRemovedTaskIds(
+    local.clearedCompletedIds,
+    remote.clearedCompletedIds,
+  )
+  const completed = mergeCompleted(local.completed, remote.completed, clearedCompletedIds)
   const removedTaskIds = mergeRemovedTaskIds(local.removedTaskIds, remote.removedTaskIds)
   const tasks = mergeOpenTasks(local.tasks, remote.tasks, completed, removedTaskIds)
-  const updatedAt = new Date(Math.max(localAt, remoteAt, Date.now())).toISOString()
+  const updatedAt = new Date(Math.max(localAt, remoteAt)).toISOString()
 
   return normalizeDailyTasksState({
     ...settingsBase,
@@ -171,6 +182,7 @@ export function mergeDailyTasksState(
     completed,
     obligationDays: mergeObligationDays(local.obligationDays, remote.obligationDays),
     removedTaskIds,
+    clearedCompletedIds,
     updatedAt,
   })
 }

@@ -14,7 +14,7 @@ import {
   type DailyTasksState,
   type NewDailyTaskInput,
 } from '@/lib/dailyTasks'
-import { isMeaningfulDailyTasksState } from '@/lib/dailyTasksCloudSync'
+import { dailyTasksFingerprint, isMeaningfulDailyTasksState } from '@/lib/dailyTasksCloudSync'
 import {
   invalidateDailyTasksCloudSync,
   mutateDailyTasks,
@@ -47,6 +47,8 @@ export function useDailyTasks() {
   const [ready, setReady] = useState(false)
   const [syncStatus, setSyncStatus] = useState<DailyTasksSyncStatus>('idle')
   const mountedRef = useRef(false)
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   const refreshReminders = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -77,9 +79,12 @@ export function useDailyTasks() {
     if (mountedRef.current) setSyncStatus('syncing')
     if (force) invalidateDailyTasksCloudSync()
     try {
+      const before = stateRef.current
       const merged = await syncDailyTasksCloud(supabase, userId, { force })
       if (!mountedRef.current) return
-      setState(merged)
+      if (dailyTasksFingerprint(merged) !== dailyTasksFingerprint(before)) {
+        setState(merged)
+      }
       setSyncStatus(isMeaningfulDailyTasksState(merged) ? 'synced' : 'empty-cloud')
     } catch {
       if (mountedRef.current) setSyncStatus('offline')
