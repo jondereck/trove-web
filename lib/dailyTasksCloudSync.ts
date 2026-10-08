@@ -1,9 +1,13 @@
 // Pure merge helpers for Daily Tasks cloud sync (no native imports).
+// Multi-device: SWR-style — keep local UI, revalidate from cloud, merge by
+// unioning open tasks (by id) instead of whole-document LWW.
 
 import {
   MAX_COMPLETED,
   normalizeDailyTasksState,
+  sortTasks,
   type CompletedDailyTask,
+  type DailyTask,
   type DailyTasksState,
 } from './dailyTasks'
 
@@ -18,6 +22,21 @@ export function stateUpdatedAtMs(state: DailyTasksState): number {
   return Number.isFinite(at) ? at : 0
 }
 
+/** Fingerprint for skipping no-op realtime echoes / redundant upserts. */
+export function dailyTasksFingerprint(state: DailyTasksState): string {
+  return JSON.stringify({
+    enabled: state.enabled,
+    updatedAt: state.updatedAt,
+    summaryEnabled: state.summaryEnabled,
+    summaryHour: state.summaryHour,
+    summaryMinute: state.summaryMinute,
+    tasks: state.tasks,
+    completed: state.completed,
+    obligationDays: state.obligationDays,
+    removedTaskIds: state.removedTaskIds,
+  })
+}
+
 function mergeCompleted(
   a: CompletedDailyTask[],
   b: CompletedDailyTask[],
@@ -29,7 +48,6 @@ function mergeCompleted(
       byId.set(entry.id, entry)
       continue
     }
-    // Keep the richer / newer archive row.
     const prevAt = Date.parse(prev.completedAt) || 0
     const nextAt = Date.parse(entry.completedAt) || 0
     if (nextAt >= prevAt) byId.set(entry.id, entry)
@@ -46,6 +64,48 @@ function mergeObligationDays(
   return { ...a, ...b }
 }
 
+function mergeRemovedTaskIds(
+  a: Record<string, string>,
+  b: Record<string, string>,
+): Record<string, string> {
+  const out: Record<string, string> = { ...a }
+  for (const [id, at] of Object.entries(b)) {
+    const prev = out[id]
+    if (!prev || (Date.parse(at) || 0) >= (Date.parse(prev) || 0)) out[id] = at
+  }
+  return out
+}
+
+function completedBlocksOpenId(completed: CompletedDailyTask[], taskId: string): boolean {
+  return completed.some(entry => entry.id === taskId || entry.seriesId === taskId)
+}
+
+/** Union open tasks by id; per-id LWW on task.updatedAt; respect removes + completed. */
+export function mergeOpenTasks(
+  a: DailyTask[],
+  b: DailyTask[],
+  completed: CompletedDailyTask[],
+  removedTaskIds: Record<string, string>,
+): DailyTask[] {
+  const byId = new Map<string, DailyTask>()
+  for (const task of [...a, ...b]) {
+    if (completedBlocksOpenId(completed, task.id)) continue
+    const removedAt = removedTaskIds[task.id]
+    if (removedAt && (Date.parse(removedAt) || 0) >= (Date.parse(task.updatedAt) || 0)) {
+      continue
+    }
+    const prev = byId.get(task.id)
+    if (!prev) {
+      byId.set(task.id, task)
+      continue
+    }
+    const prevAt = Date.parse(prev.updatedAt) || 0
+    const nextAt = Date.parse(task.updatedAt) || 0
+    if (nextAt >= prevAt) byId.set(task.id, task)
+  }
+  return sortTasks([...byId.values()])
+}
+
 /**
  * Shell = toggle/settings only (no open tasks, archive, or streak days).
  * Turning Daily Tasks “on” in a fresh browser must not wipe phone content.
@@ -54,7 +114,8 @@ export function isShellDailyTasksState(state: DailyTasksState): boolean {
   return (
     state.tasks.length === 0 &&
     state.completed.length === 0 &&
-    Object.keys(state.obligationDays).length === 0
+    Object.keys(state.obligationDays).length === 0 &&
+    Object.keys(state.removedTaskIds).length === 0
   )
 }
 
@@ -64,11 +125,11 @@ export function isMeaningfulDailyTasksState(state: DailyTasksState): boolean {
 }
 
 /**
- * Prefer the newer document for open tasks / toggles, but union completed +
- * obligation days so streak history is never lost across devices.
- *
- * A shell document (enabled-only / empty) never wins over a contentful peer,
- * even if its updatedAt is newer — that was wiping phone tasks after web Turn on.
+ * SWR merge for multi-device:
+ * - Open tasks: union by id (creates on either device survive)
+ * - Completed / obligation days / remove tombstones: union
+ * - Settings: prefer newer document clock; enabled stays on if either side is on
+ * - Shell docs never wipe contentful peers for settings base
  */
 export function mergeDailyTasksState(
   local: DailyTasksState,
@@ -79,27 +140,37 @@ export function mergeDailyTasksState(
   const localShell = isShellDailyTasksState(local)
   const remoteShell = isShellDailyTasksState(remote)
 
-  let newer: DailyTasksState
-  let older: DailyTasksState
+  let settingsBase: DailyTasksState
+  let settingsOther: DailyTasksState
   if (localShell && !remoteShell) {
-    newer = remote
-    older = local
+    settingsBase = remote
+    settingsOther = local
   } else if (remoteShell && !localShell) {
-    newer = local
-    older = remote
+    settingsBase = local
+    settingsOther = remote
+  } else if (remoteAt > localAt) {
+    settingsBase = remote
+    settingsOther = local
   } else {
-    newer = remoteAt > localAt ? remote : local
-    older = newer === remote ? local : remote
+    settingsBase = local
+    settingsOther = remote
   }
 
+  const completed = mergeCompleted(local.completed, remote.completed)
+  const removedTaskIds = mergeRemovedTaskIds(local.removedTaskIds, remote.removedTaskIds)
+  const tasks = mergeOpenTasks(local.tasks, remote.tasks, completed, removedTaskIds)
   const updatedAt = new Date(Math.max(localAt, remoteAt, Date.now())).toISOString()
 
   return normalizeDailyTasksState({
-    ...newer,
-    // Keep enabled if either side turned the feature on.
-    enabled: newer.enabled || older.enabled,
-    completed: mergeCompleted(newer.completed, older.completed),
-    obligationDays: mergeObligationDays(newer.obligationDays, older.obligationDays),
+    ...settingsBase,
+    enabled: settingsBase.enabled || settingsOther.enabled,
+    summaryEnabled: settingsBase.summaryEnabled,
+    summaryHour: settingsBase.summaryHour,
+    summaryMinute: settingsBase.summaryMinute,
+    tasks,
+    completed,
+    obligationDays: mergeObligationDays(local.obligationDays, remote.obligationDays),
+    removedTaskIds,
     updatedAt,
   })
 }

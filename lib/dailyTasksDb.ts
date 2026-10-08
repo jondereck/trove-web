@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
+  dailyTasksFingerprint,
   dailyTasksStateFromCloudRow,
   dailyTasksStateToCloudPayload,
   isMeaningfulDailyTasksState,
@@ -73,7 +74,10 @@ export async function syncDailyTasksWithCloud(
     return local
   }
   const merged = mergeDailyTasksState(local, remote)
-  await upsertCloudDailyTasks(supabase, userId, merged).catch(() => {})
+  // Only push when merge added something vs cloud — avoids ping-pong overwriting peers.
+  if (dailyTasksFingerprint(merged) !== dailyTasksFingerprint(remote)) {
+    await upsertCloudDailyTasks(supabase, userId, merged).catch(() => {})
+  }
   return merged
 }
 

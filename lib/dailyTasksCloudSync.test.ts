@@ -19,7 +19,7 @@ function base(partial: Partial<DailyTasksState> = {}): DailyTasksState {
 }
 
 describe('dailyTasksCloudSync', () => {
-  it('prefers newer open tasks but unions completed + obligation days for streak', () => {
+  it('unions open tasks from both devices and completed + obligation days', () => {
     const local = base({
       updatedAt: '2026-09-21T12:00:00.000Z',
       tasks: [{
@@ -60,8 +60,7 @@ describe('dailyTasksCloudSync', () => {
     })
 
     const merged = mergeDailyTasksState(local, remote)
-    assert.equal(merged.tasks.length, 1)
-    assert.equal(merged.tasks[0]!.id, 't1')
+    assert.deepEqual(merged.tasks.map(t => t.id).sort(), ['t1', 't2'])
     assert.deepEqual(
       merged.completed.map(c => c.id).sort(),
       ['c-local', 'c-remote'],
@@ -71,23 +70,44 @@ describe('dailyTasksCloudSync', () => {
     assert.ok(stateUpdatedAtMs(merged) >= stateUpdatedAtMs(local))
   })
 
-  it('lets meaningful remote win over virgin local browser state', () => {
-    const local = emptyDailyTasksState()
-    const remote = base({
-      updatedAt: '2026-09-20T12:00:00.000Z',
+  it('keeps a desktop-created task when phone local doc clock is newer', () => {
+    const phone = base({
+      updatedAt: '2026-10-08T14:00:00.000Z',
       tasks: [{
-        id: 'phone',
-        title: 'From phone',
-        hour: 8,
-        minute: 0,
+        id: 'phone-only',
+        title: 'Phone task',
+        hour: null,
+        minute: null,
         sortOrder: 0,
-        createdAt: '2026-09-20T08:00:00.000Z',
-        updatedAt: '2026-09-20T08:00:00.000Z',
+        createdAt: '2026-10-08T10:00:00.000Z',
+        updatedAt: '2026-10-08T10:00:00.000Z',
       }],
     })
-    const merged = mergeDailyTasksState(local, remote)
-    assert.equal(merged.tasks[0]?.id, 'phone')
-    assert.equal(merged.enabled, true)
+    const desktop = base({
+      updatedAt: '2026-10-08T13:50:00.000Z',
+      tasks: [
+        {
+          id: 'phone-only',
+          title: 'Phone task',
+          hour: null,
+          minute: null,
+          sortOrder: 0,
+          createdAt: '2026-10-08T10:00:00.000Z',
+          updatedAt: '2026-10-08T10:00:00.000Z',
+        },
+        {
+          id: 'desktop-new',
+          title: 'test',
+          hour: null,
+          minute: null,
+          sortOrder: 1,
+          createdAt: '2026-10-08T13:50:00.000Z',
+          updatedAt: '2026-10-08T13:50:00.000Z',
+        },
+      ],
+    })
+    const merged = mergeDailyTasksState(phone, desktop)
+    assert.deepEqual(merged.tasks.map(t => t.id).sort(), ['desktop-new', 'phone-only'])
   })
 
   it('lets phone tasks win over a newer empty web Turn-on shell', () => {
@@ -112,6 +132,48 @@ describe('dailyTasksCloudSync', () => {
     })
     assert.equal(isMeaningfulDailyTasksState(webShell), false)
     const merged = mergeDailyTasksState(webShell, phone)
+    assert.equal(merged.tasks[0]?.id, 'phone')
+    assert.equal(merged.enabled, true)
+  })
+
+  it('does not resurrect a task removed on the other device', () => {
+    const desktop = base({
+      updatedAt: '2026-10-08T15:00:00.000Z',
+      tasks: [],
+      removedTaskIds: { gone: '2026-10-08T15:00:00.000Z' },
+    })
+    const phone = base({
+      updatedAt: '2026-10-08T14:00:00.000Z',
+      tasks: [{
+        id: 'gone',
+        title: 'Deleted elsewhere',
+        hour: null,
+        minute: null,
+        sortOrder: 0,
+        createdAt: '2026-10-08T10:00:00.000Z',
+        updatedAt: '2026-10-08T10:00:00.000Z',
+      }],
+    })
+    const merged = mergeDailyTasksState(phone, desktop)
+    assert.equal(merged.tasks.length, 0)
+    assert.equal(merged.removedTaskIds.gone, '2026-10-08T15:00:00.000Z')
+  })
+
+  it('lets meaningful remote win over virgin local browser state', () => {
+    const local = emptyDailyTasksState()
+    const remote = base({
+      updatedAt: '2026-09-20T12:00:00.000Z',
+      tasks: [{
+        id: 'phone',
+        title: 'From phone',
+        hour: 8,
+        minute: 0,
+        sortOrder: 0,
+        createdAt: '2026-09-20T08:00:00.000Z',
+        updatedAt: '2026-09-20T08:00:00.000Z',
+      }],
+    })
+    const merged = mergeDailyTasksState(local, remote)
     assert.equal(merged.tasks[0]?.id, 'phone')
     assert.equal(merged.enabled, true)
   })

@@ -63,6 +63,11 @@ export type DailyTasksState = {
    * obligation days with 0 completions break the streak.
    */
   obligationDays: Record<string, true>
+  /**
+   * Task ids removed on this device → ISO removedAt.
+   * Used for multi-device merge so a delete is not resurrected by an older peer.
+   */
+  removedTaskIds: Record<string, string>
   /** ISO timestamp for cloud LWW merge (bumped on every local write). */
   updatedAt?: string
 }
@@ -163,7 +168,18 @@ export function emptyDailyTasksState(): DailyTasksState {
     completed: [],
     history: {},
     obligationDays: {},
+    removedTaskIds: {},
   }
+}
+
+function normalizeRemovedTaskIds(value: unknown): Record<string, string> {
+  if (!value || typeof value !== 'object') return {}
+  const out: Record<string, string> = {}
+  for (const [id, at] of Object.entries(value as Record<string, unknown>)) {
+    if (!id || typeof at !== 'string' || !Number.isFinite(Date.parse(at))) continue
+    out[id] = at
+  }
+  return out
 }
 
 function toClockHour(value: unknown): number | null {
@@ -365,15 +381,24 @@ export function normalizeDailyTasksState(value: unknown): DailyTasksState {
   const trimmed = completed.slice(0, MAX_COMPLETED)
   const summaryHour = toClockHour(row.summaryHour)
   const summaryMinute = toClockMinute(row.summaryMinute)
+  const removedTaskIds = normalizeRemovedTaskIds(row.removedTaskIds)
+  const openTasks = sortTasks(
+    tasks.filter(task => {
+      const removedAt = removedTaskIds[task.id]
+      if (!removedAt) return true
+      return (Date.parse(task.updatedAt) || 0) > (Date.parse(removedAt) || 0)
+    }),
+  )
   const state: DailyTasksState = {
     enabled: row.enabled === true,
     summaryEnabled: row.summaryEnabled === true,
     summaryHour: summaryHour ?? base.summaryHour,
     summaryMinute: row.summaryMinute == null ? base.summaryMinute : summaryMinute,
-    tasks: sortTasks(tasks),
+    tasks: openTasks,
     completed: trimmed,
     history: rebuildHistoryFromCompleted(trimmed),
     obligationDays: normalizeObligationDays(row.obligationDays),
+    removedTaskIds,
     updatedAt: typeof row.updatedAt === 'string' && row.updatedAt ? row.updatedAt : undefined,
   }
   return markObligationDay(state)
@@ -445,8 +470,16 @@ export function updateTask(
   return { ...state, tasks: sortTasks(tasks) }
 }
 
-export function removeTask(state: DailyTasksState, id: string): DailyTasksState {
-  return { ...state, tasks: state.tasks.filter(t => t.id !== id) }
+export function removeTask(
+  state: DailyTasksState,
+  id: string,
+  now: Date = new Date(),
+): DailyTasksState {
+  return {
+    ...state,
+    tasks: state.tasks.filter(t => t.id !== id),
+    removedTaskIds: { ...state.removedTaskIds, [id]: now.toISOString() },
+  }
 }
 
 /** Move a task to a new index in the visible (sorted) list and reflow sortOrder. */

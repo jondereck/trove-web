@@ -6,6 +6,9 @@ import {
   normalizeDailyTasksState,
   type DailyTasksState,
 } from './dailyTasks'
+import { dailyTasksFingerprint } from './dailyTasksCloudSync'
+
+export { dailyTasksFingerprint } from './dailyTasksCloudSync'
 
 export const DAILY_TASKS_STORE_KEY = 'trove.dailyTasks.v1'
 
@@ -124,20 +127,6 @@ export async function syncDailyTasksCloudOnce(
 
 export function invalidateDailyTasksCloudSync(): void {
   cloudSyncedOnce = false
-}
-
-/** Fingerprint for skipping no-op realtime echoes of our own upserts. */
-export function dailyTasksFingerprint(state: DailyTasksState): string {
-  return JSON.stringify({
-    enabled: state.enabled,
-    updatedAt: state.updatedAt,
-    summaryEnabled: state.summaryEnabled,
-    summaryHour: state.summaryHour,
-    summaryMinute: state.summaryMinute,
-    tasks: state.tasks,
-    completed: state.completed,
-    obligationDays: state.obligationDays,
-  })
 }
 
 export async function pushDailyTasksCloud(
