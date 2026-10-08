@@ -41,7 +41,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 **OAuth (Google / Apple):** In Supabase Dashboard → Authentication → URL configuration, add:
 
 - `http://localhost:3000/auth/callback`
-- `https://trove-jdn.vercel.app/auth/callback`
+- `https://web-trove.vercel.app/auth/callback`
 
 Or run (with a [Supabase access token](https://supabase.com/dashboard/account/tokens)):
 

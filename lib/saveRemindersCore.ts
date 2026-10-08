@@ -1,4 +1,5 @@
 import { formatReminderCountdown } from './reminderDateTime'
+import { classifyReminderBucket } from './reminderBuckets'
 import {
   formatRepeatCadenceLabel,
   nextFutureReminderTimes,
@@ -561,11 +562,31 @@ export function formatReminderListWhen(fireAtIso: string): string {
 
 export function formatUpcomingReminderSubtitle(
   row: Pick<StoredSaveReminder, 'fireAt' | 'repeat'>,
-  _now = new Date(),
+  now = new Date(),
 ): string {
+  const cadence = row.repeat ? formatRepeatCadenceLabel(row.repeat) : null
+  const at = new Date(row.fireAt)
+  if (!Number.isFinite(at.getTime())) return cadence ?? ''
+
+  const clock = formatReminderClock(at)
+  const bucket = classifyReminderBucket(row.fireAt, now)
+  const withCadence = (base: string) => (cadence ? `${base} • ${cadence}` : base)
+
+  if (bucket === 'today') {
+    const nextRun = formatNextRunIn(row.fireAt, now)
+    return withCadence(nextRun ? `${nextRun} • ${clock}` : clock)
+  }
+
+  if (bucket === 'tomorrow') {
+    return withCadence(`Tomorrow • ${clock}`)
+  }
+
+  if (bucket === 'thisWeek') {
+    return withCadence(`${WEEKDAYS[at.getDay()]} • ${clock}`)
+  }
+
   const when = formatReminderListWhen(row.fireAt)
-  const cadence = row.repeat ? formatRepeatCadenceLabel(row.repeat) : 'One-time'
-  return when ? `${when} • ${cadence}` : cadence
+  return withCadence(when || clock)
 }
 
 export function formatReminderScheduleLabels(

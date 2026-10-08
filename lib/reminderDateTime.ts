@@ -1,5 +1,6 @@
 export type ReminderPeriod = 'am' | 'pm'
 export type ReminderDateOption = { key: string; label: string; date: Date }
+export type ReminderClock = { hour: number; minute: number }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -7,6 +8,28 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export const REMINDER_HOURS = Array.from({ length: 12 }, (_, index) => index + 1)
 export const REMINDER_MINUTES = Array.from({ length: 60 }, (_, index) => index)
 export const REMINDER_PERIODS: ReminderPeriod[] = ['am', 'pm']
+export const DEFAULT_REMINDER_HOUR = 7
+export const DEFAULT_REMINDER_MINUTE = 0
+
+export function applyReminderClock(date: Date, clock: ReminderClock): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    clock.hour,
+    clock.minute,
+    0,
+    0,
+  )
+}
+
+export function formatReminderClock(at: Date): string {
+  const hours24 = at.getHours()
+  const hour12 = hours24 % 12 || 12
+  const minute = String(at.getMinutes()).padStart(2, '0')
+  const period = hours24 >= 12 ? 'pm' : 'am'
+  return `${hour12}:${minute} ${period}`
+}
 
 export function buildReminderDateOptions(now: Date, count = 365): ReminderDateOption[] {
   return Array.from({ length: count }, (_, index) => {

@@ -8,14 +8,13 @@ export default function ViewportShell({ children }: { children: React.ReactNode 
   const pathname = usePathname() ?? ''
   const allowMobile = isMobileAllowedPath(pathname)
 
-  if (allowMobile) {
-    return <>{children}</>
-  }
-
+  // Keep a stable DOM shape for hydration: always one wrapper + optional gate.
   return (
     <>
-      <div className="desktopOnly">{children}</div>
-      <MobileDesktopGate />
+      <div className={allowMobile ? undefined : 'desktopOnly'} suppressHydrationWarning>
+        {children}
+      </div>
+      {allowMobile ? null : <MobileDesktopGate />}
     </>
   )
 }

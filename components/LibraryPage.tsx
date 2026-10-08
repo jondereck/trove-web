@@ -21,6 +21,7 @@ import DemoBanner from '@/components/DemoBanner'
 import type { LibraryViewMode } from '@/components/FilterBar'
 import LibraryHeader from '@/components/LibraryHeader'
 import MoveToCollectionSheet from '@/components/MoveToCollectionSheet'
+import DailyTasksStrip from '@/components/dailyTasks/DailyTasksStrip'
 import SaveBrowseBody from '@/components/SaveBrowseBody'
 import SelectionActionBar from '@/components/SelectionActionBar'
 import SelectionModeHeader from '@/components/SelectionModeHeader'
@@ -62,7 +63,6 @@ export default function LibraryPage() {
     router.replace('/library')
   }, [router, searchParams])
 
-  const hour = new Date().getHours()
   const urlFilter = parseLibraryFilterParam(searchParams.get('filter'))
   const [filter, setFilter] = useState<LibraryFilter>(urlFilter ?? 'all')
   const [viewMode, setViewMode] = useState<LibraryViewMode>('grid')
@@ -70,6 +70,11 @@ export default function LibraryPage() {
   const debouncedSearch = useDebouncedValue(searchQuery, 250)
   const [searchResults, setSearchResults] = useState<Save[] | null>(null)
   const [searchLoading, setSearchLoading] = useState(false)
+  // Defer clock-based greeting until after mount to avoid SSR/client hour mismatch.
+  const [hour, setHour] = useState(12)
+  useEffect(() => {
+    setHour(new Date().getHours())
+  }, [])
 
   useEffect(() => {
     if (urlFilter) {
@@ -322,21 +327,24 @@ export default function LibraryPage() {
         <div className={selection.active ? styles.selectionPad : undefined}>
           {searchLoading ? <TroveLoader label="Searching…" /> : null}
           {!searchLoading ? (
-            <SaveBrowseBody
-              saves={displaySaves}
-              layout={viewMode}
-              loadingMore={!isSearching && loadingMore}
-              hasMore={!isSearching && hasMore}
-              onLoadMore={loadMore}
-              emptyTitle={emptyCopy.title}
-              emptyHint={emptyCopy.hint}
-              canEdit={canEdit}
-              fromFilter={filter}
-              selectionActive={selection.active}
-              selectedIds={selection.selectedIds}
-              onToggleSelect={selection.toggle}
-              onEnterSelection={canEdit ? selection.enter : undefined}
-            />
+            <>
+              {!selection.active && !isSearching ? <DailyTasksStrip /> : null}
+              <SaveBrowseBody
+                saves={displaySaves}
+                layout={viewMode}
+                loadingMore={!isSearching && loadingMore}
+                hasMore={!isSearching && hasMore}
+                onLoadMore={loadMore}
+                emptyTitle={emptyCopy.title}
+                emptyHint={emptyCopy.hint}
+                canEdit={canEdit}
+                fromFilter={filter}
+                selectionActive={selection.active}
+                selectedIds={selection.selectedIds}
+                onToggleSelect={selection.toggle}
+                onEnterSelection={canEdit ? selection.enter : undefined}
+              />
+            </>
           ) : null}
         </div>
       ) : null}

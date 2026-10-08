@@ -6,11 +6,11 @@
 # Usage:
 #   $env:SUPABASE_ACCESS_TOKEN = "sbp_..."
 #   .\scripts\configure-supabase-oauth.ps1
-#   .\scripts\configure-supabase-oauth.ps1 -SiteUrl "https://trove-jdn.vercel.app"
+#   .\scripts\configure-supabase-oauth.ps1 -SiteUrl "https://web-trove.vercel.app"
 
 param(
   [string]$ProjectRef = "xullagcvhnenwpschjig",
-  [string]$SiteUrl = "https://trove-jdn.vercel.app"
+  [string]$SiteUrl = "https://web-trove.vercel.app"
 )
 
 $ErrorActionPreference = "Stop"
