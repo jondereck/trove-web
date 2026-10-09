@@ -142,10 +142,15 @@ export default function DailyTasksStrip({ hidden }: Props) {
         ) : (
           <ul className={styles.list}>
             {items.map(item => (
-              <li key={item.id}>
+              <li key={item.id} className={styles.row}>
                 <button
                   type="button"
-                  className={styles.row}
+                  className={styles.checkBtn}
+                  aria-label={
+                    item.kind === 'task'
+                      ? `Complete ${item.title}`
+                      : `Complete reminder ${item.title}`
+                  }
                   onClick={() => {
                     if (item.kind === 'task') void complete(item.id)
                     else void completeReminder(item.row)
@@ -154,14 +159,31 @@ export default function DailyTasksStrip({ hidden }: Props) {
                   <span className={styles.check} aria-hidden>
                     <Circle size={14} strokeWidth={1.75} />
                   </span>
-                  <span className={styles.rowText}>
-                    <p className={styles.rowTitle}>{item.title}</p>
-                    <p className={styles.rowSub}>{item.sub}</p>
-                  </span>
-                  {item.kind === 'reminder' ? (
-                    <Bell className={styles.bell} size={14} strokeWidth={1.75} aria-hidden />
-                  ) : null}
                 </button>
+                {item.kind === 'reminder' ? (
+                  <Link
+                    href={`/library/${item.row.saveId}`}
+                    className={styles.rowMain}
+                    aria-label={`Open save ${item.title}`}
+                  >
+                    <span className={styles.rowText}>
+                      <p className={styles.rowTitle}>{item.title}</p>
+                      <p className={styles.rowSub}>{item.sub}</p>
+                    </span>
+                    <Bell className={styles.bell} size={14} strokeWidth={1.75} aria-hidden />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.rowMain}
+                    onClick={() => void complete(item.id)}
+                  >
+                    <span className={styles.rowText}>
+                      <p className={styles.rowTitle}>{item.title}</p>
+                      <p className={styles.rowSub}>{item.sub}</p>
+                    </span>
+                  </button>
+                )}
               </li>
             ))}
           </ul>

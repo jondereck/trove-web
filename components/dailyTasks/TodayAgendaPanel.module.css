@@ -177,6 +177,16 @@
   border-radius: 12px;
 }
 
+.lineLink {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.lineLink:hover {
+  border-color: color-mix(in srgb, var(--trove-accent) 40%, var(--trove-border));
+}
+
 .panel .line {
   background: var(--trove-cream);
 }

@@ -263,6 +263,28 @@
 .rowBody {
   flex: 1;
   min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+}
+
+.rowBody:hover .rowTitle {
+  color: var(--trove-accent);
+}
+
+.reminderBell {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--trove-accent);
+  text-decoration: none;
+}
+
+.reminderBell:hover {
+  background: color-mix(in srgb, var(--trove-accent) 12%, transparent);
 }
 
 .rowTitle {

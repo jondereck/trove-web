@@ -272,14 +272,25 @@ export default function TodayPage() {
                         >
                           <Circle size={16} strokeWidth={1.75} />
                         </button>
-                        <div className={styles.rowBody}>
+                        <Link
+                          href={`/library/${row.saveId}`}
+                          className={styles.rowBody}
+                          aria-label={`Open save ${row.displayTitle}`}
+                        >
                           <p className={styles.rowTitle}>{row.displayTitle}</p>
                           <p className={styles.rowSub}>
                             {formatUpcomingReminderSubtitle(row) ||
                               formatReminderClock(new Date(row.fireAt))}
                           </p>
-                        </div>
-                        <Bell size={14} strokeWidth={1.75} aria-hidden />
+                        </Link>
+                        <Link
+                          href={`/library/${row.saveId}`}
+                          className={styles.reminderBell}
+                          aria-label={`Open save ${row.displayTitle}`}
+                          title="Open save"
+                        >
+                          <Bell size={14} strokeWidth={1.75} aria-hidden />
+                        </Link>
                       </li>
                     ))}
                   </ul>

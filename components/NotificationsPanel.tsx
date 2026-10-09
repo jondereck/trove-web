@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Bell,
   CheckCircle2,
@@ -103,15 +103,22 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     setDoneOccurrences(nextDone)
   }, [])
 
-  const load = useCallback(() => {
+  const loadedWhileOpenRef = useRef(false)
+  const loadGenRef = useRef(0)
+
+  const load = useCallback((opts?: { silent?: boolean }) => {
+    const gen = ++loadGenRef.current
     let active = true
-    setLoading(true)
+    // Only the first open shows the spinner — background sync must not unmount
+    // the list (that resets scroll and feels like a constant refresh).
+    const silent = opts?.silent === true || loadedWhileOpenRef.current
+    if (!silent) setLoading(true)
 
     const run = async () => {
       const supabase = mode === 'cloud' ? createClient() : null
       if (supabase) {
         const { data: { user } } = await supabase.auth.getUser()
-        if (active) setUserId(user?.id ?? null)
+        if (active && gen === loadGenRef.current) setUserId(user?.id ?? null)
       }
 
       const [nextEntries, reminders, tasks] = await Promise.all([
@@ -120,12 +127,13 @@ export default function NotificationsPanel({ open, onClose }: Props) {
         readDailyTasks(),
       ])
 
-      if (!active) return
+      if (!active || gen !== loadGenRef.current) return
       const nextDone = completedOnDay(tasks, new Date())
         .filter(entry => entry.source === 'reminder' && entry.reminderId)
         .map(entry => ({ id: entry.reminderId!, fireAt: entry.fireAt ?? null }))
       setEntries(nextEntries)
       applyReminderLists(reminders.upcoming, reminders.history, nextDone)
+      loadedWhileOpenRef.current = true
       setLoading(false)
 
       if (nextEntries.some(entry => !entry.read)) {
@@ -140,17 +148,25 @@ export default function NotificationsPanel({ open, onClose }: Props) {
   }, [mode, applyReminderLists])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      loadedWhileOpenRef.current = false
+      return
+    }
     const stopLoad = load()
-    // Keep Reminders → Today in sync when Daily ticks a reminder.
-    const unsubTasks = subscribeDailyTasks(() => {
-      void load()
-    })
-    const unsubReminders = subscribeUpcomingReminderIndex(() => {
-      void load()
-    })
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    const scheduleSilentReload = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null
+        void load({ silent: true })
+      }, 200)
+    }
+    // Keep Reminders in sync when Daily ticks — silent so scroll stays put.
+    const unsubTasks = subscribeDailyTasks(scheduleSilentReload)
+    const unsubReminders = subscribeUpcomingReminderIndex(scheduleSilentReload)
     return () => {
       stopLoad?.()
+      if (debounceTimer) clearTimeout(debounceTimer)
       unsubTasks()
       unsubReminders()
     }

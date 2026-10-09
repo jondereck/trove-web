@@ -27,7 +27,15 @@ export function loadReminderStore(): SaveReminderStore {
 
 export function saveReminderStore(store: SaveReminderStore): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORE_KEY, JSON.stringify(store))
+  const serialized = JSON.stringify(store)
+  // Skip invalidate/reschedule when hydrate-only reloads write the same payload —
+  // otherwise NotificationsPanel load → save → invalidate → load loops forever.
+  try {
+    if (localStorage.getItem(STORE_KEY) === serialized) return
+  } catch {
+    // fall through and try to write
+  }
+  localStorage.setItem(STORE_KEY, serialized)
   invalidateUpcomingReminderIndex()
   rescheduleWebReminders(hydrateSaveReminderStore(store))
 }

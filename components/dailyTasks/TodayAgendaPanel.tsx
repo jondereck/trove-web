@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Bell, CheckCircle2, ChevronLeft, ChevronRight, Circle } from 'lucide-react'
 import {
@@ -52,13 +53,19 @@ export default function TodayAgendaPanel({
   const [selected, setSelected] = useState(() => startOfDay(new Date()))
   const [upcoming, setUpcoming] = useState<StoredSaveReminder[]>([])
 
+  // Only re-focus when the parent asks (open / deep-link). Do NOT tie this to
+  // state.updatedAt — cloud sync / task writes were snapping the calendar back
+  // to today and hiding custom-dated tasks.
   useEffect(() => {
     const focus = focusDateKey ? parseDateKey(focusDateKey) : startOfDay(new Date())
     setSelected(startOfDay(focus))
     setMonth(new Date(focus.getFullYear(), focus.getMonth(), 1))
+  }, [focusDateKey])
+
+  useEffect(() => {
     const store = hydrateSaveReminderStore(loadReminderStore())
     setUpcoming(Object.values(store.upcoming).filter(row => !row.deletedAt && !row.firedAt))
-  }, [focusDateKey, state.updatedAt])
+  }, [state.updatedAt])
 
   const year = month.getFullYear()
   const monthIndex = month.getMonth()
@@ -165,12 +172,18 @@ export default function TodayAgendaPanel({
       ) : (
         <ul className={styles.lines}>
           {selectedReminders.map(row => (
-            <li key={`rem-${row.id}`} className={styles.line}>
-              <Bell className={styles.lineIcon} size={18} strokeWidth={1.75} />
-              <div className={styles.lineBody}>
-                <p className={styles.lineTitle}>{reminderDisplayTitle(row)}</p>
-                <p className={styles.lineSub}>{formatReminderClock(new Date(row.fireAt))}</p>
-              </div>
+            <li key={`rem-${row.id}`}>
+              <Link
+                href={`/library/${row.saveId}`}
+                className={`${styles.line} ${styles.lineLink}`}
+                aria-label={`Open save ${reminderDisplayTitle(row)}`}
+              >
+                <Bell className={styles.lineIcon} size={18} strokeWidth={1.75} />
+                <div className={styles.lineBody}>
+                  <p className={styles.lineTitle}>{reminderDisplayTitle(row)}</p>
+                  <p className={styles.lineSub}>{formatReminderClock(new Date(row.fireAt))}</p>
+                </div>
+              </Link>
             </li>
           ))}
           {selectedCompleted.map(entry => (
