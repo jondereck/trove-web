@@ -27,6 +27,7 @@ import {
 import { overallStreak } from '@/lib/dailyTasksStats'
 import { DAILY_STATUS_COPY, resolveDailyStatus } from '@/lib/dailyStatus'
 import { formatReminderClock } from '@/lib/reminderDateTime'
+import { formatUpcomingReminderSubtitle } from '@/lib/saveRemindersCore'
 import { getSessionMode } from '@/lib/sessionMode'
 import { useDailyTasks } from '@/hooks/useDailyTasks'
 import AddDailyTaskModal from './AddDailyTaskModal'
@@ -102,6 +103,7 @@ export default function TodayPage() {
     dayReminders.length === 0 &&
     doneToday.length > 0
 
+  const todayKeyStr = dateKey(now)
   const tomorrowKey = dateKey(addDays(now, 1))
 
   return (
@@ -256,28 +258,6 @@ export default function TodayPage() {
                 </div>
               ) : null}
 
-              {late.length > 0 ? (
-                <>
-                  <p className={styles.sectionLabel}>Unfinished</p>
-                  {late.map(task => (
-                    <div key={task.id} className={styles.overdue}>
-                      <p className={styles.overdueTitle}>{task.title}</p>
-                      <div className={styles.overdueActions}>
-                        <button type="button" onClick={() => void reschedule(task.id, tomorrowKey)}>
-                          Move to tomorrow
-                        </button>
-                        <button type="button" onClick={() => setRescheduleTask(task)}>
-                          Choose date
-                        </button>
-                        <button type="button" onClick={() => void complete(task.id)}>
-                          Complete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : null}
-
               {dayReminders.length > 0 ? (
                 <>
                   <p className={styles.sectionLabel}>Reminders today</p>
@@ -295,13 +275,39 @@ export default function TodayPage() {
                         <div className={styles.rowBody}>
                           <p className={styles.rowTitle}>{row.displayTitle}</p>
                           <p className={styles.rowSub}>
-                            {formatReminderClock(new Date(row.fireAt))}
+                            {formatUpcomingReminderSubtitle(row) ||
+                              formatReminderClock(new Date(row.fireAt))}
                           </p>
                         </div>
                         <Bell size={14} strokeWidth={1.75} aria-hidden />
                       </li>
                     ))}
                   </ul>
+                </>
+              ) : null}
+
+              {late.length > 0 ? (
+                <>
+                  <p className={styles.sectionLabel}>Unfinished</p>
+                  {late.map(task => (
+                    <div key={task.id} className={styles.overdue}>
+                      <p className={styles.overdueTitle}>{task.title}</p>
+                      <div className={styles.overdueActions}>
+                        <button type="button" onClick={() => void reschedule(task.id, todayKeyStr)}>
+                          Move to today
+                        </button>
+                        <button type="button" onClick={() => void reschedule(task.id, tomorrowKey)}>
+                          Move to tomorrow
+                        </button>
+                        <button type="button" onClick={() => setRescheduleTask(task)}>
+                          Choose date
+                        </button>
+                        <button type="button" onClick={() => void complete(task.id)}>
+                          Complete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </>
               ) : null}
 

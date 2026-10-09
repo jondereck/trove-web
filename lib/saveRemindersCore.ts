@@ -299,29 +299,17 @@ export function hydrateSaveReminderStore(store: SaveReminderStore, now = Date.no
   Object.values(store.upcoming).forEach(row => {
     const normalized = asReminder(row) ?? row
     if (normalized.deletedAt) return
-    if (!normalized.firedAt && reminderIsInTheFuture(normalized.fireAt, now)) {
+    const alreadyRecorded = historyKeys.has(reminderHistoryKey({
+      ...normalized,
+      firedAt: normalized.firedAt ?? normalized.fireAt,
+    }))
+    // A notification firing is not completion. Keep the occurrence upcoming
+    // until the user ticks it off in Daily, even after the fire time.
+    if (!normalized.firedAt && !alreadyRecorded) {
       upcoming[normalized.id] = { ...normalized, firedAt: null }
       return
     }
-    if (normalized.repeat) {
-      const times = nextFutureReminderTimes({
-        eventAt: new Date(normalized.eventAt),
-        leadMinutes: normalized.leadMinutes,
-        repeat: normalized.repeat,
-        now: new Date(now),
-      })
-      if (times) {
-        upcoming[normalized.id] = {
-          ...normalized,
-          eventAt: times.eventAt.toISOString(),
-          fireAt: times.fireAt.toISOString(),
-          firedAt: null,
-        }
-        pushHistory(history, historyKeys, normalized, historyClearedAt)
-        return
-      }
-    }
-    pushHistory(history, historyKeys, normalized, historyClearedAt)
+    if (!alreadyRecorded) pushHistory(history, historyKeys, normalized, historyClearedAt)
   })
   history.sort((a, b) => (b.firedAt ?? b.fireAt).localeCompare(a.firedAt ?? a.fireAt))
   return {
@@ -329,6 +317,58 @@ export function hydrateSaveReminderStore(store: SaveReminderStore, now = Date.no
     history: dedupeReminderHistory(history).slice(0, MAX_SAVE_REMINDER_HISTORY),
     historyClearedAt,
   }
+}
+
+function startOfNextLocalDay(from: Date): Date {
+  return new Date(from.getFullYear(), from.getMonth(), from.getDate() + 1)
+}
+
+/**
+ * Daily tick finishes this occurrence for the rest of the local day.
+ * A repeat's next fire is the first one after midnight, so it leaves Reminders → Today.
+ */
+export function markReminderDoneForTodayInStore(
+  store: SaveReminderStore,
+  reminderId: string,
+  now = Date.now(),
+): SaveReminderStore {
+  const row = store.upcoming[reminderId]
+  if (!row) return hydrateSaveReminderStore(store, now)
+  const upcoming = { ...store.upcoming }
+  delete upcoming[reminderId]
+  const completedAt = new Date(now).toISOString()
+  if (row.repeat) {
+    const endOfToday = startOfNextLocalDay(new Date(now)).getTime() - 1
+    let times = nextFutureReminderTimes({
+      eventAt: new Date(row.eventAt),
+      leadMinutes: row.leadMinutes,
+      repeat: row.repeat,
+      now: new Date(endOfToday),
+    })
+    if (!times || times.fireAt.getTime() <= endOfToday) {
+      times = nextFutureReminderTimes({
+        eventAt: new Date(row.eventAt),
+        leadMinutes: row.leadMinutes,
+        repeat: row.repeat,
+        now: new Date(now),
+      })
+    }
+    if (times) {
+      upcoming[row.id] = {
+        ...row,
+        eventAt: times.eventAt.toISOString(),
+        fireAt: times.fireAt.toISOString(),
+        firedAt: null,
+        updatedAt: completedAt,
+      }
+    } else {
+      upcoming[row.id] = { ...row, firedAt: null, updatedAt: completedAt }
+    }
+  }
+  return hydrateSaveReminderStore(withHistoryMeta(store, {
+    upcoming,
+    history: [{ ...row, firedAt: row.fireAt, updatedAt: completedAt }, ...store.history],
+  }), now)
 }
 
 export function clearReminderHistoryInStore(

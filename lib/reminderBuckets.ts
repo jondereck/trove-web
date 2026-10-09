@@ -47,6 +47,38 @@ export function classifyReminderBucket(
   return 'later'
 }
 
+/**
+ * Hide the occurrence that was ticked in Daily today.
+ * Recurring next fires on a *later* day stay (date moves). Same-day rows
+ * leave Today even when fireAt strings differ (history vs scheduled ISO).
+ */
+export function omitRemindersDoneToday<T extends { id: string; fireAt: string }>(
+  rows: readonly T[],
+  done:
+    | ReadonlySet<string>
+    | ReadonlyMap<string, string>
+    | readonly { id: string; fireAt?: string | null }[],
+  now: Date = new Date(),
+): T[] {
+  const doneFireById = new Map<string, string | null>()
+  if (done instanceof Map) {
+    for (const [id, fireAt] of done) doneFireById.set(id, fireAt)
+  } else if (done instanceof Set) {
+    for (const id of done) doneFireById.set(id, null)
+  } else {
+    for (const entry of done) {
+      if (!entry.id) continue
+      doneFireById.set(entry.id, entry.fireAt ?? null)
+    }
+  }
+  if (doneFireById.size === 0) return [...rows]
+  return rows.filter(row => {
+    if (!doneFireById.has(row.id)) return true
+    // Still in Today → gone after Daily tick. Later buckets keep the series.
+    return classifyReminderBucket(row.fireAt, now) !== 'today'
+  })
+}
+
 /** Group upcoming reminders into Today / Tomorrow / This week / Later. Empty buckets omitted. */
 export function groupUpcomingReminders<T extends { fireAt: string }>(
   rows: readonly T[],

@@ -17,7 +17,9 @@ export default function ReminderSync({ mode }: Props) {
   useEffect(() => {
     if (mode === 'cloud') {
       const supabase = createClient()
-      void ensureRemindersSynced(supabase)
+      void ensureRemindersSynced(supabase).then(() => {
+        invalidateUpcomingReminderIndex()
+      })
       return () => {
         resetReminderSync()
       }

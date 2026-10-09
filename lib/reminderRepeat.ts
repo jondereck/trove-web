@@ -123,6 +123,50 @@ export function nextReminderOccurrence(from: Date, rule: ReminderRepeatRule): Da
   return next
 }
 
+/** Inverse of `nextReminderOccurrence` — used when cloud advanced fireAt past today. */
+export function previousReminderOccurrence(from: Date, rule: ReminderRepeatRule): Date {
+  const interval = clampReminderInterval(rule.interval)
+  const hours = from.getHours()
+  const minutes = from.getMinutes()
+  if (rule.frequency === 'daily') {
+    const prev = new Date(from)
+    prev.setDate(prev.getDate() - interval)
+    return prev
+  }
+  if (rule.frequency === 'weekly') {
+    const days = normalizeWeekdays(rule.weekdays, [from.getDay()])
+    for (let offset = 1; offset <= 14; offset += 1) {
+      const prev = new Date(from)
+      prev.setDate(from.getDate() - offset)
+      prev.setHours(hours, minutes, 0, 0)
+      if (!days.includes(prev.getDay())) continue
+      if (prev.getDay() > from.getDay() || prev.getDay() === from.getDay()) {
+        prev.setDate(prev.getDate() - 7 * (interval - 1))
+      }
+      return prev
+    }
+  }
+  if (rule.frequency === 'yearly') {
+    const month = rule.month ?? from.getMonth()
+    const monthDay = rule.monthDay ?? from.getDate()
+    const prev = new Date(from.getFullYear() - interval, month, 1, hours, minutes, 0, 0)
+    prev.setDate(Math.min(monthDay, daysInMonth(prev.getFullYear(), month)))
+    if (prev.getTime() >= from.getTime()) {
+      prev.setFullYear(prev.getFullYear() - interval)
+      prev.setDate(Math.min(monthDay, daysInMonth(prev.getFullYear(), month)))
+    }
+    return prev
+  }
+  const monthDay = rule.monthDay ?? from.getDate()
+  const prev = new Date(from.getFullYear(), from.getMonth() - interval, 1, hours, minutes, 0, 0)
+  prev.setDate(Math.min(monthDay, daysInMonth(prev.getFullYear(), prev.getMonth())))
+  if (prev.getTime() >= from.getTime()) {
+    prev.setMonth(prev.getMonth() - interval, 1)
+    prev.setDate(Math.min(monthDay, daysInMonth(prev.getFullYear(), prev.getMonth())))
+  }
+  return prev
+}
+
 export function nextFutureReminderTimes(input: {
   eventAt: Date
   leadMinutes: number

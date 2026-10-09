@@ -88,19 +88,20 @@ export default function DailyTasksStrip({ hidden }: Props) {
     | { kind: 'task'; id: string; title: string; sub: string }
     | { kind: 'reminder'; id: string; title: string; sub: string; row: (typeof dayReminders)[0] }
 
+  // Reminders always lead the strip (match mobile Today).
   const items: StripItem[] = [
-    ...openTasks.map(task => ({
-      kind: 'task' as const,
-      id: task.id,
-      title: task.title,
-      sub: formatTaskSubtitle(task),
-    })),
     ...dayReminders.map(row => ({
       kind: 'reminder' as const,
       id: `rem:${row.id}`,
       title: row.displayTitle,
       sub: formatReminderClock(new Date(row.fireAt)),
       row,
+    })),
+    ...openTasks.map(task => ({
+      kind: 'task' as const,
+      id: task.id,
+      title: task.title,
+      sub: formatTaskSubtitle(task),
     })),
   ].slice(0, STRIP_LIMIT)
 

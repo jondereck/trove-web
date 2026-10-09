@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   addTask,
+  completedOnDay,
   completeReminderTask,
   completeTask,
   emptyDailyTasksState,
@@ -24,17 +25,22 @@ import {
   syncDailyTasksCloud,
   writeDailyTasks,
 } from '@/lib/dailyTasksStore'
-import { remindersDueToday } from '@/lib/dailyTasksReminders'
+import { remindersForTodayList } from '@/lib/dailyTasksReminders'
 import {
   hydrateSaveReminderStore,
+  markReminderDoneForTodayInStore,
   markReminderFiredInStore,
   reminderDisplayTitle,
   type StoredSaveReminder,
 } from '@/lib/saveRemindersCore'
 import { loadReminderStore, saveReminderStore } from '@/lib/reminderStore'
-import { subscribeUpcomingReminderIndex } from '@/lib/upcomingReminderIndex'
+import {
+  invalidateUpcomingReminderIndex,
+  subscribeUpcomingReminderIndex,
+} from '@/lib/upcomingReminderIndex'
 import { getSessionMode } from '@/lib/sessionMode'
 import { subscribeCloudDataChanges } from '@/lib/cloudRealtime'
+import { ensureRemindersSynced } from '@/lib/reminderSession'
 
 export type TodayReminderRow = StoredSaveReminder & { displayTitle: string }
 
@@ -53,13 +59,26 @@ export function useDailyTasks() {
   const refreshReminders = useCallback(() => {
     if (typeof window === 'undefined') return
     const store = hydrateSaveReminderStore(loadReminderStore())
-    const rows = remindersDueToday(Object.values(store.upcoming))
+    // Match mobile Today: active/overdue + fired-today until ticked in Done Today.
+    const rows = remindersForTodayList(
+      Object.values(store.upcoming),
+      store.history,
+    )
+    // Match mobile TodayScreen: only hide reminders archived in Done Today (this local day).
+    const now = new Date()
+    const doneIds = new Set(
+      completedOnDay(stateRef.current, now)
+        .filter(e => e.source === 'reminder' && e.reminderId)
+        .map(e => e.reminderId!),
+    )
     if (!mountedRef.current) return
     setDayReminders(
-      rows.map(row => ({
-        ...row,
-        displayTitle: reminderDisplayTitle(row),
-      })),
+      rows
+        .filter(row => !doneIds.has(row.id))
+        .map(row => ({
+          ...row,
+          displayTitle: reminderDisplayTitle(row),
+        })),
     )
   }, [])
 
@@ -105,6 +124,8 @@ export function useDailyTasks() {
     const unsub = subscribeDailyTasks(next => {
       if (!mountedRef.current) return
       setState(next)
+      stateRef.current = next
+      refreshReminders()
     })
     const unsubReminders = subscribeUpcomingReminderIndex(() => {
       if (!mountedRef.current) return
@@ -113,8 +134,24 @@ export function useDailyTasks() {
 
     void pullCloud(true)
 
+    // Pull cloud reminders so "Reminders today" matches mobile (local store alone is empty on web).
+    if (getSessionMode() === 'cloud') {
+      const supabase = createClient()
+      void ensureRemindersSynced(supabase).then(() => {
+        invalidateUpcomingReminderIndex()
+        if (mountedRef.current) refreshReminders()
+      })
+    }
+
     const onFocus = () => {
       void pullCloud(true)
+      if (getSessionMode() === 'cloud') {
+        const supabase = createClient()
+        void ensureRemindersSynced(supabase).then(() => {
+          invalidateUpcomingReminderIndex()
+          if (mountedRef.current) refreshReminders()
+        })
+      }
     }
     window.addEventListener('focus', onFocus)
 
@@ -206,10 +243,21 @@ export function useDailyTasks() {
 
   const completeReminder = useCallback(
     async (row: StoredSaveReminder) => {
-      const firedAt = new Date().toISOString()
-      const nextStore = markReminderFiredInStore(loadReminderStore(), row.id, firedAt)
+      const store = hydrateSaveReminderStore(loadReminderStore())
+      const live = store.upcoming[row.id]
+      const endOfToday = new Date()
+      endOfToday.setHours(23, 59, 59, 999)
+      // Match mobile: finish today + move recurring to the next date.
+      // If cloud already advanced fireAt past today, leave upcoming as-is.
+      const nextStore =
+        live && Date.parse(live.fireAt) <= endOfToday.getTime()
+          ? markReminderDoneForTodayInStore(store, row.id)
+          : live
+            ? store
+            : markReminderFiredInStore(store, row.id, row.fireAt || new Date().toISOString())
       saveReminderStore(nextStore)
-      await mutateDailyTasks(s =>
+      invalidateUpcomingReminderIndex()
+      const written = await mutateDailyTasks(s =>
         completeReminderTask(s, {
           reminderId: row.id,
           title: reminderDisplayTitle(row),
@@ -218,7 +266,8 @@ export function useDailyTasks() {
           eventAt: row.eventAt,
         }),
       )
-      await persist(await readDailyTasks())
+      stateRef.current = written
+      await persist(written)
       refreshReminders()
     },
     [persist, refreshReminders],

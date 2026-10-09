@@ -1,14 +1,35 @@
 import {
   buildSaveReminderContent,
   hydrateSaveReminderStore,
-  markReminderFiredInStore,
   type SaveReminderStore,
   type StoredSaveReminder,
 } from './saveRemindersCore'
-import { loadReminderStore, saveReminderStore } from './reminderStore'
+import { loadReminderStore } from './reminderStore'
 import { invalidateUpcomingReminderIndex } from './upcomingReminderIndex'
 
 const timers = new Map<string, number>()
+
+function presentedKey(row: StoredSaveReminder): string {
+  return `trove.rem.presented:${row.id}:${row.fireAt}`
+}
+
+function wasPresented(row: StoredSaveReminder): boolean {
+  if (typeof window === 'undefined') return true
+  try {
+    return window.localStorage.getItem(presentedKey(row)) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markPresented(row: StoredSaveReminder): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(presentedKey(row), '1')
+  } catch {
+    // ignore quota / private mode
+  }
+}
 
 export function notificationsSupported(): boolean {
   return typeof window !== 'undefined' && 'Notification' in window
@@ -39,7 +60,8 @@ function scheduleReminder(row: StoredSaveReminder): void {
   if (!Number.isFinite(fireMs)) return
   const delay = fireMs - Date.now()
   if (delay <= 0) {
-    void fireWebReminder(row)
+    // Past fire: notify once if needed, but keep upcoming until Daily tick (mobile parity).
+    if (!wasPresented(row)) void fireWebReminder(row)
     return
   }
   const timer = window.setTimeout(() => {
@@ -49,10 +71,15 @@ function scheduleReminder(row: StoredSaveReminder): void {
   timers.set(row.id, timer)
 }
 
+/**
+ * Show the browser notification only. Do NOT archive / advance the reminder —
+ * that happens when the user ticks Daily Tasks (mobile parity).
+ */
 async function fireWebReminder(row: StoredSaveReminder): Promise<void> {
   const store = hydrateSaveReminderStore(loadReminderStore())
   const current = store.upcoming[row.id]
   if (!current || current.deletedAt) return
+  if (wasPresented(current)) return
 
   const content = buildSaveReminderContent({
     saveId: current.saveId,
@@ -64,7 +91,7 @@ async function fireWebReminder(row: StoredSaveReminder): Promise<void> {
     const notification = new Notification(content.title, {
       body: content.body,
       icon: '/trove-app-icon.png',
-      tag: row.id,
+      tag: `${row.id}:${current.fireAt}`,
       data: content.data,
     })
     notification.onclick = () => {
@@ -74,12 +101,8 @@ async function fireWebReminder(row: StoredSaveReminder): Promise<void> {
     }
   }
 
-  const next = hydrateSaveReminderStore(
-    markReminderFiredInStore(store, row.id, new Date().toISOString()),
-  )
-  saveReminderStore(next)
+  markPresented(current)
   invalidateUpcomingReminderIndex()
-  rescheduleWebReminders(next)
 }
 
 export function rescheduleWebReminders(
