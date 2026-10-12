@@ -32,5 +32,5 @@ export const DAILY_STATUS_COPY: Record<
   one_left: { title: 'One last task!' },
   completing: { title: 'Completing your day...' },
   small_steps: { title: 'Small steps today', sub: 'create a brighter tomorrow.' },
-  day_spent: { title: 'Day well spent.', sub: 'See you again tomorrow!' },
+  day_spent: { title: 'Day well spent.', sub: 'Small steps today lead to big progress.' },
 }

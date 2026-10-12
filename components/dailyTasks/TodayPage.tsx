@@ -14,6 +14,8 @@ import {
   Sun,
 } from 'lucide-react'
 import AppShell from '@/components/AppShell'
+import AllDoneCelebration from './AllDoneCelebration'
+import DailyStatusCard from './DailyStatusCard'
 import {
   addDays,
   completedOnDay,
@@ -25,7 +27,7 @@ import {
   type DailyTask,
 } from '@/lib/dailyTasks'
 import { overallStreak } from '@/lib/dailyTasksStats'
-import { DAILY_STATUS_COPY, resolveDailyStatus } from '@/lib/dailyStatus'
+import { resolveDailyStatus } from '@/lib/dailyStatus'
 import { formatReminderClock } from '@/lib/reminderDateTime'
 import { formatUpcomingReminderSubtitle } from '@/lib/saveRemindersCore'
 import { getSessionMode } from '@/lib/sessionMode'
@@ -70,6 +72,7 @@ export default function TodayPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [menuTaskId, setMenuTaskId] = useState<string | null>(null)
   const [agendaOpen, setAgendaOpen] = useState(false)
+  const [addSchedule, setAddSchedule] = useState<'today' | 'tomorrow'>('today')
   const [rescheduleTask, setRescheduleTask] = useState<DailyTask | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -182,9 +185,23 @@ export default function TodayPage() {
                 <div className={styles.cardTitles}>
                   <h2 className={styles.cardTitle}>Daily Tasks</h2>
                   <p className={styles.cardSub}>
-                    {progress ? `${progress.done} done · ${progress.open} left` : null}
+                    {progress
+                      ? progress.open === 0 && progress.done === 0
+                        ? 'No open tasks'
+                        : progress.open === 0
+                          ? `All clear · ${progress.done} done today`
+                          : progress.done === 0
+                            ? `${progress.open} left`
+                            : `${progress.done} done · ${progress.open} left`
+                      : null}
                   </p>
                 </div>
+                {streak > 0 ? (
+                  <span className={styles.cardStreak}>
+                    <Flame size={13} strokeWidth={2} aria-hidden />
+                    {streak} day streak
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   className={styles.overflow}
@@ -398,38 +415,36 @@ export default function TodayPage() {
               ) : null}
 
               {allClear ? (
-                <div className={styles.celebration}>
-                  <p className={styles.celebrationTitle}>All done for today</p>
-                  <p className={styles.celebrationSub}>
-                    Add tasks for tomorrow, or check the agenda.
-                  </p>
-                </div>
+                <AllDoneCelebration
+                  onAddTask={() => {
+                    setEditing(null)
+                    setAddSchedule('tomorrow')
+                    setSheetOpen(true)
+                  }}
+                  onViewAgenda={() => setAgendaOpen(true)}
+                />
               ) : due.length === 0 && late.length === 0 && dayReminders.length === 0 ? (
                 <p className={styles.empty}>No open tasks</p>
               ) : null}
 
-              <button
-                type="button"
-                className={styles.addBtn}
-                onClick={() => {
-                  setEditing(null)
-                  setSheetOpen(true)
-                }}
-              >
-                + Add task
-              </button>
+              {!allClear ? (
+                <button
+                  type="button"
+                  className={styles.addBtn}
+                  onClick={() => {
+                    setEditing(null)
+                    setAddSchedule('today')
+                    setSheetOpen(true)
+                  }}
+                >
+                  + Add task
+                </button>
+              ) : null}
             </section>
           </div>
 
           <aside className={styles.desktopSide}>
-            {status ? (
-              <div className={styles.banner}>
-                <p className={styles.bannerTitle}>{DAILY_STATUS_COPY[status].title}</p>
-                {DAILY_STATUS_COPY[status].sub ? (
-                  <p className={styles.bannerSub}>{DAILY_STATUS_COPY[status].sub}</p>
-                ) : null}
-              </div>
-            ) : null}
+            {status ? <DailyStatusCard kind={status} /> : null}
 
             {doneToday.length > 0 ? (
               <div>
@@ -480,9 +495,11 @@ export default function TodayPage() {
       <AddDailyTaskModal
         open={sheetOpen}
         editing={editing}
+        initialSchedule={addSchedule}
         onClose={() => {
           setSheetOpen(false)
           setEditing(null)
+          setAddSchedule('today')
         }}
         onSave={input => add(input)}
         onUpdate={(id, input) => update(id, input)}

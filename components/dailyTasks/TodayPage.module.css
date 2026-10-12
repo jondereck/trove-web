@@ -158,6 +158,19 @@
   color: var(--trove-text-sub);
 }
 
+.cardStreak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .overflow {
   border: 0;
   background: transparent;
@@ -460,23 +473,6 @@
 
 .menuDanger {
   color: #b42318 !important;
-}
-
-.celebration {
-  text-align: center;
-  padding: 20px 12px 8px;
-}
-
-.celebrationTitle {
-  margin: 0;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.25rem;
-}
-
-.celebrationSub {
-  margin: 6px 0 0;
-  font-size: 0.875rem;
-  color: var(--trove-text-sub);
 }
 
 .offCard {

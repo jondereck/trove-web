@@ -14,6 +14,7 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 type Props = {
   open: boolean
   editing?: DailyTask | null
+  initialSchedule?: 'today' | 'tomorrow' | 'custom'
   onClose: () => void
   onSave: (input: NewDailyTaskInput) => void | Promise<void>
   onUpdate?: (id: string, input: NewDailyTaskInput) => void | Promise<void>
@@ -22,6 +23,7 @@ type Props = {
 export default function AddDailyTaskModal({
   open,
   editing,
+  initialSchedule = 'today',
   onClose,
   onSave,
   onUpdate,
@@ -47,15 +49,19 @@ export default function AddDailyTaskModal({
       setWeekdays(editing.weekdays ?? [])
     } else {
       setTitle('')
-      setSchedule('today')
-      setCustomDate(dateKey(new Date()))
+      setSchedule(initialSchedule)
+      setCustomDate(
+        initialSchedule === 'tomorrow'
+          ? dateKey(addDays(new Date(), 1))
+          : dateKey(new Date()),
+      )
       setWithTime(false)
       setHour(9)
       setMinute(0)
       setWeekdays([])
     }
     setSaving(false)
-  }, [open, editing])
+  }, [open, editing, initialSchedule])
 
   useEffect(() => {
     if (!open) return

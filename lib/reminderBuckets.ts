@@ -67,8 +67,10 @@ export function omitRemindersDoneToday<T extends { id: string; fireAt: string }>
     for (const id of done) doneFireById.set(id, null)
   } else {
     for (const entry of done) {
-      if (!entry.id) continue
-      doneFireById.set(entry.id, entry.fireAt ?? null)
+      if (typeof entry !== 'object' || entry == null) continue
+      const rec = entry as { id?: string; fireAt?: string | null }
+      if (!rec.id) continue
+      doneFireById.set(rec.id, rec.fireAt ?? null)
     }
   }
   if (doneFireById.size === 0) return [...rows]

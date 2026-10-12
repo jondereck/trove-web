@@ -1,0 +1,108 @@
+.banner,
+.spent {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--trove-border);
+  background: var(--trove-cream);
+}
+
+.banner {
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.spent {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  min-height: 300px;
+  padding: 20px 20px 0;
+  background: #fdf6ef;
+}
+
+.bannerHead,
+.spentHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.spentHead {
+  position: relative;
+  z-index: 1;
+  padding-right: 8px;
+}
+
+.iconWrap,
+.spentIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--trove-card);
+  color: var(--trove-text-sub);
+  flex-shrink: 0;
+  border: 1px solid var(--trove-border);
+}
+
+.spentIcon {
+  color: var(--trove-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.flagIcon {
+  color: var(--trove-accent);
+}
+
+.copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.banner .title,
+.banner .sub {
+  margin: 0;
+}
+
+.banner .title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--trove-text);
+}
+
+.banner .sub {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--trove-text-sub);
+}
+
+.spent .title {
+  margin: 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--trove-text);
+  line-height: 1.2;
+}
+
+.spent .sub {
+  margin: 4px 0 0;
+  max-width: 14rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--trove-text-sub);
+}
+
+.scene {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 62%;
+  pointer-events: none;
+}
+
+.sceneSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
