@@ -36,6 +36,7 @@ import { groupUpcomingReminders, omitRemindersDoneToday } from '@/lib/reminderBu
 import { promptCancelReminder } from '@/lib/reminderCancel'
 import { createClient } from '@/lib/supabase/client'
 import {
+  applyCaughtUpRepeatingReminders,
   clearSaveReminderHistory,
   listSaveReminders,
   listSaveRemindersLocal,
@@ -114,14 +115,19 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     nextHistory: StoredSaveReminder[],
     nextDone: { id: string; fireAt: string | null }[],
   ) => {
-    // Match mobile: raw upcoming only. Daily synthesis must not invent Today.
-    setUpcoming(nextUpcoming.filter(row => !row.deletedAt))
+    const doneIds = new Set(nextDone.map(d => d.id))
+    const caughtUp = applyCaughtUpRepeatingReminders(
+      nextUpcoming.filter(row => !row.deletedAt),
+      doneIds,
+    )
+    setUpcoming(caughtUp)
     setHistory(nextHistory)
     setDoneOccurrences(nextDone)
   }, [])
 
   const loadedWhileOpenRef = useRef(false)
   const loadGenRef = useRef(0)
+  const suppressTaskReloadRef = useRef(false)
 
   const load = useCallback((opts?: { silent?: boolean }) => {
     const gen = ++loadGenRef.current
@@ -164,12 +170,30 @@ export default function NotificationsPanel({ open, onClose }: Props) {
       setUserId(cloudUserId)
       if (!cloudUserId) return
 
-      const [, reminders] = await Promise.all([
-        syncDailyTasksCloud(supabase, cloudUserId, { force: true }),
-        listSaveReminders(supabase),
-      ])
-      if (!active || gen !== loadGenRef.current) return
-      const tasks = await readDailyTasks()
+      // Daily sync notifies subscribers — don't let that cancel this paint.
+      suppressTaskReloadRef.current = true
+      let reminders: Awaited<ReturnType<typeof listSaveReminders>>
+      let tasks: Awaited<ReturnType<typeof readDailyTasks>>
+      try {
+        const doneHint = new Set(doneFromTasks(peekDailyTasks()).map(d => d.id))
+        const [, nextReminders] = await Promise.all([
+          syncDailyTasksCloud(supabase, cloudUserId, { force: true }),
+          listSaveReminders(supabase, { userId: cloudUserId, doneIds: doneHint }),
+        ])
+        reminders = nextReminders
+        tasks = await readDailyTasks()
+        // Re-apply with authoritative done from cloud pull.
+        const done = doneFromTasks(tasks)
+        const doneIds = new Set(done.map(d => d.id))
+        reminders = {
+          upcoming: applyCaughtUpRepeatingReminders(reminders.upcoming, doneIds),
+          history: reminders.history,
+        }
+      } finally {
+        suppressTaskReloadRef.current = false
+      }
+      // Apply even if a silent reload bumped gen — this open's cloud result wins.
+      if (!active) return
       applyReminderLists(reminders.upcoming, reminders.history, doneFromTasks(tasks))
     }
 
@@ -187,6 +211,7 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     const stopLoad = load()
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
     const scheduleSilentReload = () => {
+      if (suppressTaskReloadRef.current) return
       if (debounceTimer) clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
         debounceTimer = null

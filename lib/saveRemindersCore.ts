@@ -4,6 +4,7 @@ import {
   formatRepeatCadenceLabel,
   nextFutureReminderTimes,
   normalizeReminderRepeat,
+  normalizeWeekdays,
   type ReminderRepeatRule,
 } from './reminderRepeat'
 
@@ -321,6 +322,69 @@ export function hydrateSaveReminderStore(store: SaveReminderStore, now = Date.no
 
 function startOfNextLocalDay(from: Date): Date {
   return new Date(from.getFullYear(), from.getMonth(), from.getDate() + 1)
+}
+
+/** Weekly subsets only belong on those weekdays — match mobile. */
+export function reminderMatchesDayWeekdays(
+  row: Pick<StoredSaveReminder, 'repeat'>,
+  day: Date,
+): boolean {
+  if (row.repeat?.frequency !== 'weekly') return true
+  const days = normalizeWeekdays(row.repeat.weekdays, [])
+  if (days.length === 0 || days.length >= 7) return true
+  return days.includes(day.getDay())
+}
+
+/**
+ * Cloud often keeps a past fireAt for repeats the phone already left behind
+ * (OS fire / Daily tick not uploaded). Advance those so Notifications buckets
+ * match mobile: off-weekday overdue weeklies + done-today series → next fire.
+ * Same-day open dailies stay until the user ticks them.
+ */
+export function advanceCaughtUpRepeatingRows(
+  rows: readonly StoredSaveReminder[],
+  doneIds: ReadonlySet<string>,
+  now = Date.now(),
+): { rows: StoredSaveReminder[]; changed: StoredSaveReminder[] } {
+  const day = new Date(now)
+  const endToday = startOfNextLocalDay(day).getTime()
+  const updatedAt = new Date(now).toISOString()
+  const changed: StoredSaveReminder[] = []
+  const nextRows = rows.map(row => {
+    if (row.deletedAt || row.firedAt || !row.repeat) return row
+    const fire = Date.parse(row.fireAt)
+    if (!Number.isFinite(fire) || fire >= endToday) return row
+    const offDay = !reminderMatchesDayWeekdays(row, day)
+    const done = doneIds.has(row.id)
+    if (!offDay && !done) return row
+
+    const anchor = done ? new Date(endToday - 1) : day
+    let times = nextFutureReminderTimes({
+      eventAt: new Date(row.eventAt || row.fireAt),
+      leadMinutes: row.leadMinutes ?? 0,
+      repeat: row.repeat,
+      now: anchor,
+    })
+    if (!times || times.fireAt.getTime() < endToday) {
+      times = nextFutureReminderTimes({
+        eventAt: new Date(row.eventAt || row.fireAt),
+        leadMinutes: row.leadMinutes ?? 0,
+        repeat: row.repeat,
+        now: day,
+      })
+    }
+    if (!times || times.fireAt.getTime() < endToday) return row
+    const advanced: StoredSaveReminder = {
+      ...row,
+      eventAt: times.eventAt.toISOString(),
+      fireAt: times.fireAt.toISOString(),
+      firedAt: null,
+      updatedAt,
+    }
+    changed.push(advanced)
+    return advanced
+  })
+  return { rows: nextRows, changed }
 }
 
 /**
