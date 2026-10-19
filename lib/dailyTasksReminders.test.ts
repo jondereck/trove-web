@@ -93,6 +93,46 @@ describe('remindersForTodayList', () => {
     assert.equal(list.some(r => r.id === 'water'), true)
   })
 
+  it('keeps everyday reminder after cloud catch-up advanced fireAt several days ahead', () => {
+    // Phone was offline; nextFutureReminderTimes skipped to Oct 11. Web must
+    // walk previous daily occurrences back to today (Oct 8).
+    const skipped = new Date(2026, 9, 11, 9, 0)
+    const list = remindersForTodayList(
+      [
+        row({
+          id: 'meds',
+          title: 'Meds',
+          fireAt: skipped.toISOString(),
+          eventAt: skipped.toISOString(),
+          repeat: { frequency: 'daily', interval: 1 },
+        }),
+      ],
+      [],
+      day,
+    )
+    const meds = list.find(r => r.id === 'meds')
+    assert.ok(meds)
+    assert.equal(new Date(meds!.fireAt).getDate(), 8)
+  })
+
+  it('keeps everyday reminder after a single advance to tomorrow', () => {
+    const tomorrow = new Date(2026, 9, 9, 9, 0)
+    const list = remindersForTodayList(
+      [
+        row({
+          id: 'meds',
+          title: 'Meds',
+          fireAt: tomorrow.toISOString(),
+          eventAt: tomorrow.toISOString(),
+          repeat: { frequency: 'daily', interval: 1 },
+        }),
+      ],
+      [],
+      day,
+    )
+    assert.equal(list.some(r => r.id === 'meds'), true)
+  })
+
   it('puts advanced weekly Water Plants under Notifications Today until Daily tick', () => {
     const todayFire = new Date(2026, 9, 8, 9, 0)
     const nextWeek = new Date(2026, 9, 15, 9, 0)

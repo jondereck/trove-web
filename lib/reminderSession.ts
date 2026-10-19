@@ -6,7 +6,11 @@ import type { SaveReminderStore } from './saveRemindersCore'
 
 let syncPromise: Promise<SaveReminderStore> | null = null
 
-export function ensureRemindersSynced(supabase: SupabaseClient): Promise<SaveReminderStore> {
+export function ensureRemindersSynced(
+  supabase: SupabaseClient,
+  options?: { force?: boolean },
+): Promise<SaveReminderStore> {
+  if (options?.force) syncPromise = null
   if (!syncPromise) {
     syncPromise = syncReminderStoreWithCloud(supabase).then(store => {
       rescheduleWebReminders(store)

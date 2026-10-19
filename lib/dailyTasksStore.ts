@@ -18,6 +18,15 @@ const listeners = new Set<Listener>()
 let cache: DailyTasksState | null = null
 let cloudSyncedOnce = false
 
+/** Serialize writes vs cloud refresh so Realtime merge cannot overwrite an in-flight tick. */
+let opChain: Promise<unknown> = Promise.resolve()
+
+function enqueueDailyTasksOp<T>(fn: () => Promise<T>): Promise<T> {
+  const next = opChain.then(fn, fn)
+  opChain = next.catch(() => {})
+  return next
+}
+
 function persistLocal(state: DailyTasksState): void {
   if (typeof window === 'undefined') return
   try {
@@ -35,6 +44,19 @@ function loadLocal(): DailyTasksState {
   } catch {
     return emptyDailyTasksState()
   }
+}
+
+function commitLocal(state: DailyTasksState): DailyTasksState {
+  const next = markObligationDay(
+    normalizeDailyTasksState({
+      ...state,
+      updatedAt: state.updatedAt || new Date().toISOString(),
+    }),
+  )
+  cache = next
+  persistLocal(next)
+  listeners.forEach(listener => listener(next))
+  return next
 }
 
 export function peekDailyTasks(): DailyTasksState {
@@ -62,23 +84,24 @@ export async function readDailyTasks(): Promise<DailyTasksState> {
 }
 
 export async function writeDailyTasks(state: DailyTasksState): Promise<DailyTasksState> {
-  const next = markObligationDay(
-    normalizeDailyTasksState({
+  return enqueueDailyTasksOp(async () =>
+    commitLocal({
       ...state,
       updatedAt: new Date().toISOString(),
     }),
   )
-  cache = next
-  persistLocal(next)
-  listeners.forEach(listener => listener(next))
-  return next
 }
 
 export async function mutateDailyTasks(
   transform: (state: DailyTasksState) => DailyTasksState,
 ): Promise<DailyTasksState> {
-  const current = await readDailyTasks()
-  return writeDailyTasks(transform(current))
+  return enqueueDailyTasksOp(async () => {
+    const current = cache ?? loadLocal()
+    return commitLocal({
+      ...transform(current),
+      updatedAt: new Date().toISOString(),
+    })
+  })
 }
 
 export function subscribeDailyTasks(listener: Listener): () => void {
@@ -91,30 +114,33 @@ export function subscribeDailyTasks(listener: Listener): () => void {
 /**
  * Pull+merge from Supabase. Pass `force` after login / focus to pick up phone
  * uploads even if this tab already synced once.
+ * Queued behind local writes so a tick cannot be overwritten mid-flight.
  */
 export async function syncDailyTasksCloud(
   supabase: import('@supabase/supabase-js').SupabaseClient,
   userId: string,
   options?: { force?: boolean },
 ): Promise<DailyTasksState> {
-  const local = await readDailyTasks()
-  if (cloudSyncedOnce && !options?.force) return local
-  cloudSyncedOnce = true
-  try {
-    const { syncDailyTasksWithCloud } = await import('./dailyTasksDb')
-    const beforeFp = dailyTasksFingerprint(local)
-    const merged = await syncDailyTasksWithCloud(supabase, userId, local)
-    cache = merged
-    persistLocal(merged)
-    // Only notify when the document actually changed — avoids cascading
-    // setState into remounting subscribers during Strict Mode / HMR / Realtime echo.
-    if (dailyTasksFingerprint(merged) !== beforeFp) {
-      listeners.forEach(listener => listener(merged))
+  return enqueueDailyTasksOp(async () => {
+    const local = cache ?? loadLocal()
+    if (cloudSyncedOnce && !options?.force) return local
+    cloudSyncedOnce = true
+    try {
+      const { syncDailyTasksWithCloud } = await import('./dailyTasksDb')
+      const beforeFp = dailyTasksFingerprint(local)
+      const merged = await syncDailyTasksWithCloud(supabase, userId, local)
+      cache = merged
+      persistLocal(merged)
+      // Only notify when the document actually changed — avoids cascading
+      // setState into remounting subscribers during Strict Mode / HMR / Realtime echo.
+      if (dailyTasksFingerprint(merged) !== beforeFp) {
+        listeners.forEach(listener => listener(merged))
+      }
+      return merged
+    } catch {
+      return local
     }
-    return merged
-  } catch {
-    return local
-  }
+  })
 }
 
 /** @deprecated use syncDailyTasksCloud */
@@ -146,4 +172,5 @@ export async function pushDailyTasksCloud(
 export function __resetDailyTasksStoreCache(): void {
   cache = null
   cloudSyncedOnce = false
+  opChain = Promise.resolve()
 }

@@ -10,9 +10,9 @@ function localDayBounds(day: Date): { start: number; end: number } {
 
 /**
  * When mobile fires a repeat, it keeps a local history row for today and advances
- * cloud `fireAt` to the next occurrence. Web often only sees that advanced upcoming
- * row (history never synced). Synthesize today's occurrence so Daily Tasks still
- * lists it until the user ticks it off.
+ * cloud `fireAt` to the next occurrence (or several, if the device catch-up loop
+ * skipped days). Web often only sees that advanced upcoming row (history never
+ * synced). Walk previous occurrences until one lands on `day`.
  */
 export function synthesizeFiredTodayFromAdvancedRepeat(
   row: StoredSaveReminder,
@@ -23,19 +23,30 @@ export function synthesizeFiredTodayFromAdvancedRepeat(
   const fire = Date.parse(row.fireAt)
   if (!Number.isFinite(fire) || fire < end) return null
 
-  const eventAt = new Date(row.eventAt || row.fireAt)
+  let eventAt = new Date(row.eventAt || row.fireAt)
   if (!Number.isFinite(eventAt.getTime())) return null
   const leadMs = Math.max(0, (row.leadMinutes ?? 0) * 60_000)
-  const prevEvent = previousReminderOccurrence(eventAt, row.repeat)
-  const prevFire = new Date(prevEvent.getTime() - leadMs)
-  if (prevFire.getTime() < start || prevFire.getTime() >= end) return null
 
-  return {
-    ...row,
-    eventAt: prevEvent.toISOString(),
-    fireAt: prevFire.toISOString(),
-    firedAt: prevFire.toISOString(),
+  // Everyday catch-up can jump fireAt several days ahead; weekly jumps a week.
+  // Walk back until we hit today's window (or pass it).
+  for (let guard = 0; guard < 512; guard += 1) {
+    const prevEvent = previousReminderOccurrence(eventAt, row.repeat)
+    if (!Number.isFinite(prevEvent.getTime()) || prevEvent.getTime() >= eventAt.getTime()) {
+      return null
+    }
+    const prevFire = new Date(prevEvent.getTime() - leadMs)
+    if (prevFire.getTime() >= start && prevFire.getTime() < end) {
+      return {
+        ...row,
+        eventAt: prevEvent.toISOString(),
+        fireAt: prevFire.toISOString(),
+        firedAt: prevFire.toISOString(),
+      }
+    }
+    if (prevFire.getTime() < start) return null
+    eventAt = prevEvent
   }
+  return null
 }
 
 /** Upcoming (and overdue) save reminders that belong on Today's list. */
@@ -43,8 +54,17 @@ export function remindersDueToday(
   upcoming: StoredSaveReminder[],
   now: Date = new Date(),
 ): StoredSaveReminder[] {
+  const { start, end } = localDayBounds(now)
   return upcoming
-    .filter(row => !row.deletedAt && !row.firedAt && classifyReminderBucket(row.fireAt, now) === 'today')
+    .filter(row => {
+      if (row.deletedAt || row.firedAt) return false
+      // Match mobile remindersActiveOnDay: fire before end-of-day, or event on day.
+      const fire = Date.parse(row.fireAt)
+      const event = Date.parse(row.eventAt)
+      if (Number.isFinite(fire) && fire < end) return true
+      if (Number.isFinite(event) && event >= start && event < end) return true
+      return classifyReminderBucket(row.fireAt, now) === 'today'
+    })
     .sort((a, b) => a.fireAt.localeCompare(b.fireAt))
 }
 
@@ -52,7 +72,7 @@ export function remindersDueToday(
  * Same shape as mobile `remindersForTodayList`: due/overdue upcoming + history
  * that already fired today (until the user ticks them off in Done Today).
  * Also synthesizes today's occurrence when cloud advanced a weekly/daily repeat
- * past today without a synced history row (e.g. Water Plants).
+ * past today without a synced history row (e.g. Water Plants / everyday meds).
  */
 export function remindersForTodayList(
   upcoming: StoredSaveReminder[],

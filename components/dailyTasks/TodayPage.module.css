@@ -382,7 +382,7 @@
 
 .doneRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
   padding: 10px 8px;
@@ -391,8 +391,24 @@
   text-align: left;
   cursor: pointer;
   color: var(--trove-muted);
-  text-decoration: line-through;
   font-size: 0.9rem;
+}
+
+.doneRowText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.doneRowText > span:first-child {
+  text-decoration: line-through;
+}
+
+.doneRowHint {
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: var(--trove-muted);
 }
 
 .empty {

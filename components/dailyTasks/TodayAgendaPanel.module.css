@@ -177,13 +177,27 @@
   border-radius: 12px;
 }
 
-.lineLink {
+.lineLink,
+.lineButton {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font: inherit;
 }
 
-.lineLink:hover {
+.lineButton {
+  border: 1px solid var(--trove-border);
+  background: var(--trove-bg);
+}
+
+.panel .lineButton {
+  background: var(--trove-cream);
+}
+
+.lineLink:hover,
+.lineButton:hover {
   border-color: color-mix(in srgb, var(--trove-accent) 40%, var(--trove-border));
 }
 

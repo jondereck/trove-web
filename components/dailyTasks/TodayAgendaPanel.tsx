@@ -10,6 +10,7 @@ import {
   parseDateKey,
   startOfDay,
   tasksScheduledOn,
+  type CompletedDailyTask,
   type DailyTasksState,
 } from '@/lib/dailyTasks'
 import { dayCompletion } from '@/lib/dailyTasksStats'
@@ -30,6 +31,8 @@ type Props = {
   focusDateKey?: string
   /** Compact card for the Today desktop sidebar */
   variant?: 'panel' | 'sheet'
+  /** Tap a completed row to restore it (same as Done Today). */
+  onUncomplete?: (entry: CompletedDailyTask) => void
 }
 
 function monthTitle(date: Date): string {
@@ -48,6 +51,7 @@ export default function TodayAgendaPanel({
   state,
   focusDateKey,
   variant = 'panel',
+  onUncomplete,
 }: Props) {
   const [month, setMonth] = useState(() => startOfDay(new Date()))
   const [selected, setSelected] = useState(() => startOfDay(new Date()))
@@ -186,12 +190,34 @@ export default function TodayAgendaPanel({
               </Link>
             </li>
           ))}
-          {selectedCompleted.map(entry => (
-            <li key={entry.id} className={styles.line}>
-              <CheckCircle2 className={styles.lineIcon} size={18} strokeWidth={1.75} />
-              <p className={`${styles.lineTitle} ${styles.lineDone}`}>{entry.title}</p>
-            </li>
-          ))}
+          {selectedCompleted.map(entry => {
+            const canUntick = !!onUncomplete && entry.source !== 'reminder'
+            if (!canUntick) {
+              return (
+                <li key={entry.id} className={styles.line}>
+                  <CheckCircle2 className={styles.lineIcon} size={18} strokeWidth={1.75} />
+                  <p className={`${styles.lineTitle} ${styles.lineDone}`}>{entry.title}</p>
+                </li>
+              )
+            }
+            return (
+              <li key={entry.id}>
+                <button
+                  type="button"
+                  className={`${styles.line} ${styles.lineButton}`}
+                  onClick={() => onUncomplete(entry)}
+                  aria-label={`Uncheck ${entry.title}`}
+                  title="Tap to uncheck"
+                >
+                  <CheckCircle2 className={styles.lineIcon} size={18} strokeWidth={1.75} />
+                  <div className={styles.lineBody}>
+                    <p className={`${styles.lineTitle} ${styles.lineDone}`}>{entry.title}</p>
+                    <p className={styles.lineSub}>Tap to uncheck</p>
+                  </div>
+                </button>
+              </li>
+            )
+          })}
           {selectedOpen.map(task => (
             <li key={task.id} className={styles.line}>
               <Circle className={`${styles.lineIcon} ${styles.lineMuted}`} size={18} strokeWidth={1.75} />

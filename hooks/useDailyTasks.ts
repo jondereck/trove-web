@@ -23,7 +23,6 @@ import {
   readDailyTasks,
   subscribeDailyTasks,
   syncDailyTasksCloud,
-  writeDailyTasks,
 } from '@/lib/dailyTasksStore'
 import { remindersForTodayList } from '@/lib/dailyTasksReminders'
 import {
@@ -147,7 +146,7 @@ export function useDailyTasks() {
       void pullCloud(true)
       if (getSessionMode() === 'cloud') {
         const supabase = createClient()
-        void ensureRemindersSynced(supabase).then(() => {
+        void ensureRemindersSynced(supabase, { force: true }).then(() => {
           invalidateUpcomingReminderIndex()
           if (mountedRef.current) refreshReminders()
         })
@@ -170,75 +169,74 @@ export function useDailyTasks() {
     }
   }, [refreshReminders, pullCloud])
 
-  const persist = useCallback(async (next: DailyTasksState) => {
-    const written = await writeDailyTasks(next)
-    if (getSessionMode() === 'cloud') {
-      const supabase = createClient()
-      const { data } = await supabase.auth.getUser()
-      const userId = data.user?.id
-      if (userId) {
-        void pushDailyTasksCloud(supabase, userId, written).then(() => {
-          if (mountedRef.current) setSyncStatus('synced')
-        })
+  /** One local write + cloud push. Avoids mutate-then-rewrite (tick glimpse). */
+  const applyLocal = useCallback(
+    async (transform: (state: DailyTasksState) => DailyTasksState) => {
+      const written = await mutateDailyTasks(transform)
+      stateRef.current = written
+      if (mountedRef.current) setState(written)
+      if (getSessionMode() === 'cloud') {
+        const supabase = createClient()
+        const { data } = await supabase.auth.getUser()
+        const userId = data.user?.id
+        if (userId) {
+          void pushDailyTasksCloud(supabase, userId, written).then(() => {
+            if (mountedRef.current) setSyncStatus('synced')
+          })
+        }
       }
-    }
-    return written
-  }, [])
+      return written
+    },
+    [],
+  )
 
   const setEnabled = useCallback(
     async (enabled: boolean) => {
-      await mutateDailyTasks(s => ({ ...s, enabled }))
-      await persist(await readDailyTasks())
+      await applyLocal(s => ({ ...s, enabled }))
     },
-    [persist],
+    [applyLocal],
   )
 
   const add = useCallback(
     async (input: NewDailyTaskInput) => {
-      await mutateDailyTasks(s => addTask({ ...s, enabled: true }, input))
-      await persist(await readDailyTasks())
+      await applyLocal(s => addTask({ ...s, enabled: true }, input))
     },
-    [persist],
+    [applyLocal],
   )
 
   const complete = useCallback(
     async (id: string) => {
-      await mutateDailyTasks(s => completeTask(s, id))
-      await persist(await readDailyTasks())
+      await applyLocal(s => completeTask(s, id))
     },
-    [persist],
+    [applyLocal],
   )
 
   const uncomplete = useCallback(
     async (id: string) => {
-      await mutateDailyTasks(s => uncompleteTask(s, id))
-      await persist(await readDailyTasks())
+      await applyLocal(s => uncompleteTask(s, id))
     },
-    [persist],
+    [applyLocal],
   )
 
   const remove = useCallback(
     async (id: string) => {
-      await mutateDailyTasks(s => removeTask(s, id))
-      await persist(await readDailyTasks())
+      await applyLocal(s => removeTask(s, id))
     },
-    [persist],
+    [applyLocal],
   )
 
   const update = useCallback(
     async (id: string, patch: Partial<NewDailyTaskInput> & { title?: string }) => {
-      await mutateDailyTasks(s => updateTask(s, id, patch))
-      await persist(await readDailyTasks())
+      await applyLocal(s => updateTask(s, id, patch))
     },
-    [persist],
+    [applyLocal],
   )
 
   const reschedule = useCallback(
     async (id: string, scheduledOn: string) => {
-      await mutateDailyTasks(s => rescheduleTask(s, id, scheduledOn))
-      await persist(await readDailyTasks())
+      await applyLocal(s => rescheduleTask(s, id, scheduledOn))
     },
-    [persist],
+    [applyLocal],
   )
 
   const completeReminder = useCallback(
@@ -257,7 +255,7 @@ export function useDailyTasks() {
             : markReminderFiredInStore(store, row.id, row.fireAt || new Date().toISOString())
       saveReminderStore(nextStore)
       invalidateUpcomingReminderIndex()
-      const written = await mutateDailyTasks(s =>
+      await applyLocal(s =>
         completeReminderTask(s, {
           reminderId: row.id,
           title: reminderDisplayTitle(row),
@@ -266,11 +264,9 @@ export function useDailyTasks() {
           eventAt: row.eventAt,
         }),
       )
-      stateRef.current = written
-      await persist(written)
       refreshReminders()
     },
-    [persist, refreshReminders],
+    [applyLocal, refreshReminders],
   )
 
   const updateSettings = useCallback(
@@ -279,10 +275,9 @@ export function useDailyTasks() {
         Pick<DailyTasksState, 'enabled' | 'summaryEnabled' | 'summaryHour' | 'summaryMinute'>
       >,
     ) => {
-      await mutateDailyTasks(s => ({ ...s, ...patch }))
-      await persist(await readDailyTasks())
+      await applyLocal(s => ({ ...s, ...patch }))
     },
-    [persist],
+    [applyLocal],
   )
 
   return {
