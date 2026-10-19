@@ -10,15 +10,23 @@ import { softDeleteCloudReminder, syncReminderStoreWithCloud } from './reminderC
 import { loadReminderStore, saveReminderStore } from './reminderStore'
 import { cancelWebReminder } from './webReminderNotifications'
 
+/** Local cache only — no network. Use for first paint. */
+export function listSaveRemindersLocal(): {
+  upcoming: StoredSaveReminder[]
+  history: StoredSaveReminder[]
+} {
+  const store = hydrateSaveReminderStore(loadReminderStore())
+  saveReminderStore(store)
+  return listSaveRemindersFromStore(store)
+}
+
 export async function listSaveReminders(
   supabase?: SupabaseClient | null,
 ): Promise<{ upcoming: StoredSaveReminder[]; history: StoredSaveReminder[] }> {
   if (supabase) {
     await syncReminderStoreWithCloud(supabase)
   }
-  const store = hydrateSaveReminderStore(loadReminderStore())
-  saveReminderStore(store)
-  return listSaveRemindersFromStore(store)
+  return listSaveRemindersLocal()
 }
 
 export function clearSaveReminderHistory(): {

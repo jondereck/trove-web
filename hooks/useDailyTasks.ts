@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   addTask,
-  completedOnDay,
   completeReminderTask,
   completeTask,
+  doneReminderIdsOnDay,
   emptyDailyTasksState,
   removeTask,
   rescheduleTask,
@@ -63,13 +63,8 @@ export function useDailyTasks() {
       Object.values(store.upcoming),
       store.history,
     )
-    // Match mobile TodayScreen: only hide reminders archived in Done Today (this local day).
-    const now = new Date()
-    const doneIds = new Set(
-      completedOnDay(stateRef.current, now)
-        .filter(e => e.source === 'reminder' && e.reminderId)
-        .map(e => e.reminderId!),
-    )
+    // Hide anything already archived in Done Today (incl. rem-{id} recovery).
+    const doneIds = doneReminderIdsOnDay(stateRef.current, new Date())
     if (!mountedRef.current) return
     setDayReminders(
       rows
@@ -100,25 +95,21 @@ export function useDailyTasks() {
       const before = stateRef.current
       const merged = await syncDailyTasksCloud(supabase, userId, { force })
       if (!mountedRef.current) return
+      stateRef.current = merged
       if (dailyTasksFingerprint(merged) !== dailyTasksFingerprint(before)) {
         setState(merged)
       }
+      // Always re-filter reminders — Done Today from mobile may have landed.
+      refreshReminders()
       setSyncStatus(isMeaningfulDailyTasksState(merged) ? 'synced' : 'empty-cloud')
     } catch {
       if (mountedRef.current) setSyncStatus('offline')
     }
-  }, [])
+  }, [refreshReminders])
 
   useEffect(() => {
     mountedRef.current = true
     let cancelled = false
-
-    void readDailyTasks().then(next => {
-      if (cancelled || !mountedRef.current) return
-      setState(next)
-      setReady(true)
-    })
-    refreshReminders()
 
     const unsub = subscribeDailyTasks(next => {
       if (!mountedRef.current) return
@@ -131,26 +122,36 @@ export function useDailyTasks() {
       refreshReminders()
     })
 
-    void pullCloud(true)
+    // Daily Tasks cloud first, then reminders — otherwise synthesize shows
+    // today's weekly rows before Done Today from the phone is applied.
+    void (async () => {
+      const local = await readDailyTasks()
+      if (cancelled || !mountedRef.current) return
+      stateRef.current = local
+      setState(local)
+      setReady(true)
+      refreshReminders()
 
-    // Pull cloud reminders so "Reminders today" matches mobile (local store alone is empty on web).
-    if (getSessionMode() === 'cloud') {
-      const supabase = createClient()
-      void ensureRemindersSynced(supabase).then(() => {
-        invalidateUpcomingReminderIndex()
-        if (mountedRef.current) refreshReminders()
-      })
-    }
+      await pullCloud(true)
+      if (cancelled || !mountedRef.current) return
 
-    const onFocus = () => {
-      void pullCloud(true)
       if (getSessionMode() === 'cloud') {
         const supabase = createClient()
-        void ensureRemindersSynced(supabase, { force: true }).then(() => {
-          invalidateUpcomingReminderIndex()
-          if (mountedRef.current) refreshReminders()
-        })
+        await ensureRemindersSynced(supabase, { force: true })
+        invalidateUpcomingReminderIndex()
+        if (mountedRef.current) refreshReminders()
       }
+    })()
+
+    const onFocus = () => {
+      void (async () => {
+        await pullCloud(true)
+        if (getSessionMode() !== 'cloud') return
+        const supabase = createClient()
+        await ensureRemindersSynced(supabase, { force: true })
+        invalidateUpcomingReminderIndex()
+        if (mountedRef.current) refreshReminders()
+      })()
     }
     window.addEventListener('focus', onFocus)
 

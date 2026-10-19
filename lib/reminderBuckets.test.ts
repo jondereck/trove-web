@@ -53,19 +53,38 @@ describe('reminderBuckets', () => {
     assert.deepEqual(visible.map(row => row.id), ['lunch'])
   })
 
-  it('hides Today even when done fireAt string differs from displayed occurrence', () => {
-    const displayed = new Date(2026, 9, 9, 9, 0, 0).toISOString()
+  it('keeps next occurrence when done fireAt differs (advanced repeat)', () => {
     const archived = '2026-10-09T07:28:03.566Z'
     const nextWeek = new Date(2026, 9, 16, 9, 0, 0).toISOString()
     const at = new Date(2026, 9, 9, 15, 0, 0)
     const visible = omitRemindersDoneToday(
-      [
-        { id: 'cactus', fireAt: displayed },
-        { id: 'cactus-next', fireAt: nextWeek },
-      ],
+      [{ id: 'cactus', fireAt: nextWeek }],
       [{ id: 'cactus', fireAt: archived }],
       at,
     )
-    assert.deepEqual(visible.map(row => row.id), ['cactus-next'])
+    assert.deepEqual(visible.map(row => row.id), ['cactus'])
+  })
+
+  it('hides Today even when done fireAt ISO differs from stale local fireAt', () => {
+    const displayed = new Date(2026, 9, 9, 9, 0, 0).toISOString()
+    const archived = '2026-10-09T07:28:03.566Z'
+    const at = new Date(2026, 9, 9, 15, 0, 0)
+    const visible = omitRemindersDoneToday(
+      [{ id: 'lunch', fireAt: displayed }],
+      [{ id: 'lunch', fireAt: archived }],
+      at,
+    )
+    assert.deepEqual(visible.map(row => row.id), [])
+  })
+
+  it('hides exact done occurrence still sitting in Today', () => {
+    const fire = new Date(2026, 9, 9, 9, 0, 0).toISOString()
+    const at = new Date(2026, 9, 9, 15, 0, 0)
+    const visible = omitRemindersDoneToday(
+      [{ id: 'cactus', fireAt: fire }],
+      [{ id: 'cactus', fireAt: fire }],
+      at,
+    )
+    assert.deepEqual(visible.map(row => row.id), [])
   })
 })

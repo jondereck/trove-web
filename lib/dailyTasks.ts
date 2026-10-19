@@ -268,10 +268,14 @@ function normalizeCompletedEntry(value: unknown): CompletedDailyTask | null {
   if ('minute' in row) entry.minute = entry.hour == null ? null : toClockMinute(row.minute)
   const weekdays = normalizeWeekdays(row.weekdays)
   if (weekdays) entry.weekdays = weekdays
-  if (row.source === 'reminder') {
+  if (row.source === 'reminder' || (typeof row.id === 'string' && row.id.startsWith('rem-'))) {
     entry.source = 'reminder'
     if (typeof row.saveId === 'string' && row.saveId) entry.saveId = row.saveId
-    if (typeof row.reminderId === 'string' && row.reminderId) entry.reminderId = row.reminderId
+    if (typeof row.reminderId === 'string' && row.reminderId) {
+      entry.reminderId = row.reminderId
+    } else if (typeof row.id === 'string' && row.id.startsWith('rem-')) {
+      entry.reminderId = row.id.slice(4)
+    }
     if (typeof row.fireAt === 'string') entry.fireAt = row.fireAt
     if (typeof row.eventAt === 'string') entry.eventAt = row.eventAt
   } else if (row.source === 'task') {
@@ -718,6 +722,28 @@ export function toggleTaskDone(
 export function completedOnDay(state: DailyTasksState, date: Date): CompletedDailyTask[] {
   const key = dateKey(date)
   return state.completed.filter(c => c.completedOn === key)
+}
+
+/**
+ * Reminder ids archived in Done Today. Recovers `rem-{id}` when `reminderId`
+ * was dropped in an older cloud payload so web can hide synthesized Today rows
+ * after mobile already ticked them.
+ */
+export function doneReminderIdsOnDay(
+  state: DailyTasksState,
+  date: Date = new Date(),
+): Set<string> {
+  const ids = new Set<string>()
+  for (const entry of completedOnDay(state, date)) {
+    const isReminder = entry.source === 'reminder' || entry.id.startsWith('rem-')
+    if (!isReminder) continue
+    if (entry.reminderId) {
+      ids.add(entry.reminderId)
+      continue
+    }
+    if (entry.id.startsWith('rem-')) ids.add(entry.id.slice(4))
+  }
+  return ids
 }
 
 // ── Progress ─────────────────────────────────────────────────────────────────

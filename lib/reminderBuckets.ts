@@ -49,8 +49,9 @@ export function classifyReminderBucket(
 
 /**
  * Hide the occurrence that was ticked in Daily today.
- * Recurring next fires on a *later* day stay (date moves). Same-day rows
- * leave Today even when fireAt strings differ (history vs scheduled ISO).
+ * Web often still has today's fireAt while phone already archived a slightly
+ * different ISO — always strip the Today bucket for done ids. Next-day
+ * advances (Tomorrow / This week) stay visible.
  */
 export function omitRemindersDoneToday<T extends { id: string; fireAt: string }>(
   rows: readonly T[],
@@ -76,8 +77,13 @@ export function omitRemindersDoneToday<T extends { id: string; fireAt: string }>
   if (doneFireById.size === 0) return [...rows]
   return rows.filter(row => {
     if (!doneFireById.has(row.id)) return true
-    // Still in Today → gone after Daily tick. Later buckets keep the series.
-    return classifyReminderBucket(row.fireAt, now) !== 'today'
+    // Still due today / overdue on this device → gone after Daily tick.
+    if (classifyReminderBucket(row.fireAt, now) === 'today') return false
+    const doneFireAt = doneFireById.get(row.id)
+    // Exact archived occurrence (any bucket) → hide.
+    if (doneFireAt && doneFireAt === row.fireAt) return false
+    // Advanced to a later day → keep.
+    return true
   })
 }
 

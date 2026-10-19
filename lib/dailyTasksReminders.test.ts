@@ -133,7 +133,7 @@ describe('remindersForTodayList', () => {
     assert.equal(list.some(r => r.id === 'meds'), true)
   })
 
-  it('puts advanced weekly Water Plants under Notifications Today until Daily tick', () => {
+  it('does not invent Today rows for Notifications when cloud already advanced', () => {
     const todayFire = new Date(2026, 9, 8, 9, 0)
     const nextWeek = new Date(2026, 9, 15, 9, 0)
     const list = remindersForNotificationsList(
@@ -160,7 +160,25 @@ describe('remindersForTodayList', () => {
     )
     const water = list.find(r => r.id === 'water')
     assert.ok(water)
-    assert.equal(water!.fireAt, todayFire.toISOString())
-    assert.equal(water!.firedAt, null)
+    assert.equal(water!.fireAt, nextWeek.toISOString())
+  })
+
+  it('drops overdue weekly that is not scheduled for this weekday', () => {
+    // Monday: Sunday-only weekly still overdue in cloud must not land on Daily.
+    const monday = new Date(2026, 9, 19, 12, 0)
+    const sundayPast = new Date(2026, 9, 18, 8, 0)
+    const list = remindersDueToday(
+      [
+        row({
+          id: 'media',
+          title: 'Multimedia Systems',
+          fireAt: sundayPast.toISOString(),
+          eventAt: sundayPast.toISOString(),
+          repeat: { frequency: 'weekly', interval: 1, weekdays: [0] },
+        }),
+      ],
+      monday,
+    )
+    assert.deepEqual(list.map(r => r.id), [])
   })
 })

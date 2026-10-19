@@ -3,6 +3,7 @@ import { describe, it } from 'node:test'
 import {
   addTask,
   completeReminderTask,
+  doneReminderIdsOnDay,
   completeTask,
   completedOnDay,
   dateKey,
@@ -100,8 +101,22 @@ describe('dailyTasks helpers', () => {
     assert.equal(state.completed[0]!.source, 'reminder')
     assert.equal(state.completed[0]!.reminderId, 'r1')
     assert.equal(completedOnDay(state, now).length, 1)
+    assert.ok(doneReminderIdsOnDay(state, now).has('r1'))
     state = uncompleteTask(state, state.completed[0]!.id, now)
     assert.equal(state.completed.length, 0)
+  })
+
+  it('recovers done reminder ids from rem- completed rows without reminderId', () => {
+    const state = {
+      ...emptyDailyTasksState(),
+      completed: [{
+        id: 'rem-water-plants',
+        title: 'Water Plants',
+        completedOn: todayKey(now),
+        completedAt: now.toISOString(),
+      }],
+    }
+    assert.ok(doneReminderIdsOnDay(state, now).has('water-plants'))
   })
 
   it('incomplete tasks stay open across days but do not count as tomorrow', () => {

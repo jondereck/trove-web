@@ -18,13 +18,19 @@ import { setLibraryFilterIntent } from '@/lib/libraryFilterIntent'
 import { findSaveById } from '@/lib/libraryCore'
 import {
   clearNotificationLog,
+  getNotificationLog,
   markAllNotificationsRead,
   syncPresentedNotifications,
 } from '@/lib/notificationLog'
 import type { NotificationLogEntry } from '@/lib/notificationLogCore'
-import { completedOnDay } from '@/lib/dailyTasks'
-import { remindersForNotificationsList } from '@/lib/dailyTasksReminders'
-import { readDailyTasks, subscribeDailyTasks } from '@/lib/dailyTasksStore'
+import { completedOnDay, doneReminderIdsOnDay } from '@/lib/dailyTasks'
+import {
+  peekDailyTasks,
+  readDailyTasks,
+  subscribeDailyTasks,
+  syncDailyTasksCloud,
+} from '@/lib/dailyTasksStore'
+import { getSessionMode } from '@/lib/sessionMode'
 import { subscribeUpcomingReminderIndex } from '@/lib/upcomingReminderIndex'
 import { groupUpcomingReminders, omitRemindersDoneToday } from '@/lib/reminderBuckets'
 import { promptCancelReminder } from '@/lib/reminderCancel'
@@ -32,6 +38,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   clearSaveReminderHistory,
   listSaveReminders,
+  listSaveRemindersLocal,
 } from '@/lib/saveReminders'
 import {
   formatHistorySubtitle,
@@ -92,13 +99,23 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     [saves],
   )
 
+  const doneFromTasks = useCallback((tasks: ReturnType<typeof peekDailyTasks>) => {
+    const now = new Date()
+    return [...doneReminderIdsOnDay(tasks, now)].map(id => {
+      const entry = completedOnDay(tasks, now).find(
+        e => e.reminderId === id || e.id === `rem-${id}`,
+      )
+      return { id, fireAt: entry?.fireAt ?? null }
+    })
+  }, [])
+
   const applyReminderLists = useCallback((
     nextUpcoming: StoredSaveReminder[],
     nextHistory: StoredSaveReminder[],
     nextDone: { id: string; fireAt: string | null }[],
   ) => {
-    const display = remindersForNotificationsList(nextUpcoming, nextHistory)
-    setUpcoming(display)
+    // Match mobile: raw upcoming only. Daily synthesis must not invent Today.
+    setUpcoming(nextUpcoming.filter(row => !row.deletedAt))
     setHistory(nextHistory)
     setDoneOccurrences(nextDone)
   }, [])
@@ -109,43 +126,58 @@ export default function NotificationsPanel({ open, onClose }: Props) {
   const load = useCallback((opts?: { silent?: boolean }) => {
     const gen = ++loadGenRef.current
     let active = true
-    // Only the first open shows the spinner — background sync must not unmount
-    // the list (that resets scroll and feels like a constant refresh).
     const silent = opts?.silent === true || loadedWhileOpenRef.current
-    if (!silent) setLoading(true)
+
+    // Sync local paint first — never wait on Supabase for the spinner.
+    const localReminders = listSaveRemindersLocal()
+    const localTasks = peekDailyTasks()
+    const localEntries = getNotificationLog()
+    applyReminderLists(
+      localReminders.upcoming,
+      localReminders.history,
+      doneFromTasks(localTasks),
+    )
+    setEntries(localEntries)
+    const coldEmpty =
+      localReminders.upcoming.length === 0
+      && localReminders.history.length === 0
+      && localEntries.length === 0
+    if (!silent && coldEmpty) setLoading(true)
+    else setLoading(false)
+    loadedWhileOpenRef.current = true
 
     const run = async () => {
-      const supabase = mode === 'cloud' ? createClient() : null
-      if (supabase) {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (active && gen === loadGenRef.current) setUserId(user?.id ?? null)
-      }
-
-      const [nextEntries, reminders, tasks] = await Promise.all([
-        syncPresentedNotifications(),
-        listSaveReminders(supabase),
-        readDailyTasks(),
-      ])
-
+      const nextEntries = await syncPresentedNotifications()
       if (!active || gen !== loadGenRef.current) return
-      const nextDone = completedOnDay(tasks, new Date())
-        .filter(entry => entry.source === 'reminder' && entry.reminderId)
-        .map(entry => ({ id: entry.reminderId!, fireAt: entry.fireAt ?? null }))
       setEntries(nextEntries)
-      applyReminderLists(reminders.upcoming, reminders.history, nextDone)
-      loadedWhileOpenRef.current = true
-      setLoading(false)
-
       if (nextEntries.some(entry => !entry.read)) {
         setEntries(markAllNotificationsRead())
       }
+      setLoading(false)
+
+      // Background cloud refresh — list stays visible.
+      if (mode !== 'cloud' || getSessionMode() !== 'cloud') return
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!active || gen !== loadGenRef.current) return
+      const cloudUserId = user?.id ?? null
+      setUserId(cloudUserId)
+      if (!cloudUserId) return
+
+      const [, reminders] = await Promise.all([
+        syncDailyTasksCloud(supabase, cloudUserId, { force: true }),
+        listSaveReminders(supabase),
+      ])
+      if (!active || gen !== loadGenRef.current) return
+      const tasks = await readDailyTasks()
+      applyReminderLists(reminders.upcoming, reminders.history, doneFromTasks(tasks))
     }
 
     void run()
     return () => {
       active = false
     }
-  }, [mode, applyReminderLists])
+  }, [mode, applyReminderLists, doneFromTasks])
 
   useEffect(() => {
     if (!open) {
@@ -197,9 +229,13 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     const supabase = mode === 'cloud' ? createClient() : null
     promptCancelReminder(row, () => {
       void Promise.all([listSaveReminders(supabase), readDailyTasks()]).then(([reminders, tasks]) => {
-        const nextDone = completedOnDay(tasks, new Date())
-          .filter(entry => entry.source === 'reminder' && entry.reminderId)
-          .map(entry => ({ id: entry.reminderId!, fireAt: entry.fireAt ?? null }))
+        const now = new Date()
+        const nextDone = [...doneReminderIdsOnDay(tasks, now)].map(id => {
+          const entry = completedOnDay(tasks, now).find(
+            e => e.reminderId === id || e.id === `rem-${id}`,
+          )
+          return { id, fireAt: entry?.fireAt ?? null }
+        })
         applyReminderLists(reminders.upcoming, reminders.history, nextDone)
       })
     }, { supabase, userId, row })

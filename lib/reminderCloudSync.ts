@@ -26,6 +26,31 @@ function stamp(row: Pick<StoredSaveReminder, 'updatedAt' | 'fireAt' | 'deletedAt
   return row.updatedAt || row.deletedAt || row.fireAt
 }
 
+function startOfNextLocalDay(now = Date.now()): number {
+  const d = new Date(now)
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime()
+}
+
+/**
+ * After a Daily tick, phone advances fireAt past today and uploads. Web local
+ * may still hold today's fireAt with a newer hydrate stamp — prefer the
+ * schedule that already moved to a future day.
+ */
+function pickOpenReminder(
+  local: StoredSaveReminder,
+  remote: StoredSaveReminder,
+  now = Date.now(),
+): StoredSaveReminder {
+  const endToday = startOfNextLocalDay(now)
+  const localFire = Date.parse(local.fireAt)
+  const remoteFire = Date.parse(remote.fireAt)
+  if (Number.isFinite(localFire) && Number.isFinite(remoteFire)) {
+    if (localFire < endToday && remoteFire >= endToday) return remote
+    if (remoteFire < endToday && localFire >= endToday) return local
+  }
+  return stamp(remote) >= stamp(local) ? remote : local
+}
+
 export function isCloudSyncableReminder(row: StoredSaveReminder): boolean {
   return !row.localOnly
 }
@@ -71,19 +96,21 @@ export function reminderFromCloudRow(row: Partial<CloudReminderRow> | null | und
 export function mergeUpcomingReminders(
   local: Record<string, StoredSaveReminder>,
   remote: Record<string, StoredSaveReminder>,
+  now = Date.now(),
 ): Record<string, StoredSaveReminder> {
   const ids = new Set([...Object.keys(local), ...Object.keys(remote)])
   const merged: Record<string, StoredSaveReminder> = {}
   for (const id of ids) {
     const localRow = local[id]
     const remoteRow = remote[id]
-    const winner = !localRow
-      ? remoteRow
-      : !remoteRow
-        ? localRow
-        : stamp(remoteRow) >= stamp(localRow)
-          ? remoteRow
-          : localRow
+    let winner: StoredSaveReminder | undefined
+    if (!localRow) winner = remoteRow
+    else if (!remoteRow) winner = localRow
+    else if (localRow.deletedAt || remoteRow.deletedAt) {
+      winner = stamp(remoteRow) >= stamp(localRow) ? remoteRow : localRow
+    } else {
+      winner = pickOpenReminder(localRow, remoteRow, now)
+    }
     if (!winner || winner.deletedAt) continue
     merged[id] = preserveCalendarLinkage(winner, localRow)
   }
