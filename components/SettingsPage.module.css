@@ -208,3 +208,67 @@
 .signOutBtn:hover {
   filter: brightness(0.97);
 }
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--trove-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.tokenCreate {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tokenInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--trove-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--trove-text);
+  font-size: 14px;
+}
+
+.tokenOnce,
+.tokenError {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tokenError {
+  color: #b42318;
+}
+
+.tokenCode {
+  display: block;
+  margin-top: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--trove-accent-soft);
+  font-size: 12px;
+}
+
+.tokenList {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
