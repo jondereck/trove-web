@@ -1,12 +1,13 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import MobileDesktopGate from '@/components/MobileDesktopGate'
 import { isMobileAllowedPath } from '@/lib/mobileViewportAllow'
 
 export default function ViewportShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? ''
-  const allowMobile = isMobileAllowedPath(pathname)
+  const searchParams = useSearchParams()
+  const allowMobile = isMobileAllowedPath(pathname, searchParams.toString())
 
   // Keep a stable DOM shape for hydration: always one wrapper + optional gate.
   return (

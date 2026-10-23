@@ -21,7 +21,7 @@ function textResult(value: unknown, isError = false) {
 function requireUser(extra: ToolExtra): string | { error: string } {
   if (!serviceRoleKey()) return { error: 'MCP server is missing SUPABASE_SERVICE_ROLE_KEY' }
   const userId = extra.authInfo?.extra?.userId
-  if (!userId) return { error: 'Send Authorization: Bearer trove_sk_… from Settings → Agents & MCP' }
+  if (!userId) return { error: 'Sign in through your agent, or send Authorization: Bearer trove_sk_… from Settings → Agents & MCP' }
   if (!extra.authInfo?.scopes?.includes('trove:read')) return { error: 'This token does not have trove:read' }
   return userId
 }
@@ -104,6 +104,31 @@ const handler = createMcpHandler(
     )
 
     server.registerTool(
+      'list_collection_items',
+      {
+        title: 'List collection items',
+        description: 'List non-vault saves inside one collection, newest first. Up to 100. Vault collections return nothing.',
+        inputSchema: {
+          collection_id: z.string().uuid(),
+          limit: z.number().int().min(1).max(100).optional(),
+        },
+      },
+      async ({ collection_id, limit }, extra: ToolExtra) => {
+        const user = requireUser(extra)
+        if (typeof user !== 'string') return textResult(user.error, true)
+        const supabase = createServiceClient()
+        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
+        const { data, error } = await supabase.rpc('mcp_list_collection_saves', {
+          p_user_id: user,
+          p_collection_id: collection_id,
+          p_limit: limit ?? 100,
+        })
+        if (error) return textResult(error.message, true)
+        return textResult(data ?? [])
+      },
+    )
+
+    server.registerTool(
       'list_reminders',
       {
         title: 'List reminders',
@@ -137,7 +162,7 @@ const authed = withMcpAuth(
       extra: { userId: user.userId },
     }
   },
-  { required: false },
+  { required: true, resourceMetadataPath: '/.well-known/oauth-protected-resource' },
 )
 
 export const maxDuration = 10

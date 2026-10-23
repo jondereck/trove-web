@@ -1,8 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-import { Bell, CheckCircle2, ChevronLeft, ChevronRight, Circle } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Bell,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  MoreVertical,
+} from 'lucide-react'
 import {
   completedOnDay,
   dateKey,
@@ -11,6 +18,7 @@ import {
   startOfDay,
   tasksScheduledOn,
   type CompletedDailyTask,
+  type DailyTask,
   type DailyTasksState,
 } from '@/lib/dailyTasks'
 import { dayCompletion } from '@/lib/dailyTasksStats'
@@ -33,6 +41,8 @@ type Props = {
   variant?: 'panel' | 'sheet'
   /** Tap a completed row to restore it (same as Done Today). */
   onUncomplete?: (entry: CompletedDailyTask) => void
+  onEditTask?: (task: DailyTask) => void
+  onDeleteTask?: (task: DailyTask) => void
 }
 
 function monthTitle(date: Date): string {
@@ -52,10 +62,24 @@ export default function TodayAgendaPanel({
   focusDateKey,
   variant = 'panel',
   onUncomplete,
+  onEditTask,
+  onDeleteTask,
 }: Props) {
   const [month, setMonth] = useState(() => startOfDay(new Date()))
   const [selected, setSelected] = useState(() => startOfDay(new Date()))
   const [upcoming, setUpcoming] = useState<StoredSaveReminder[]>([])
+  const [menuTaskId, setMenuTaskId] = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const canManageTasks = !!(onEditTask || onDeleteTask)
+
+  useEffect(() => {
+    if (!menuTaskId) return
+    const onPointer = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuTaskId(null)
+    }
+    window.addEventListener('mousedown', onPointer)
+    return () => window.removeEventListener('mousedown', onPointer)
+  }, [menuTaskId])
 
   // Only re-focus when the parent asks (open / deep-link). Do NOT tie this to
   // state.updatedAt — cloud sync / task writes were snapping the calendar back
@@ -225,6 +249,53 @@ export default function TodayAgendaPanel({
                 <p className={styles.lineTitle}>{task.title}</p>
                 <p className={styles.lineSub}>{formatTaskSubtitle(task)}</p>
               </div>
+              {canManageTasks ? (
+                <div
+                  className={styles.menuWrap}
+                  ref={menuTaskId === task.id ? menuRef : undefined}
+                >
+                  <button
+                    type="button"
+                    className={styles.rowMenu}
+                    aria-label={`More options for ${task.title}`}
+                    aria-expanded={menuTaskId === task.id}
+                    onClick={() =>
+                      setMenuTaskId(id => (id === task.id ? null : task.id))
+                    }
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  {menuTaskId === task.id ? (
+                    <div className={styles.menu} role="menu">
+                      {onEditTask ? (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setMenuTaskId(null)
+                            onEditTask(task)
+                          }}
+                        >
+                          Edit
+                        </button>
+                      ) : null}
+                      {onDeleteTask ? (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className={styles.menuDanger}
+                          onClick={() => {
+                            setMenuTaskId(null)
+                            onDeleteTask(task)
+                          }}
+                        >
+                          Delete
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

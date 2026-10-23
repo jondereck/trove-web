@@ -501,6 +501,13 @@ export default function TodayPage() {
                   if (entry.source === 'reminder') return
                   void uncomplete(entry.id)
                 }}
+                onEditTask={task => {
+                  setEditing(task)
+                  setSheetOpen(true)
+                }}
+                onDeleteTask={task => {
+                  void remove(task.id)
+                }}
               />
             </div>
           </aside>
@@ -539,6 +546,14 @@ export default function TodayPage() {
           onUncomplete={entry => {
             if (entry.source === 'reminder') return
             void uncomplete(entry.id)
+          }}
+          onEditTask={task => {
+            setAgendaOpen(false)
+            setEditing(task)
+            setSheetOpen(true)
+          }}
+          onDeleteTask={task => {
+            void remove(task.id)
           }}
         />
       ) : null}

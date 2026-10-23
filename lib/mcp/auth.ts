@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { hashMcpToken, isMcpToken } from '@/lib/mcp/tokens'
 import { createServiceClient } from '@/lib/mcp/serviceClient'
+import { userFromSupabaseAccessToken } from '@/lib/mcp/supabaseAccessToken'
 
 export type McpUser = {
   userId: string
@@ -8,7 +9,10 @@ export type McpUser = {
 }
 
 export async function resolveMcpUser(token: string | undefined): Promise<McpUser | null> {
-  if (!token || !isMcpToken(token)) return null
+  if (!token) return null
+  const oauthUser = await userFromSupabaseAccessToken(token)
+  if (oauthUser) return oauthUser
+  if (!isMcpToken(token)) return null
   const supabase = createServiceClient()
   if (!supabase) return null
   const { data, error } = await supabase.rpc('mcp_resolve_token', {

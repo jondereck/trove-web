@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Cloud, CloudDownload, FileText, Info, Sparkle } from 'lucide-react'
 import { SiApple, SiGoogle } from 'react-icons/si'
 import { createClient } from '@/lib/supabase/client'
+import { safeNextPath } from '@/lib/auth/safeNext'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
 import { parseImportFile } from '@/lib/import'
 import { writeImport } from '@/lib/importStore'
@@ -108,14 +109,14 @@ export default function LandingPage() {
       return
     }
     playSuccess()
-    router.push('/library')
+    router.push(safeNextPath(searchParams.get('next')) ?? '/library')
     router.refresh()
   }
 
   const handleOAuth = async (provider: OAuthProvider) => {
     setError('')
     setOauthProvider(provider)
-    const { error: oauthError } = await signInWithOAuth(provider)
+    const { error: oauthError } = await signInWithOAuth(provider, searchParams.get('next'))
     if (oauthError) {
       setOauthProvider(null)
       setError(oauthError)

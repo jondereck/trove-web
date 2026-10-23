@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
-import type { CompletedDailyTask, DailyTasksState } from '@/lib/dailyTasks'
+import type { CompletedDailyTask, DailyTask, DailyTasksState } from '@/lib/dailyTasks'
 import TodayAgendaPanel from './TodayAgendaPanel'
 import styles from './TodayAgendaModal.module.css'
 
@@ -12,6 +12,8 @@ type Props = {
   focusDateKey?: string
   onClose: () => void
   onUncomplete?: (entry: CompletedDailyTask) => void
+  onEditTask?: (task: DailyTask) => void
+  onDeleteTask?: (task: DailyTask) => void
 }
 
 export default function TodayAgendaModal({
@@ -20,6 +22,8 @@ export default function TodayAgendaModal({
   focusDateKey,
   onClose,
   onUncomplete,
+  onEditTask,
+  onDeleteTask,
 }: Props) {
   useEffect(() => {
     if (!open) return
@@ -53,6 +57,8 @@ export default function TodayAgendaModal({
           focusDateKey={focusDateKey}
           variant="sheet"
           onUncomplete={onUncomplete}
+          onEditTask={onEditTask}
+          onDeleteTask={onDeleteTask}
         />
       </div>
     </div>

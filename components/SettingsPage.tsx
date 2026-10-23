@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Info, LogOut, Settings2, Shield, User } from 'lucide-react'
 import AgentsMcpSection from '@/components/AgentsMcpSection'
+import ConnectedAppsSection from '@/components/ConnectedAppsSection'
 import AppShell from '@/components/AppShell'
 import TroveLoader from '@/components/TroveLoader'
 import { createClient } from '@/lib/supabase/client'
@@ -160,6 +161,8 @@ export default function SettingsPage() {
         </section>
 
         <AgentsMcpSection />
+
+        <ConnectedAppsSection />
 
         <section className={styles.card}>
           <header className={styles.cardHead}>

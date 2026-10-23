@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Instrument_Serif, Hanken_Grotesk } from 'next/font/google'
 import InteractionSounds from '@/components/InteractionSounds'
 import ViewportShell from '@/components/ViewportShell'
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={cn(serif.variable, sans.variable)}>
       <body>
         <InteractionSounds />
-        <ViewportShell>{children}</ViewportShell>
+        <Suspense fallback={null}>
+          <ViewportShell>{children}</ViewportShell>
+        </Suspense>
       </body>
     </html>
   )

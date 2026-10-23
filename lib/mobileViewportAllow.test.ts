@@ -10,6 +10,13 @@ describe('isMobileAllowedPath', () => {
     assert.equal(isMobileAllowedPath('/c'), true)
   })
 
+  it('allows OAuth consent and the sign-in page that returns there', () => {
+    assert.equal(isMobileAllowedPath('/oauth/consent'), true)
+    assert.equal(isMobileAllowedPath('/oauth/consent?authorization_id=abc'), true)
+    assert.equal(isMobileAllowedPath('/auth/callback'), true)
+    assert.equal(isMobileAllowedPath('/', 'next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc'), true)
+  })
+
   it('blocks the rest of the app', () => {
     assert.equal(isMobileAllowedPath('/'), false)
     assert.equal(isMobileAllowedPath('/library'), false)

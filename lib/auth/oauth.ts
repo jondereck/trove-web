@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { siteUrl } from '@/lib/env'
+import { safeNextPath } from '@/lib/auth/safeNext'
 
 export type OAuthProvider = 'google' | 'apple'
 
@@ -11,12 +12,18 @@ export function oauthCallbackUrl(origin?: string): string {
   return `${base.replace(/\/$/, '')}/auth/callback`
 }
 
-export async function signInWithOAuth(provider: OAuthProvider): Promise<{ error: string | null }> {
+export async function signInWithOAuth(
+  provider: OAuthProvider,
+  next?: string | null,
+): Promise<{ error: string | null }> {
   const supabase = createClient()
+  const callback = new URL(oauthCallbackUrl())
+  const safe = safeNextPath(next)
+  if (safe) callback.searchParams.set('next', safe)
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: oauthCallbackUrl(),
+      redirectTo: callback.toString(),
     },
   })
   return { error: error?.message ?? null }
