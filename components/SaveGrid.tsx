@@ -12,6 +12,7 @@ type SelectionProps = {
   selectionActive?: boolean
   onToggleSelect?: (id: string) => void
   onEnterSelection?: (id: string) => void
+  onMove?: (id: string) => void
 }
 
 type Props = {
@@ -37,6 +38,7 @@ function CardGrid({
   selectedIds,
   onToggleSelect,
   onEnterSelection,
+  onMove,
 }: {
   saves: Save[]
   compact?: boolean
@@ -57,6 +59,7 @@ function CardGrid({
           selected={selectionActive ? selectedIds?.has(save.id) : undefined}
           onToggleSelect={onToggleSelect}
           onEnterSelection={onEnterSelection}
+          onMove={onMove}
         />
       ))}
     </div>
@@ -78,6 +81,7 @@ export default function SaveGrid({
   selectedIds,
   onToggleSelect,
   onEnterSelection,
+  onMove,
 }: Props) {
   if (saves.length === 0 && !title) {
     return (
@@ -93,6 +97,7 @@ export default function SaveGrid({
     selectedIds,
     onToggleSelect,
     onEnterSelection,
+    onMove,
   }
 
   return (
@@ -128,6 +133,7 @@ export default function SaveGrid({
               selected={selectionActive ? selectedIds?.has(save.id) : undefined}
               onToggleSelect={onToggleSelect}
               onEnterSelection={onEnterSelection}
+              onMove={onMove}
             />
           ))}
         </div>

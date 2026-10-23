@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check, Eye, Heart, ImageIcon, Link2, Play, Timer } from 'lucide-react'
+import { Check, Eye, FolderOpen, Heart, ImageIcon, Link2, Play, Timer } from 'lucide-react'
 import MediaLightbox from '@/components/MediaLightbox'
 import DomainBrand from '@/components/DomainBrand'
 import ReminderActiveStatus from '@/components/ReminderActiveStatus'
@@ -45,6 +45,8 @@ type Props = {
   selected?: boolean
   onToggleSelect?: (id: string) => void
   onEnterSelection?: (id: string) => void
+  /** When set, shows a Move button that files this save into a collection. */
+  onMove?: (id: string) => void
 }
 
 function TypeIcon({ type, size = 28 }: { type: Save['type']; size?: number }) {
@@ -135,6 +137,7 @@ export default function SaveCard({
   selected,
   onToggleSelect,
   onEnterSelection,
+  onMove,
 }: Props) {
   const router = useRouter()
   const href = detailHrefWithFrom(saveDetailHref(save), fromFilter)
@@ -434,6 +437,20 @@ export default function SaveCard({
           >
             <Heart size={16} strokeWidth={1.75} fill={isFav ? 'currentColor' : 'none'} />
           </button>
+          {onMove ? (
+            <button
+              type="button"
+              className={styles.actionBtn}
+              aria-label={`Move ${save.title}`}
+              onClick={event => {
+                event.preventDefault()
+                event.stopPropagation()
+                onMove(save.id)
+              }}
+            >
+              <FolderOpen size={16} strokeWidth={1.75} />
+            </button>
+          ) : null}
         </div>
       ) : null}
 

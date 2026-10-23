@@ -4,7 +4,7 @@ import { buildThumbnailRepairPatch, type ThumbnailRepairPatch } from './thumbnai
 
 export { buildThumbnailRepairPatch, type ThumbnailRepairPatch } from './thumbnailRepairCore'
 
-const ATTEMPTS_KEY = 'trove-web.thumbRepair.attempts'
+const ATTEMPTS_KEY = 'trove-web.thumbRepair.attempts.v2'
 const ATTEMPT_TTL = 24 * 60 * 60 * 1000
 
 const inFlight = new Set<string>()

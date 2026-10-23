@@ -18,6 +18,7 @@ import {
   type SessionMode,
 } from '@/lib/sessionMode'
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
+import { useInboxCount } from '@/lib/useInboxCount'
 import QuickSaveFab from '@/components/QuickSaveFab'
 import ReminderSync from '@/components/ReminderSync'
 import CloudRealtimeSync from '@/components/CloudRealtimeSync'
@@ -28,16 +29,15 @@ import styles from './AppShell.module.css'
 
 type NavItem = {
   label: string
-  href?: string
+  href: string
   icon: React.ReactNode
-  soon?: boolean
 }
 
 const NAV: NavItem[] = [
   { label: 'Library', href: '/library', icon: <LayoutGrid size={18} strokeWidth={1.75} /> },
   { label: 'Collections', href: '/collections', icon: <FolderOpen size={18} strokeWidth={1.75} /> },
   { label: 'Statistics', href: '/statistics', icon: <BarChart3 size={18} strokeWidth={1.75} /> },
-  { label: 'Unsorted', icon: <Inbox size={18} strokeWidth={1.75} />, soon: true },
+  { label: 'Unsorted', href: '/unsorted', icon: <Inbox size={18} strokeWidth={1.75} /> },
 ]
 
 type Props = {
@@ -51,6 +51,7 @@ const GUEST_PROFILE: SidebarProfile = { displayName: 'Guest', initials: 'G' }
 export default function AppShell({ mode, importFileName, children }: Props) {
   const router = useRouter()
   const pathname = usePathname()
+  const inboxBadge = useInboxCount(mode)
   const [profile, setProfile] = useState<SidebarProfile>(GUEST_PROFILE)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
@@ -132,21 +133,17 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
             <nav className={styles.nav}>
               {NAV.map(item => (
-                item.href ? (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={isActive(item.href) ? styles.navActive : styles.navLink}
-                  >
-                    <span className={styles.navIcon}>{item.icon}</span>
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span key={item.label} className={styles.navDisabled}>
-                    <span className={styles.navIcon}>{item.icon}</span>
-                    {item.label}
-                  </span>
-                )
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={isActive(item.href) ? styles.navActive : styles.navLink}
+                >
+                  <span className={styles.navIcon}>{item.icon}</span>
+                  {item.label}
+                  {item.href === '/unsorted' && inboxBadge ? (
+                    <span className={styles.navBadge}>{inboxBadge}</span>
+                  ) : null}
+                </Link>
               ))}
             </nav>
 

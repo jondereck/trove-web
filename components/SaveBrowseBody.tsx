@@ -23,6 +23,7 @@ type Props = {
   selectedIds?: ReadonlySet<string>
   onToggleSelect?: (id: string) => void
   onEnterSelection?: (id: string) => void
+  onMove?: (id: string) => void
 }
 
 export default function SaveBrowseBody({
@@ -40,6 +41,7 @@ export default function SaveBrowseBody({
   selectedIds,
   onToggleSelect,
   onEnterSelection,
+  onMove,
 }: Props) {
   const { pinned, rest } = partitionPinnedSaves(saves)
   const hasPinned = showPinned && pinned.length > 0
@@ -48,6 +50,7 @@ export default function SaveBrowseBody({
     selectedIds,
     onToggleSelect,
     onEnterSelection,
+    onMove,
   }
 
   const sentinelRef = useInfiniteScroll({
