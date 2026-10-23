@@ -179,6 +179,14 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
                 {profileMenuOpen ? (
                   <div className={styles.profileMenu} role="menu">
+                    <Link
+                      href="/guide"
+                      className={styles.profileMenuItem}
+                      role="menuitem"
+                      onClick={() => setProfileMenuOpen(false)}
+                    >
+                      Guide
+                    </Link>
                     {mode === 'cloud' ? (
                       <Link
                         href="/settings"

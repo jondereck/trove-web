@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { BookOpen, MessageCircle, Monitor } from 'lucide-react'
 import StoreBadgeLinks from '@/components/StoreBadgeLinks'
 import styles from './MobileDesktopGate.module.css'
@@ -29,6 +30,11 @@ export default function MobileDesktopGate() {
         </p>
 
         <div className={styles.links}>
+          <Link className={styles.link} href="/guide">
+            <BookOpen size={15} strokeWidth={2} aria-hidden />
+            Guide
+          </Link>
+          <span className={styles.linkSep} aria-hidden />
           <a className={styles.link} href={DOCS_URL} target="_blank" rel="noopener noreferrer">
             <BookOpen size={15} strokeWidth={2} aria-hidden />
             Read the docs

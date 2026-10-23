@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Cloud, CloudDownload, FileText, Info, Sparkle } from 'lucide-react'
@@ -172,6 +173,12 @@ export default function LandingPage() {
               library on this device.
             </p>
             <p>You can also load a local export or explore a demo library.</p>
+            <p>
+              <Link href="/guide" className={styles.textLink}>
+                Read the guide
+              </Link>
+              , including how to connect Cursor or another agent with MCP.
+            </p>
           </div>
 
           <StoreBadgeLinks layout="row" className={styles.storeRow} />

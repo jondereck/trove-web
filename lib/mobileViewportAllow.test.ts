@@ -17,6 +17,11 @@ describe('isMobileAllowedPath', () => {
     assert.equal(isMobileAllowedPath('/', 'next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc'), true)
   })
 
+  it('allows the public guide on a phone', () => {
+    assert.equal(isMobileAllowedPath('/guide'), true)
+    assert.equal(isMobileAllowedPath('/guide?lesson=mcp-cursor'), true)
+  })
+
   it('blocks the rest of the app', () => {
     assert.equal(isMobileAllowedPath('/'), false)
     assert.equal(isMobileAllowedPath('/library'), false)

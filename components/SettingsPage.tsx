@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Info, LogOut, Settings2, Shield, User } from 'lucide-react'
 import AgentsMcpSection from '@/components/AgentsMcpSection'
@@ -174,6 +175,13 @@ export default function SettingsPage() {
               <p className={styles.cardDesc}>App information and updates</p>
             </div>
           </header>
+          <Link href="/guide" className={styles.row}>
+            <div className={styles.rowCopy}>
+              <p className={styles.rowLabel}>Guide</p>
+              <p className={styles.rowHint}>Short lessons, including how to connect an agent</p>
+            </div>
+            <span className={styles.statusMuted}>Open</span>
+          </Link>
           <div className={styles.row}>
             <div className={styles.rowCopy}>
               <p className={styles.rowLabel}>Version</p>

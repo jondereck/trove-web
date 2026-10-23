@@ -1,0 +1,362 @@
+.page {
+  min-height: 100vh;
+  background: var(--trove-bg);
+  color: var(--trove-text);
+  padding: 28px clamp(20px, 4vw, 64px) 72px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--trove-accent);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.home {
+  font-size: 14px;
+  color: var(--trove-text-sub);
+}
+
+.home:hover {
+  color: var(--trove-text);
+}
+
+.hero {
+  max-width: 680px;
+  margin-bottom: 28px;
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--trove-text-sub);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  max-width: 1080px;
+  gap: 20px;
+  align-items: start;
+}
+
+.sidebar,
+.lesson {
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: var(--radius-lg);
+}
+
+.sidebar {
+  position: sticky;
+  top: 16px;
+  padding: 18px 14px 14px;
+}
+
+.progressHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 6px;
+}
+
+.progressHead p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progressHead span,
+.group h2 span {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--trove-text-sub);
+}
+
+.track {
+  height: 6px;
+  margin: 10px 6px 16px;
+  border-radius: 999px;
+  background: var(--trove-accent-soft);
+  overflow: hidden;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  background: var(--trove-accent);
+  border-radius: inherit;
+}
+
+.group + .group {
+  margin-top: 14px;
+}
+
+.group h2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 6px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--trove-muted);
+}
+
+.group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row,
+.rowActive {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 2px;
+  border-radius: 12px;
+}
+
+.rowActive {
+  background: var(--trove-accent-soft);
+}
+
+.check,
+.checkOn,
+.lessonBtn,
+.saved button,
+.codeBlock button,
+.primary,
+.doneBtn,
+.next {
+  font: inherit;
+  cursor: pointer;
+}
+
+.check,
+.checkOn {
+  width: 18px;
+  height: 18px;
+  margin: 10px 0 0 8px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1.5px solid var(--trove-border);
+  background: #fff;
+  color: #fff;
+}
+
+.checkOn {
+  border-color: var(--trove-accent);
+  background: var(--trove-accent);
+}
+
+.lessonBtn {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 8px 8px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--trove-text);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.num {
+  color: var(--trove-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.saved {
+  margin: 14px 6px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--trove-muted);
+}
+
+.saved button,
+.codeBlock button,
+.next {
+  border: 0;
+  background: transparent;
+  color: var(--trove-accent);
+  padding: 0;
+}
+
+.lesson {
+  padding: 28px 28px 22px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--trove-accent);
+}
+
+.lesson h2 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.summary,
+.prose {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--trove-text-sub);
+}
+
+.steps {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--trove-cream);
+  color: var(--trove-accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.steps {
+  counter-reset: step;
+}
+
+.note {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--trove-cream);
+  color: var(--trove-text);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.codeBlock {
+  margin: 0 0 18px;
+  border-radius: 14px;
+  background: #1f1c19;
+  color: #f6efe8;
+  overflow: hidden;
+}
+
+.codeBlock figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #d9c7ba;
+}
+
+.codeBlock button {
+  color: #f3c7b4;
+}
+
+.codeBlock pre {
+  margin: 0;
+  padding: 0 14px 14px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--trove-border);
+}
+
+.primary,
+.doneBtn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.primary {
+  background: var(--trove-accent);
+  color: var(--trove-on-accent);
+}
+
+.doneBtn {
+  background: var(--trove-accent-soft);
+  color: var(--trove-accent);
+}
+
+.end {
+  font-size: 14px;
+  color: var(--trove-text-sub);
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .lesson {
+    padding: 22px 18px 18px;
+  }
+}
