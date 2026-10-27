@@ -22,11 +22,23 @@ export function stateUpdatedAtMs(state: DailyTasksState): number {
   return Number.isFinite(at) ? at : 0
 }
 
+/**
+ * PostgREST returns `timestamptz` as `2026-10-26T11:21:01.246+00:00`.
+ * We persist `toISOString()` (`...Z`). Those strings are the same instant;
+ * comparing them raw made every sync look dirty and upsert again.
+ */
+export function canonicalUpdatedAt(value: string | undefined): string | undefined {
+  if (!value) return value
+  const ms = Date.parse(value)
+  if (!Number.isFinite(ms)) return value
+  return new Date(ms).toISOString()
+}
+
 /** Fingerprint for skipping no-op realtime echoes / redundant upserts. */
 export function dailyTasksFingerprint(state: DailyTasksState): string {
   return JSON.stringify({
     enabled: state.enabled,
-    updatedAt: state.updatedAt,
+    updatedAt: canonicalUpdatedAt(state.updatedAt),
     summaryEnabled: state.summaryEnabled,
     summaryHour: state.summaryHour,
     summaryMinute: state.summaryMinute,
@@ -190,10 +202,11 @@ export function mergeDailyTasksState(
 export function dailyTasksStateFromCloudRow(row: CloudDailyTasksRow | null): DailyTasksState | null {
   if (!row) return null
   const state = normalizeDailyTasksState(row.state)
-  const remoteAt = typeof row.updated_at === 'string' ? row.updated_at : state.updatedAt
+  const columnAt = typeof row.updated_at === 'string' ? row.updated_at : state.updatedAt
+  const updatedAt = canonicalUpdatedAt(columnAt) || state.updatedAt
   return {
     ...state,
-    updatedAt: remoteAt || state.updatedAt,
+    updatedAt,
   }
 }
 
