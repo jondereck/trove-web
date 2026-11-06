@@ -74,15 +74,24 @@ function readNeonUser(body: unknown): NeonUser | null {
   return { id: user.id, email: user.email, name: user.name }
 }
 
+function authOrigin(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://web-trove.vercel.app').replace(/\/$/, '')
+}
+
 export async function neonEmailAuth(
   path: 'sign-in/email' | 'sign-up/email' | 'request-password-reset',
   body: Record<string, unknown>,
 ): Promise<{ user: NeonUser | null; error: string | null }> {
   const base = neonAuthUrl()
   if (!base) return { user: null, error: 'Neon Auth is not configured' }
+  const origin = authOrigin()
   const response = await fetch(`${base}/${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: origin,
+      Referer: `${origin}/`,
+    },
     body: JSON.stringify(body),
   })
   const payload = await response.json().catch(() => null)

@@ -9,7 +9,11 @@ export async function POST(request: Request) {
   if (!email || !password) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
   }
-  const result = await neonEmailAuth('sign-in/email', { email, password })
+  let result = await neonEmailAuth('sign-in/email', { email, password })
+  if (result.error && /invalid email or password/i.test(result.error)) {
+    const created = await neonEmailAuth('sign-up/email', { email, password, name: email })
+    if (created.user) result = created
+  }
   if (result.error || !result.user) {
     return NextResponse.json({ error: result.error ?? 'Sign-in failed' }, { status: 401 })
   }
