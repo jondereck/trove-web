@@ -78,6 +78,67 @@ export function authOrigin(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://web-trove.vercel.app').replace(/\/$/, '')
 }
 
+export async function openGoogleNonce(): Promise<string> {
+  const nonce = randomBytes(18).toString('base64url')
+  const pool = neonPool()
+  await pool.query(
+    `create table if not exists public.google_nonces (
+      nonce text primary key,
+      created_at timestamptz not null default now(),
+      used_at timestamptz
+    )`,
+  )
+  await pool.query('insert into public.google_nonces (nonce) values ($1)', [nonce])
+  return nonce
+}
+
+export async function releasePasswordOnlyNeonUsers(): Promise<void> {
+  const pool = neonPool()
+  const ids = await pool.query(
+    `select u.id
+     from neon_auth."user" u
+     join public.users p on lower(p.email) = lower(u.email)
+     where not exists (
+       select 1 from neon_auth.account a
+       where a."userId" = u.id and a."providerId" = 'google'
+     )`,
+  )
+  const userIds = ids.rows.map((row) => row.id as string)
+  if (userIds.length === 0) return
+  await pool.query('delete from neon_auth.session where "userId" = any($1::uuid[])', [userIds])
+  await pool.query('delete from neon_auth.account where "userId" = any($1::uuid[])', [userIds])
+  await pool.query('delete from neon_auth."user" where id = any($1::uuid[])', [userIds])
+}
+
+export async function claimNeonGoogleSession(request: Request, nonce: string): Promise<NeonUser | null> {
+  const pool = neonPool()
+  const marked = await pool.query(
+    `update public.google_nonces
+     set used_at = now()
+     where nonce = $1 and used_at is null and created_at > now() - interval '10 minutes'
+     returning created_at`,
+    [nonce],
+  )
+  const startedAt = marked.rows[0]?.created_at as Date | undefined
+  if (!startedAt) return null
+  const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() ?? ''
+  const userAgent = request.headers.get('user-agent') ?? ''
+  const found = await pool.query(
+    `select u.id::text as id, u.email, u.name, s."ipAddress" as ip, s."userAgent" as agent
+     from neon_auth.session s
+     join neon_auth."user" u on u.id = s."userId"
+     where s."createdAt" >= $1 and s."expiresAt" > now()
+     order by s."createdAt" desc
+     limit 5`,
+    [startedAt],
+  )
+  const rows = found.rows as { id: string; email: string; name?: string; ip: string | null; agent: string | null }[]
+  const tight = rows.filter((row) => (ip && row.ip === ip) || (userAgent && row.agent === userAgent))
+  const chosen = rows.length === 1 ? rows[0] : tight.length === 1 ? tight[0] : null
+  if (!chosen?.email) return null
+  return { id: chosen.id, email: chosen.email, name: chosen.name }
+}
+
 export async function startNeonGoogle(callbackURL: string): Promise<{ url: string | null; error: string | null }> {
   const base = neonAuthUrl()
   if (!base) return { url: null, error: 'Neon Auth is not configured' }

@@ -5,9 +5,13 @@ import { useEffect, useState } from 'react'
 export function NeonGoogleFinish({
   authUrl,
   fromMobile,
+  nonce,
+  errorCode,
 }: {
   authUrl: string
   fromMobile: boolean
+  nonce: string
+  errorCode: string
 }) {
   const [message, setMessage] = useState('Signing in…')
 
@@ -15,18 +19,27 @@ export function NeonGoogleFinish({
     let cancelled = false
     async function finish() {
       try {
-        const sessionResponse = await fetch(`${authUrl}/get-session`, { credentials: 'include' })
-        const session = await sessionResponse.json() as { session?: { token?: string } }
-        const neonToken = session.session?.token
-        if (!neonToken) {
-          if (!cancelled) setMessage('Google did not return a session. Use email, or try again.')
+        if (errorCode === 'account_not_linked') {
+          const blocked = await fetch('/api/auth/google/finish', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'account_not_linked' }),
+          })
+          const blockedBody = await blocked.json() as { error?: string }
+          if (!cancelled) {
+            setMessage(blockedBody.error ?? 'Tap Google again. It will connect to your library.')
+          }
           return
         }
+        const sessionResponse = await fetch(`${authUrl}/get-session`, { credentials: 'include' })
+        const session = await sessionResponse.json() as { session?: { token?: string } } | null
+        const neonToken = session?.session?.token
         const finishResponse = await fetch('/api/auth/google/finish', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: neonToken }),
+          body: JSON.stringify(neonToken ? { token: neonToken } : { nonce }),
         })
         const body = await finishResponse.json() as { token?: string; error?: string }
         if (!finishResponse.ok || !body.token) {
@@ -46,7 +59,7 @@ export function NeonGoogleFinish({
     return () => {
       cancelled = true
     }
-  }, [authUrl, fromMobile])
+  }, [authUrl, errorCode, fromMobile, nonce])
 
   return (
     <main className="grid min-h-screen place-items-center px-6 text-center text-sm text-neutral-600">
