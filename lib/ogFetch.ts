@@ -11,9 +11,11 @@ export async function fetchOGMetadata(url: string): Promise<OGMetadata> {
   })()
 
   const base: OGMetadata = { url, title: hostFallback }
-  const endpoint = `${supabaseUrl()}/functions/v1/fetch-og`
+  const endpoint = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+    ? '/api/og'
+    : `${supabaseUrl()}/functions/v1/fetch-og`
   const key = supabaseAnonKey()
-  if (!endpoint.includes('supabase') || !key) return base
+  if (process.env.NEXT_PUBLIC_DATA_BACKEND !== 'neon' && (!endpoint.includes('supabase') || !key)) return base
 
   try {
     const res = await fetch(endpoint, {

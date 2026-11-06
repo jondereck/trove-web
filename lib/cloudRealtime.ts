@@ -1,4 +1,4 @@
-import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type CloudDataChange = 'saves' | 'collections' | 'dailyTasks'
 
@@ -7,7 +7,6 @@ type Listener = (change: CloudDataChange) => void
 const DEBOUNCE_MS = 450
 
 const listeners = new Set<Listener>()
-let channel: RealtimeChannel | null = null
 let activeUserId: string | null = null
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let pending = new Set<CloudDataChange>()
@@ -34,45 +33,34 @@ export function subscribeCloudDataChanges(listener: Listener): () => void {
   }
 }
 
-/** Cross-device sync for Trove Web Library / Collections / Daily Tasks. */
-export function startCloudRealtime(supabase: SupabaseClient, userId: string): void {
+const POLL_MS = 12000
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
+/** Cross-device sync. Neon is polled; the Supabase argument is unused. */
+export function startCloudRealtime(_supabase: SupabaseClient, userId: string): void {
   if (!userId) {
-    stopCloudRealtime(supabase)
+    stopCloudRealtime(_supabase)
     return
   }
-  if (channel && activeUserId === userId) return
-
-  stopCloudRealtime(supabase)
+  if (pollTimer && activeUserId === userId) return
+  stopCloudRealtime(_supabase)
   activeUserId = userId
-  channel = supabase
-    .channel(`trove-web-sync:${userId}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'saves', filter: `user_id=eq.${userId}` },
-      () => schedule('saves'),
-    )
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'collections', filter: `user_id=eq.${userId}` },
-      () => schedule('collections'),
-    )
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'daily_tasks', filter: `user_id=eq.${userId}` },
-      () => schedule('dailyTasks'),
-    )
-    .subscribe()
+  pollTimer = setInterval(() => {
+    schedule('saves')
+    schedule('collections')
+    schedule('dailyTasks')
+  }, POLL_MS)
 }
 
-export function stopCloudRealtime(supabase: SupabaseClient): void {
+export function stopCloudRealtime(_supabase: SupabaseClient): void {
   if (debounceTimer) {
     clearTimeout(debounceTimer)
     debounceTimer = null
   }
-  pending = new Set()
-  if (channel) {
-    void supabase.removeChannel(channel)
-    channel = null
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
+  pending = new Set()
   activeUserId = null
 }

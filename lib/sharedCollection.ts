@@ -40,12 +40,13 @@ export async function fetchSharedCollection(
   token: string,
 ): Promise<SharedCollectionPayload | null> {
   if (!isSharedCollectionToken(token)) return null
-  const base = supabaseUrl()
+  const neon = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+  const base = neon ? '' : supabaseUrl()
   const anon = supabaseAnonKey()
-  if (!base.trim() || !anon.trim()) return null
+  if (!neon && (!base.trim() || !anon.trim())) return null
 
   const res = await fetch(
-    `${base}/functions/v1/shared-collection?token=${encodeURIComponent(token)}`,
+    neon ? `/api/shared-collection?token=${encodeURIComponent(token)}` : `${base}/functions/v1/shared-collection?token=${encodeURIComponent(token)}`,
     {
       headers: { Authorization: `Bearer ${anon}`, apikey: anon },
       next: { revalidate: 30 },
@@ -65,12 +66,13 @@ export async function postSharedCollectionAction(
     | { action: 'attach_viewer'; token: string }
     | { action: 'accept_invite'; invite_token: string },
 ): Promise<{ ok: boolean; status: number; error?: string }> {
-  const base = supabaseUrl()
+  const neon = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+  const base = neon ? '' : supabaseUrl()
   const anon = supabaseAnonKey()
-  if (!base.trim() || !anon.trim()) {
+  if (!neon && (!base.trim() || !anon.trim())) {
     return { ok: false, status: 0, error: 'not_configured' }
   }
-  const res = await fetch(`${base}/functions/v1/shared-collection`, {
+  const res = await fetch(neon ? '/api/shared-collection' : `${base}/functions/v1/shared-collection`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,

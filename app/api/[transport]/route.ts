@@ -11,7 +11,21 @@ type ToolExtra = {
   }
 }
 
-function textResult(value: unknown, isError = false) {
+async function callMcp(fn: string, args: Record<string, unknown>, userId: string) {
+  if (process.env.DATABASE_URL) {
+    const { emptyState, runQuery } = await import('@/lib/neon/query')
+    const { neonPool } = await import('@/lib/neon/pool')
+    return runQuery((sql, params) => neonPool().query(sql, params), {
+      ...emptyState('saves'),
+      rpc: { fn, args },
+    }, userId)
+  }
+  const supabase = createServiceClient()
+  if (!supabase) return { data: null, error: { message: 'MCP server is missing SUPABASE_SERVICE_ROLE_KEY' }, count: null }
+  const { data, error } = await supabase.rpc(fn, args)
+  return { data, error: error ? { message: error.message } : null, count: null }
+}
+  function textResult(value: unknown, isError = false) {
   return {
     isError,
     content: [{ type: 'text' as const, text: typeof value === 'string' ? value : JSON.stringify(value) }],
@@ -19,7 +33,9 @@ function textResult(value: unknown, isError = false) {
 }
 
 function requireUser(extra: ToolExtra): string | { error: string } {
-  if (!serviceRoleKey()) return { error: 'MCP server is missing SUPABASE_SERVICE_ROLE_KEY' }
+  if (!serviceRoleKey() && !process.env.DATABASE_URL) {
+    return { error: 'MCP server is missing its database connection' }
+  }
   const userId = extra.authInfo?.extra?.userId
   if (!userId) return { error: 'Sign in through your agent, or send Authorization: Bearer trove_sk_… from Settings → Agents & MCP' }
   if (!extra.authInfo?.scopes?.includes('trove:read')) return { error: 'This token does not have trove:read' }
@@ -51,15 +67,13 @@ const handler = createMcpHandler(
       async ({ query, limit }, extra: ToolExtra) => {
         const user = requireUser(extra)
         if (typeof user !== 'string') return textResult(user.error, true)
-        const supabase = createServiceClient()
-        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
-        const { data, error } = await supabase.rpc('mcp_search_saves', {
+        const result = await callMcp('mcp_search_saves', {
           p_user_id: user,
           p_query: query ?? '',
           p_limit: limit ?? 20,
-        })
-        if (error) return textResult(error.message, true)
-        return textResult(data ?? [])
+        }, user)
+        if (result.error) return textResult(result.error.message, true)
+        return textResult(result.data ?? [])
       },
     )
 
@@ -73,15 +87,13 @@ const handler = createMcpHandler(
       async ({ id }, extra: ToolExtra) => {
         const user = requireUser(extra)
         if (typeof user !== 'string') return textResult(user.error, true)
-        const supabase = createServiceClient()
-        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
-        const { data, error } = await supabase.rpc('mcp_get_save', {
+        const result = await callMcp('mcp_get_save', {
           p_user_id: user,
           p_save_id: id,
-        })
-        if (error) return textResult(error.message, true)
-        if (!data) return textResult('Save not found', true)
-        return textResult(data)
+        }, user)
+        if (result.error) return textResult(result.error.message, true)
+        if (!result.data) return textResult('Save not found', true)
+        return textResult(result.data)
       },
     )
 
@@ -95,11 +107,9 @@ const handler = createMcpHandler(
       async (_args, extra: ToolExtra) => {
         const user = requireUser(extra)
         if (typeof user !== 'string') return textResult(user.error, true)
-        const supabase = createServiceClient()
-        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
-        const { data, error } = await supabase.rpc('mcp_list_collections', { p_user_id: user })
-        if (error) return textResult(error.message, true)
-        return textResult(data ?? [])
+        const result = await callMcp('mcp_list_collections', { p_user_id: user }, user)
+        if (result.error) return textResult(result.error.message, true)
+        return textResult(result.data ?? [])
       },
     )
 
@@ -116,15 +126,13 @@ const handler = createMcpHandler(
       async ({ collection_id, limit }, extra: ToolExtra) => {
         const user = requireUser(extra)
         if (typeof user !== 'string') return textResult(user.error, true)
-        const supabase = createServiceClient()
-        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
-        const { data, error } = await supabase.rpc('mcp_list_collection_saves', {
+        const result = await callMcp('mcp_list_collection_saves', {
           p_user_id: user,
           p_collection_id: collection_id,
           p_limit: limit ?? 100,
-        })
-        if (error) return textResult(error.message, true)
-        return textResult(data ?? [])
+        }, user)
+        if (result.error) return textResult(result.error.message, true)
+        return textResult(result.data ?? [])
       },
     )
 
@@ -138,11 +146,9 @@ const handler = createMcpHandler(
       async (_args, extra: ToolExtra) => {
         const user = requireUser(extra)
         if (typeof user !== 'string') return textResult(user.error, true)
-        const supabase = createServiceClient()
-        if (!supabase) return textResult('MCP server is missing SUPABASE_SERVICE_ROLE_KEY', true)
-        const { data, error } = await supabase.rpc('mcp_list_reminders', { p_user_id: user })
-        if (error) return textResult(error.message, true)
-        return textResult(data ?? [])
+        const result = await callMcp('mcp_list_reminders', { p_user_id: user }, user)
+        if (result.error) return textResult(result.error.message, true)
+        return textResult(result.data ?? [])
       },
     )
   },

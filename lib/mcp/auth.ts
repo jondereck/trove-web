@@ -10,6 +10,20 @@ export type McpUser = {
 
 export async function resolveMcpUser(token: string | undefined): Promise<McpUser | null> {
   if (!token) return null
+  if (process.env.DATABASE_URL) {
+    const { readSession } = await import('@/lib/neon/accounts')
+    const session = await readSession(token)
+    if (session) return { userId: session.appUserId, scopes: ['trove:read'] }
+    if (isMcpToken(token)) {
+      const { neonPool } = await import('@/lib/neon/pool')
+      const result = await neonPool().query(
+        'select user_id, scopes from public.mcp_resolve_token($1)',
+        [hashMcpToken(token)],
+      )
+      const row = result.rows[0] as { user_id?: string; scopes?: string[] } | undefined
+      if (row?.user_id) return { userId: row.user_id, scopes: row.scopes ?? ['trove:read'] }
+    }
+  }
   const oauthUser = await userFromSupabaseAccessToken(token)
   if (oauthUser) return oauthUser
   if (!isMcpToken(token)) return null

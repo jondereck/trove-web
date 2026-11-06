@@ -84,11 +84,14 @@ export async function callAiProxy(input: {
   userId?: string | null
   maxTokens?: number
 }): Promise<string> {
-  const url = supabaseUrl().trim()
+  const url = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon' ? '' : supabaseUrl().trim()
   const anon = supabaseAnonKey().trim()
-  if (!url || !anon) throw new Error('Supabase is not configured.')
+  const endpoint = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+    ? '/api/ai'
+    : `${url}/functions/v1/ai-proxy`
+  if (process.env.NEXT_PUBLIC_DATA_BACKEND !== 'neon' && (!url || !anon)) throw new Error('Supabase is not configured.')
 
-  const res = await fetch(`${url}/functions/v1/ai-proxy`, {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
