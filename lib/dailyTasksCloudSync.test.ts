@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { emptyDailyTasksState, type DailyTasksState } from './dailyTasks'
 import {
+  dailyTasksFingerprint,
   dailyTasksStateFromCloudRow,
   dailyTasksStateToCloudPayload,
   isMeaningfulDailyTasksState,
@@ -226,5 +227,43 @@ describe('dailyTasksCloudSync', () => {
     assert.ok(back)
     assert.equal(back!.completed[0]!.id, 'c1')
     assert.equal(back!.obligationDays['2026-09-21'], true)
+  })
+
+  it('does not treat a PostgREST timestamptz offset as a document change', () => {
+    const local = base({
+      updatedAt: '2026-10-26T11:21:01.246Z',
+      tasks: [{
+        id: 't1',
+        title: 'Water plants',
+        hour: 8,
+        minute: 0,
+        sortOrder: 0,
+        createdAt: '2026-10-20T08:00:00.000Z',
+        updatedAt: '2026-10-20T08:00:00.000Z',
+        scheduledOn: '2026-10-20',
+      }],
+      obligationDays: { '2026-10-20': true },
+    })
+    const remote = dailyTasksStateFromCloudRow({
+      user_id: 'user-1',
+      state: local,
+      updated_at: '2026-10-26T11:21:01.246+00:00',
+    })
+    assert.ok(remote)
+    const merged = mergeDailyTasksState(local, remote)
+    assert.equal(dailyTasksFingerprint(merged), dailyTasksFingerprint(remote))
+    assert.equal(remote.updatedAt, '2026-10-26T11:21:01.246Z')
+  })
+
+  it('still treats a newer cloud clock as a different document', () => {
+    const local = base({ updatedAt: '2026-10-26T11:21:01.246Z' })
+    const remote = dailyTasksStateFromCloudRow({
+      user_id: 'user-1',
+      state: { ...local, updatedAt: '2026-10-26T12:00:00.000Z' },
+      updated_at: '2026-10-26T12:00:00+00:00',
+    })
+    assert.ok(remote)
+    assert.notEqual(dailyTasksFingerprint(local), dailyTasksFingerprint(remote))
+    assert.equal(remote.updatedAt, '2026-10-26T12:00:00.000Z')
   })
 })

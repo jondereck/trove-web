@@ -63,8 +63,10 @@ export async function syncDailyTasksWithCloud(
   userId: string,
   local: DailyTasksState,
 ): Promise<DailyTasksState> {
-  // Re-probe each sync — table may have been created after an earlier miss.
-  tableAvailable = null
+  // Re-probe only after a miss (the table may be created later). A successful
+  // probe used to be cleared on every sync, which added a `select=user_id&limit=1`
+  // GET before the real fetch — half of the daily_tasks reads in API logs.
+  if (tableAvailable === false) tableAvailable = null
   const remote = await fetchCloudDailyTasks(supabase, userId)
   if (!remote) {
     // Never seed cloud with an empty virgin browser — phone is first source.
