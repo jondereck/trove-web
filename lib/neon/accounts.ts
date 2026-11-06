@@ -74,8 +74,48 @@ function readNeonUser(body: unknown): NeonUser | null {
   return { id: user.id, email: user.email, name: user.name }
 }
 
-function authOrigin(): string {
+export function authOrigin(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://web-trove.vercel.app').replace(/\/$/, '')
+}
+
+export async function startNeonGoogle(callbackURL: string): Promise<{ url: string | null; error: string | null }> {
+  const base = neonAuthUrl()
+  if (!base) return { url: null, error: 'Neon Auth is not configured' }
+  const origin = authOrigin()
+  const response = await fetch(`${base}/sign-in/social`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: origin,
+      Referer: `${origin}/`,
+    },
+    body: JSON.stringify({ provider: 'google', callbackURL }),
+  })
+  const payload = await response.json().catch(() => null) as { url?: string; message?: string } | null
+  if (!response.ok || !payload?.url) {
+    return { url: null, error: payload?.message ?? 'Could not start Google sign-in.' }
+  }
+  return { url: payload.url, error: null }
+}
+
+export async function userFromNeonSession(sessionToken: string): Promise<NeonUser | null> {
+  const base = neonAuthUrl()
+  if (!base || !sessionToken) return null
+  const origin = authOrigin()
+  const headersList = [
+    { Authorization: `Bearer ${sessionToken}` },
+    { Cookie: `__Secure-neon-auth.session_token=${sessionToken}` },
+    { Cookie: `neon-auth.session_token=${sessionToken}` },
+  ]
+  for (const extra of headersList) {
+    const response = await fetch(`${base}/get-session`, {
+      headers: { Origin: origin, Referer: `${origin}/`, ...extra },
+    })
+    if (!response.ok) continue
+    const user = readNeonUser(await response.json().catch(() => null))
+    if (user) return user
+  }
+  return null
 }
 
 export async function neonEmailAuth(

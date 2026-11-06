@@ -116,8 +116,17 @@ export function createRemoteNeonClient(options: {
         void this.getSession().then((result) => callback('INITIAL_SESSION', result.data.session))
         return { data: { subscription: { unsubscribe() { listeners.delete(callback) } } } }
       },
-      async signInWithOAuth() {
-        return { data: { url: null }, error: { message: 'Sign in with email and set a new password. Your library stays on that email.' } }
+      async signInWithOAuth(input?: { provider?: string }) {
+        if (input?.provider && input.provider !== 'google') {
+          return { data: { url: null }, error: { message: 'Use Google or email.' } }
+        }
+        const response = await fetch(`${options.apiUrl}/api/auth/google`, { credentials: 'include' })
+        const body = await response.json().catch(() => ({})) as { url?: string; error?: string }
+        if (!response.ok || !body.url) {
+          return { data: { url: null }, error: { message: body.error ?? 'Could not start Google sign-in.' } }
+        }
+        if (typeof window !== 'undefined') window.location.assign(body.url)
+        return { data: { url: body.url }, error: null }
       },
       async exchangeCodeForSession() {
         return { error: { message: 'Use email sign-in.' } }
