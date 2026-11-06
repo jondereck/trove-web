@@ -181,6 +181,32 @@ export async function userFromNeonSession(sessionToken: string): Promise<NeonUse
   return null
 }
 
+export async function neonAuthPost(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; error: string | null }> {
+  const base = neonAuthUrl()
+  if (!base) return { ok: false, error: 'Neon Auth is not configured' }
+  const origin = authOrigin()
+  const response = await fetch(`${base}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: origin,
+      Referer: `${origin}/`,
+    },
+    body: JSON.stringify(body),
+  })
+  const payload = await response.json().catch(() => null)
+  if (!response.ok) {
+    const message = payload && typeof payload === 'object' && 'message' in payload
+      ? String((payload as { message: unknown }).message)
+      : 'Request failed'
+    return { ok: false, error: message }
+  }
+  return { ok: true, error: null }
+}
+
 export async function neonEmailAuth(
   path: 'sign-in/email' | 'sign-up/email' | 'request-password-reset',
   body: Record<string, unknown>,
