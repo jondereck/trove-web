@@ -1,0 +1,48 @@
+.bar {
+  position: fixed;
+  z-index: 40;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  background: var(--trove-card);
+  border: 1px solid var(--trove-border);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.08);
+}
+
+.copy {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--trove-text-sub);
+}
+
+.copy a {
+  color: var(--trove-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ok {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--trove-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ok:active {
+  transform: scale(0.97);
+}

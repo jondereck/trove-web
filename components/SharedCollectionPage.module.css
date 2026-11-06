@@ -1,8 +1,10 @@
 .page {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: var(--trove-bg);
   color: var(--trove-text);
-  padding: 24px clamp(16px, 4vw, 48px) 64px;
+  padding: 24px clamp(16px, 4vw, 48px) 32px;
   box-sizing: border-box;
 }
 

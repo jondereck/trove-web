@@ -6,7 +6,7 @@ import { sortByPinnedThenCreated } from './libraryFilters'
 import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
 import { parseSaveRow } from './saves'
 import type { LibraryFilter, LibraryStats, Save, SavesPageResult } from './types'
-import { canOpenCloudSaveDetail, filterLibrarySaves } from './libraryCore'
+import { canOpenCloudSaveDetail, excludeVaultSaves, filterLibrarySaves } from './libraryCore'
 
 function applyLibraryFilter<T extends {
   eq: (col: string, val: unknown) => T
@@ -162,6 +162,38 @@ export async function fetchCloudSavesForStats(supabase: SupabaseClient): Promise
     const { saves, total } = await fetchCloudLibrarySavesPage(supabase, offset, pageSize, 'all')
     all.push(...saves)
     if (all.length >= total || saves.length < pageSize) break
+    offset += pageSize
+  }
+
+  return all
+}
+
+/** Library + Inbox, Vault excluded. Used for zip backup export. */
+export async function fetchCloudBackupSaves(supabase: SupabaseClient): Promise<Save[]> {
+  const pageSize = 500
+  const all: Save[] = []
+  let offset = 0
+
+  while (true) {
+    let result = await supabase
+      .from('saves')
+      .select('*')
+      .eq('is_vault', false)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1)
+
+    if (result.error && /is_vault/.test(result.error.message)) {
+      result = await supabase
+        .from('saves')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
+    }
+
+    if (result.error) throw result.error
+    const rows = (result.data ?? []).map(row => parseSaveRow(row as Save))
+    all.push(...excludeVaultSaves(rows))
+    if (rows.length < pageSize) break
     offset += pageSize
   }
 

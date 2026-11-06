@@ -17,6 +17,7 @@ import {
   clearImportSession,
   type SessionMode,
 } from '@/lib/sessionMode'
+import { downloadCurrentBackup } from '@/lib/backup/downloadBackup'
 import { fetchSidebarProfile, type SidebarProfile } from '@/lib/profile'
 import { useInboxCount } from '@/lib/useInboxCount'
 import QuickSaveFab from '@/components/QuickSaveFab'
@@ -25,6 +26,7 @@ import CloudRealtimeSync from '@/components/CloudRealtimeSync'
 import TroveMark from '@/components/TroveMark'
 import { BRAND } from '@/lib/branding'
 import UserAvatar from '@/components/UserAvatar'
+import SiteFooter from '@/components/SiteFooter'
 import styles from './AppShell.module.css'
 
 type NavItem = {
@@ -54,6 +56,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
   const inboxBadge = useInboxCount(mode)
   const [profile, setProfile] = useState<SidebarProfile>(GUEST_PROFILE)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [backupBusy, setBackupBusy] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -187,6 +190,29 @@ export default function AppShell({ mode, importFileName, children }: Props) {
                     >
                       Guide
                     </Link>
+                    <button
+                      type="button"
+                      className={styles.profileMenuItem}
+                      role="menuitem"
+                      disabled={backupBusy}
+                      onClick={() => {
+                        setBackupBusy(true)
+                        void downloadCurrentBackup()
+                          .catch(error => {
+                            window.alert(
+                              error instanceof Error
+                                ? error.message
+                                : 'Could not download a backup.',
+                            )
+                          })
+                          .finally(() => {
+                            setBackupBusy(false)
+                            setProfileMenuOpen(false)
+                          })
+                      }}
+                    >
+                      {backupBusy ? 'Preparing backup…' : 'Download backup'}
+                    </button>
                     {mode === 'cloud' ? (
                       <Link
                         href="/settings"
@@ -241,6 +267,7 @@ export default function AppShell({ mode, importFileName, children }: Props) {
 
           <div className={styles.mainWrap}>
             {children}
+            <SiteFooter />
             <QuickSaveFab mode={mode} />
           </div>
         </div>

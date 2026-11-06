@@ -1,9 +1,11 @@
 .page {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  padding: clamp(24px, 3.5vh, 40px) clamp(28px, 5vw, 72px);
+  padding: clamp(24px, 3.5vh, 40px) clamp(28px, 5vw, 72px) 12px;
   background: var(--trove-bg);
   box-sizing: border-box;
 }
@@ -12,11 +14,19 @@
   position: relative;
   z-index: 1;
   display: grid;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  height: auto;
   grid-template-columns: minmax(280px, 520px) minmax(340px, 420px);
   justify-content: center;
   gap: clamp(40px, 5vw, 72px);
   align-items: stretch;
+}
+
+.footerSlot {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
 }
 
 .wavesWrap {
@@ -355,6 +365,38 @@
 
 .filePick input {
   display: none;
+}
+
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 12px;
+  border: 1.5px solid var(--trove-accent);
+  border-radius: var(--radius-md);
+  background: var(--trove-card);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--trove-accent);
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.downloadBtn:hover:not(:disabled) {
+  background: var(--trove-accent-soft);
+}
+
+.downloadBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.downloadBtn:active:not(:disabled) {
+  transform: scale(0.99);
 }
 
 .hint {

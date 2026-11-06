@@ -9,6 +9,7 @@ import {
   doneReminderIdsOnDay,
   emptyDailyTasksState,
   removeTask,
+  type CompletedDailyTask,
   rescheduleTask,
   uncompleteTask,
   updateTask,
@@ -30,8 +31,11 @@ import {
   markReminderDoneForTodayInStore,
   markReminderFiredInStore,
   reminderDisplayTitle,
+  restoreReminderOccurrenceInStore,
   type StoredSaveReminder,
 } from '@/lib/saveRemindersCore'
+import { upsertCloudReminder } from '@/lib/reminderCloud'
+import { setGuestSessionUserId } from '@/lib/guestImportGate'
 import { loadReminderStore, saveReminderStore } from '@/lib/reminderStore'
 import {
   invalidateUpcomingReminderIndex,
@@ -125,6 +129,9 @@ export function useDailyTasks() {
     // Daily Tasks cloud first, then reminders — otherwise synthesize shows
     // today's weekly rows before Done Today from the phone is applied.
     void (async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      setGuestSessionUserId(data.user?.id ?? null)
       const local = await readDailyTasks()
       if (cancelled || !mountedRef.current) return
       stateRef.current = local
@@ -219,6 +226,38 @@ export function useDailyTasks() {
     [applyLocal],
   )
 
+  const uncompleteEntry = useCallback(
+    async (entry: CompletedDailyTask) => {
+      if (entry.source === 'reminder' && entry.reminderId) {
+        const store = hydrateSaveReminderStore(loadReminderStore())
+        const next = restoreReminderOccurrenceInStore(store, {
+          reminderId: entry.reminderId,
+          saveId: entry.saveId ?? '',
+          title: entry.title,
+          eventAt: entry.eventAt || entry.fireAt || new Date().toISOString(),
+          fireAt: entry.fireAt || entry.eventAt || new Date().toISOString(),
+          repeat: entry.repeat ?? null,
+        })
+        saveReminderStore(next)
+        invalidateUpcomingReminderIndex()
+        const restored = next.upcoming[entry.reminderId]
+        if (getSessionMode() === 'cloud' && restored) {
+          const supabase = createClient()
+          const { data } = await supabase.auth.getUser()
+          if (data.user?.id) {
+            await upsertCloudReminder(supabase, data.user.id, restored).catch(() => {})
+          }
+        }
+        await applyLocal(s => uncompleteTask(s, entry.id))
+        refreshReminders()
+        return
+      }
+      await applyLocal(s => uncompleteTask(s, entry.id))
+      refreshReminders()
+    },
+    [applyLocal, refreshReminders],
+  )
+
   const remove = useCallback(
     async (id: string) => {
       await applyLocal(s => removeTask(s, id))
@@ -263,6 +302,7 @@ export function useDailyTasks() {
           saveId: row.saveId,
           fireAt: row.fireAt,
           eventAt: row.eventAt,
+          repeat: row.repeat ?? null,
         }),
       )
       refreshReminders()
@@ -291,6 +331,7 @@ export function useDailyTasks() {
     add,
     complete,
     uncomplete,
+    uncompleteEntry,
     remove,
     update,
     reschedule,

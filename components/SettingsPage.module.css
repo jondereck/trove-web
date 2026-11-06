@@ -118,6 +118,11 @@
   background: var(--trove-accent-soft);
 }
 
+.outlineBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .neutralBtn {
   border: 1px solid var(--trove-border);
   color: var(--trove-text);
@@ -226,6 +231,10 @@
 .primaryBtn:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.hiddenFile {
+  display: none;
 }
 
 .tokenCreate {

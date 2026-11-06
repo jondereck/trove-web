@@ -215,7 +215,7 @@ export default function TodayAgendaPanel({
             </li>
           ))}
           {selectedCompleted.map(entry => {
-            const canUntick = !!onUncomplete && entry.source !== 'reminder'
+            const canUntick = !!onUncomplete
             if (!canUntick) {
               return (
                 <li key={entry.id} className={styles.line}>
@@ -231,12 +231,14 @@ export default function TodayAgendaPanel({
                   className={`${styles.line} ${styles.lineButton}`}
                   onClick={() => onUncomplete(entry)}
                   aria-label={`Uncheck ${entry.title}`}
-                  title="Tap to uncheck"
+                  title={entry.source === 'reminder' ? 'Reminder · tap to restore' : 'Tap to uncheck'}
                 >
                   <CheckCircle2 className={styles.lineIcon} size={18} strokeWidth={1.75} />
                   <div className={styles.lineBody}>
                     <p className={`${styles.lineTitle} ${styles.lineDone}`}>{entry.title}</p>
-                    <p className={styles.lineSub}>Tap to uncheck</p>
+                    <p className={styles.lineSub}>
+                      {entry.source === 'reminder' ? 'Reminder · tap to restore' : 'Tap to uncheck'}
+                    </p>
                   </div>
                 </button>
               </li>

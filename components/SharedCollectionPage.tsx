@@ -4,6 +4,7 @@ import SharedCollectionAttach from '@/components/SharedCollectionAttach'
 import StoreBadgeLinks from '@/components/StoreBadgeLinks'
 import UserAvatar from '@/components/UserAvatar'
 import TroveMark from '@/components/TroveMark'
+import SiteFooter from '@/components/SiteFooter'
 import type { SharedCollectionPayload } from '@/lib/sharedCollection'
 import { sharedCollectionPath } from '@/lib/sharedCollection'
 import type { Save, SaveType } from '@/lib/types'
@@ -57,6 +58,7 @@ export default function SharedCollectionPage(props: Props) {
             Go to Trove
           </Link>
         </main>
+        <SiteFooter />
       </div>
     )
   }
@@ -121,6 +123,7 @@ export default function SharedCollectionPage(props: Props) {
           emptyHint="Check back later, or open Trove on your phone."
         />
       </main>
+      <SiteFooter />
     </div>
   )
 }

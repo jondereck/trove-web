@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Check } from 'lucide-react'
 import TroveMark from '@/components/TroveMark'
+import SiteFooter from '@/components/SiteFooter'
 import { BRAND } from '@/lib/branding'
 import {
   GUIDE_GROUPS,
@@ -230,6 +231,7 @@ export default function GuidePage() {
           </div>
         </article>
       </div>
+      <SiteFooter />
     </div>
   )
 }

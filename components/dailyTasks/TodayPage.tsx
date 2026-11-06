@@ -58,7 +58,7 @@ export default function TodayPage() {
     setEnabled,
     add,
     complete,
-    uncomplete,
+    uncompleteEntry,
     remove,
     update,
     reschedule,
@@ -465,26 +465,25 @@ export default function TodayPage() {
                           type="button"
                           className={styles.doneRow}
                           onClick={() => {
-                            if (item.source === 'reminder') return
-                            void uncomplete(item.id)
+                            void uncompleteEntry(item)
                           }}
                           aria-label={
                             item.source === 'reminder'
-                              ? item.title
+                              ? `Restore ${item.title}`
                               : `Uncheck ${item.title}`
                           }
                           title={
                             item.source === 'reminder'
-                              ? 'Reminder completions stay archived'
+                              ? 'Reminder · tap to restore'
                               : 'Tap to uncheck'
                           }
                         >
                           <Check size={14} aria-hidden />
                           <span className={styles.doneRowText}>
                             <span>{item.title}</span>
-                            {item.source !== 'reminder' ? (
-                              <span className={styles.doneRowHint}>Tap to uncheck</span>
-                            ) : null}
+                            <span className={styles.doneRowHint}>
+                              {item.source === 'reminder' ? 'Reminder · tap to restore' : 'Tap to uncheck'}
+                            </span>
                           </span>
                         </button>
                       </li>
@@ -498,8 +497,7 @@ export default function TodayPage() {
               <TodayAgendaPanel
                 state={state}
                 onUncomplete={entry => {
-                  if (entry.source === 'reminder') return
-                  void uncomplete(entry.id)
+                  void uncompleteEntry(entry)
                 }}
                 onEditTask={task => {
                   setEditing(task)
@@ -544,8 +542,7 @@ export default function TodayPage() {
           state={state}
           onClose={() => setAgendaOpen(false)}
           onUncomplete={entry => {
-            if (entry.source === 'reminder') return
-            void uncomplete(entry.id)
+            void uncompleteEntry(entry)
           }}
           onEditTask={task => {
             setAgendaOpen(false)

@@ -446,6 +446,106 @@ export function clearReminderHistoryInStore(
   }, now)
 }
 
+export type RestoreReminderOccurrenceInput = {
+  reminderId: string
+  saveId: string
+  title: string
+  eventAt: string
+  fireAt: string
+  leadMinutes?: number
+  repeat?: ReminderRepeatRule | null
+}
+
+/**
+ * Undo a Daily tick: keep today's occurrence visible and leave a repeating
+ * series on its next fire. Does not invent a new time or drop the repeat rule.
+ */
+export function restoreReminderOccurrenceInStore(
+  store: SaveReminderStore,
+  input: RestoreReminderOccurrenceInput,
+  now = Date.now(),
+): SaveReminderStore {
+  const id = input.reminderId.trim()
+  if (!id) return hydrateSaveReminderStore(store, now)
+
+  const existing = store.upcoming[id]
+  const fromHistory = store.history.find(row => row.id === id)
+  const repeat = input.repeat ?? existing?.repeat ?? fromHistory?.repeat ?? null
+  const leadMinutes = Math.max(
+    0,
+    input.leadMinutes ?? existing?.leadMinutes ?? fromHistory?.leadMinutes ?? 0,
+  )
+  const title = input.title.trim() || existing?.title || fromHistory?.title || 'Trove reminder'
+  const updatedAt = new Date(now).toISOString()
+  const snapEvent = Number.isFinite(Date.parse(input.eventAt)) ? input.eventAt : input.fireAt
+  const snapFire = Number.isFinite(Date.parse(input.fireAt)) ? input.fireAt : snapEvent
+
+  const base: StoredSaveReminder = {
+    id,
+    saveId: input.saveId || existing?.saveId || fromHistory?.saveId || '',
+    title,
+    sourceText: existing?.sourceText ?? fromHistory?.sourceText ?? null,
+    eventAt: snapEvent,
+    eventEndAt: existing?.eventEndAt ?? fromHistory?.eventEndAt ?? null,
+    fireAt: snapFire,
+    leadMinutes,
+    firedAt: snapFire,
+    calendarId: existing?.calendarId ?? fromHistory?.calendarId ?? null,
+    calendarEventId: existing?.calendarEventId ?? fromHistory?.calendarEventId ?? null,
+    repeat,
+    updatedAt,
+    localOnly: existing?.localOnly ?? fromHistory?.localOnly,
+  }
+
+  let history = store.history
+  const hasSnap = history.some(row => row.id === id && row.fireAt === snapFire)
+  if (!hasSnap) history = [{ ...base, firedAt: snapFire, updatedAt }, ...history]
+
+  const upcoming = { ...store.upcoming }
+  const snapMs = Date.parse(snapFire)
+
+  if (repeat) {
+    const existingFire = existing ? Date.parse(existing.fireAt) : NaN
+    if (
+      existing
+      && existing.repeat
+      && Number.isFinite(existingFire)
+      && Number.isFinite(snapMs)
+      && existingFire > snapMs
+    ) {
+      upcoming[id] = { ...existing, title, repeat, leadMinutes, firedAt: null, updatedAt }
+    } else {
+      const times = nextFutureReminderTimes({
+        eventAt: new Date(snapEvent),
+        leadMinutes,
+        repeat,
+        now: new Date(now),
+      })
+      if (times) {
+        upcoming[id] = {
+          ...base,
+          eventAt: times.eventAt.toISOString(),
+          fireAt: times.fireAt.toISOString(),
+          firedAt: null,
+          repeat,
+          updatedAt,
+        }
+      } else {
+        upcoming[id] = { ...base, firedAt: null, repeat, updatedAt }
+      }
+    }
+  } else {
+    const fireMs = Date.parse(snapFire)
+    if (Number.isFinite(fireMs) && fireMs > now) {
+      upcoming[id] = { ...base, firedAt: null, repeat: null, updatedAt }
+    } else if (existing && !existing.repeat) {
+      delete upcoming[id]
+    }
+  }
+
+  return hydrateSaveReminderStore(withHistoryMeta(store, { upcoming, history }), now)
+}
+
 export function markReminderFiredInStore(
   store: SaveReminderStore,
   reminderId: string,

@@ -1,8 +1,10 @@
 .page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--trove-bg);
   color: var(--trove-text);
-  padding: 28px clamp(20px, 4vw, 64px) 72px;
+  padding: 28px clamp(20px, 4vw, 64px) 32px;
 }
 
 .top {
@@ -57,6 +59,7 @@
   max-width: 1080px;
   gap: 20px;
   align-items: start;
+  flex: 1;
 }
 
 .sidebar,

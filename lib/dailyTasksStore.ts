@@ -7,6 +7,8 @@ import {
   type DailyTasksState,
 } from './dailyTasks'
 import { dailyTasksFingerprint } from './dailyTasksCloudSync'
+import { guestDailyPushHeld, guestSessionUserId } from './guestImportGate'
+import { markGuestDailyTasksDirty } from './guestImportOrigin'
 
 export { dailyTasksFingerprint } from './dailyTasksCloudSync'
 
@@ -46,6 +48,10 @@ function loadLocal(): DailyTasksState {
   }
 }
 
+function noteLoggedOutDailyTaskWrite(): void {
+  if (guestSessionUserId() === null) markGuestDailyTasksDirty()
+}
+
 function commitLocal(state: DailyTasksState): DailyTasksState {
   const next = markObligationDay(
     normalizeDailyTasksState({
@@ -56,6 +62,7 @@ function commitLocal(state: DailyTasksState): DailyTasksState {
   cache = next
   persistLocal(next)
   listeners.forEach(listener => listener(next))
+  noteLoggedOutDailyTaskWrite()
   return next
 }
 
@@ -123,6 +130,7 @@ export async function syncDailyTasksCloud(
 ): Promise<DailyTasksState> {
   return enqueueDailyTasksOp(async () => {
     const local = cache ?? loadLocal()
+    if (guestDailyPushHeld()) return local
     if (cloudSyncedOnce && !options?.force) return local
     cloudSyncedOnce = true
     try {
@@ -160,6 +168,7 @@ export async function pushDailyTasksCloud(
   userId: string,
   state: DailyTasksState,
 ): Promise<void> {
+  if (guestDailyPushHeld()) return
   try {
     const { upsertCloudDailyTasks } = await import('./dailyTasksDb')
     await upsertCloudDailyTasks(supabase, userId, state)

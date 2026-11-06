@@ -1,0 +1,40 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--trove-border);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--trove-muted);
+}
+
+.copy {
+  margin: 0;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.links a {
+  color: var(--trove-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.links a:focus-visible {
+  outline: 2px solid var(--trove-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

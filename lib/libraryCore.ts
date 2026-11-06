@@ -1,5 +1,13 @@
 import type { Save } from './types'
 
+export function isVaultSave(save: { is_vault?: boolean } | null | undefined): boolean {
+  return !!save?.is_vault
+}
+
+export function excludeVaultSaves<T extends { is_vault?: boolean }>(saves: T[]): T[] {
+  return saves.filter(save => !isVaultSave(save))
+}
+
 export function filterLibrarySaves(saves: Save[]): Save[] {
   return saves.filter(s => !s.is_inbox && !s.is_vault)
 }

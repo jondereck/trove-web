@@ -210,6 +210,11 @@
   background: var(--trove-bg);
 }
 
+.profileMenuItem:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .profileMenuDanger {
   color: #b91c1c;
 }
@@ -224,4 +229,6 @@
   padding: 28px clamp(20px, 3vw, 36px) 96px;
   background: var(--trove-bg);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }

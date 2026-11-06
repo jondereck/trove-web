@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { countsByType, filterLibrarySaves } from './libraryCore'
+import { countsByType, excludeVaultSaves, filterLibrarySaves } from './libraryCore'
 import type { Save } from './types'
 
 const sample: Save[] = [
@@ -38,6 +38,10 @@ describe('libraryCore', () => {
   it('filters inbox and vault saves', () => {
     assert.equal(filterLibrarySaves(sample).length, 1)
     assert.equal(filterLibrarySaves(sample)[0]?.id, '1')
+  })
+
+  it('keeps inbox when excluding vault only', () => {
+    assert.deepEqual(excludeVaultSaves(sample).map(row => row.id), ['1', '2'])
   })
 
   it('counts by type', () => {

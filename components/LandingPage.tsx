@@ -3,18 +3,18 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Cloud, CloudDownload, FileText, Info, Sparkle } from 'lucide-react'
+import { Cloud, CloudDownload, Download, FileText, Info, Sparkle } from 'lucide-react'
 import { SiApple, SiGoogle } from 'react-icons/si'
 import { createClient } from '@/lib/supabase/client'
 import { safeNextPath } from '@/lib/auth/safeNext'
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth'
-import { parseImportFile } from '@/lib/import'
-import { writeImport } from '@/lib/importStore'
-import { setDemoMode, setImportSession } from '@/lib/sessionMode'
+import { applyLocalImport, downloadCurrentBackup } from '@/lib/backup/downloadBackup'
+import { setDemoMode } from '@/lib/sessionMode'
 import { playSuccess } from '@/lib/sounds'
 import { BRAND } from '@/lib/branding'
 import StoreBadgeLinks from '@/components/StoreBadgeLinks'
 import TroveMark from '@/components/TroveMark'
+import SiteFooter from '@/components/SiteFooter'
 import styles from './LandingPage.module.css'
 
 function PeachWaves() {
@@ -88,6 +88,7 @@ export default function LandingPage() {
   const [error, setError] = useState('')
   const [importMessage, setImportMessage] = useState('')
   const [importLoading, setImportLoading] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
 
   useEffect(() => {
     const authError = searchParams.get('error')
@@ -136,9 +137,7 @@ export default function LandingPage() {
     setError('')
     setImportLoading(true)
     try {
-      const parsed = await parseImportFile(file)
-      const importId = await writeImport(file.name, parsed.saves, parsed.collections)
-      setImportSession(file.name, importId)
+      await applyLocalImport(file)
       router.push('/library')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not read that file.')
@@ -148,7 +147,24 @@ export default function LandingPage() {
     }
   }
 
+  const handleDownload = async () => {
+    setImportMessage('')
+    setError('')
+    setExportLoading(true)
+    try {
+      const result = await downloadCurrentBackup()
+      setImportMessage(
+        `Downloaded ${result.filename} (${result.saves} save${result.saves === 1 ? '' : 's'} · ${result.collections} collection${result.collections === 1 ? '' : 's'}). Stays on this device.`,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not download a backup.')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
   const authBusy = loading || oauthProvider !== null
+  const transferBusy = importLoading || exportLoading
 
   return (
     <div className={styles.page} data-landing-page>
@@ -172,7 +188,10 @@ export default function LandingPage() {
               Sign in with the same Trove Cloud account you use on mobile to browse your synced
               library on this device.
             </p>
-            <p>You can also load a local export or explore a demo library.</p>
+            <p>
+              A free phone account does not open this website. Trove Cloud does. You can also
+              load a local export or explore a demo library.
+            </p>
             <p>
               <Link href="/guide" className={styles.textLink}>
                 Read the guide
@@ -265,11 +284,23 @@ export default function LandingPage() {
             type="file"
             accept=".json,.zip,.csv"
             onChange={handleFile}
-            disabled={importLoading}
+            disabled={transferBusy}
           />
         </label>
+        <button
+          type="button"
+          className={styles.downloadBtn}
+          onClick={() => void handleDownload()}
+          disabled={transferBusy}
+        >
+          <Download size={18} strokeWidth={1.75} aria-hidden />
+          <span>{exportLoading ? 'Preparing backup…' : 'Download backup'}</span>
+        </button>
         {importMessage ? <p className={styles.hint}>{importMessage}</p> : null}
-        <p className={styles.hint}>Opens a local export — does not upload to Trove Cloud.</p>
+        <p className={styles.hint}>
+          Import and export stay in this browser. Inbox is included. Vault is not. Nothing is
+          uploaded to Trove Cloud.
+        </p>
 
         <div className={styles.orRow}>
           <span className={styles.orLine} />
@@ -287,6 +318,9 @@ export default function LandingPage() {
           Explore sample links, notes, and images without signing in.
         </p>
       </section>
+      </div>
+      <div className={styles.footerSlot}>
+        <SiteFooter />
       </div>
     </div>
   )
