@@ -102,15 +102,13 @@ export async function userFromNeonSession(sessionToken: string): Promise<NeonUse
   const base = neonAuthUrl()
   if (!base || !sessionToken) return null
   const origin = authOrigin()
-  const headersList = [
-    { Authorization: `Bearer ${sessionToken}` },
-    { Cookie: `__Secure-neon-auth.session_token=${sessionToken}` },
-    { Cookie: `neon-auth.session_token=${sessionToken}` },
+  const headersList: Record<string, string>[] = [
+    { Authorization: `Bearer ${sessionToken}`, Origin: origin, Referer: `${origin}/` },
+    { Cookie: `__Secure-neon-auth.session_token=${sessionToken}`, Origin: origin, Referer: `${origin}/` },
+    { Cookie: `neon-auth.session_token=${sessionToken}`, Origin: origin, Referer: `${origin}/` },
   ]
-  for (const extra of headersList) {
-    const response = await fetch(`${base}/get-session`, {
-      headers: { Origin: origin, Referer: `${origin}/`, ...extra },
-    })
+  for (const headers of headersList) {
+    const response = await fetch(`${base}/get-session`, { headers })
     if (!response.ok) continue
     const user = readNeonUser(await response.json().catch(() => null))
     if (user) return user
