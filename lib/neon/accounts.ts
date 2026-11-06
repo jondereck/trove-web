@@ -26,6 +26,10 @@ export async function linkAppUser(neonUser: NeonUser): Promise<string> {
     appUserId = created.rows[0].id as string
   }
   await pool.query(
+    'delete from public.auth_links where email = $1 and neon_user_id <> $2::uuid',
+    [email, neonUser.id],
+  )
+  await pool.query(
     `insert into public.auth_links (neon_user_id, app_user_id, email)
      values ($1::uuid, $2::uuid, $3)
      on conflict (neon_user_id) do update set app_user_id = excluded.app_user_id, email = excluded.email`,
