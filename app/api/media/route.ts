@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { neonUserId } from '@/lib/neon/client'
 import { neonPool } from '@/lib/neon/pool'
+import { putMedia } from '@/lib/neon/storage'
 
 export async function POST(request: Request) {
   const userId = await neonUserId(request)
@@ -14,11 +15,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'File is empty or too large' }, { status: 400 })
   }
   const contentType = request.headers.get('content-type') ?? 'application/octet-stream'
+  const stored = await putMedia(path, bytes, contentType)
+  if (!stored) {
+    return NextResponse.json({ error: 'Media bucket is not configured' }, { status: 500 })
+  }
   await neonPool().query(
     `insert into public.media_objects (path, content_type, bytes, user_id)
-     values ($1, $2, $3, $4::uuid)
-     on conflict (path) do update set content_type = excluded.content_type, bytes = excluded.bytes`,
-    [path, contentType, bytes, userId],
+     values ($1, $2, ''::bytea, $3::uuid)
+     on conflict (path) do update set content_type = excluded.content_type, bytes = ''::bytea`,
+    [path, contentType, userId],
   )
   return NextResponse.json({ path })
 }
