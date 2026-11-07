@@ -152,7 +152,9 @@ describe('parseImportFile', () => {
     const zip = new JSZip()
     zip.file('backup.json', JSON.stringify(MOBILE_V2_FIXTURE))
     const bytes = await zip.generateAsync({ type: 'uint8array' })
-    const file = new File([bytes], 'trove-backup-fixture.zip', { type: 'application/zip' })
+    const file = new File([bytes.buffer as ArrayBuffer], 'trove-backup-fixture.zip', {
+      type: 'application/zip',
+    })
     const result = await parseImportFile(file)
     assert.equal(result.source, 'trove-zip')
     assert.equal(result.collections[0]?.name, 'Recipes')

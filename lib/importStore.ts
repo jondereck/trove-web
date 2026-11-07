@@ -86,7 +86,7 @@ async function putMedia(importId: string, media: BundledMedia[]): Promise<void> 
       id: `${importId}:${filename}`,
       importId,
       filename,
-      blob: new Blob([copyBytes(file.bytes)], {
+      blob: new Blob([copyBytes(file.bytes).buffer as ArrayBuffer], {
         type: file.mime ?? mimeFromMediaName(filename),
       }),
     })

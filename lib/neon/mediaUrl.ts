@@ -7,7 +7,9 @@ export type MediaPublicBase = {
 
 const PROXY_PATH = /\/api\/media\/(.+)$/i
 
-export function readMediaPublicBase(env: NodeJS.ProcessEnv = process.env): MediaPublicBase | null {
+export function readMediaPublicBase(
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env,
+): MediaPublicBase | null {
   const endpoint = (
     env.NEXT_PUBLIC_NEON_STORAGE_ENDPOINT
     || env.NEON_STORAGE_ENDPOINT
