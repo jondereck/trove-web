@@ -44,7 +44,10 @@ export async function linkAppUser(neonUser: NeonUser): Promise<string> {
 
 export async function openSession(appUserId: string, email: string): Promise<string> {
   const token = randomBytes(32).toString('base64url')
-  await neonPool().query(
+  const pool = neonPool()
+  // Sweep on sign-in only (rare) instead of every API read.
+  await sweepExpiredSessions(pool).catch(() => {})
+  await pool.query(
     `insert into public.app_sessions (token, app_user_id, email, expires_at)
      values ($1, $2::uuid, $3, now() + interval '30 days')`,
     [token, appUserId, email.trim().toLowerCase()],
@@ -52,10 +55,16 @@ export async function openSession(appUserId: string, email: string): Promise<str
   return token
 }
 
+/** Opportunistic cleanup — never run on the hot auth path (was ~every /api/db call). */
+async function sweepExpiredSessions(pool: ReturnType<typeof neonPool>): Promise<void> {
+  await pool.query('delete from public.app_sessions where expires_at < now()')
+}
+
 export async function readSession(token: string | null | undefined): Promise<AppSession | null> {
   if (!token) return null
   const pool = neonPool()
-  await pool.query('delete from public.app_sessions where expires_at < now()')
+  // One SELECT only. Expired-row sweeps used to DELETE on every request and
+  // serialized the Neon pool (mobile saw ~5s /api/db even for limit:1).
   const result = await pool.query(
     'select token, app_user_id, email from public.app_sessions where token = $1 and expires_at > now()',
     [token],

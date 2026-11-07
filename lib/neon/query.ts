@@ -180,6 +180,8 @@ function valueFor(value: unknown): unknown {
 
 const RPC_ARGS: Record<string, string[]> = {
   search_saves: ['terms'],
+  /** Inline GROUP BY — not a Postgres function; handled below. */
+  collection_save_counts: [],
   mcp_resolve_token: ['p_token_hash'],
   mcp_list_collections: ['p_user_id'],
   mcp_get_save: ['p_user_id', 'p_save_id'],
@@ -207,6 +209,22 @@ export async function runQuery(
         const result = await query(
           'select * from public.search_saves($1::text[]) where user_id = $2::uuid',
           [args.terms ?? [], userId],
+        )
+        return { data: result.rows, error: null, count: result.rows.length }
+      }
+      if (state.rpc.fn === 'collection_save_counts') {
+        if (!userId) return { data: null, error: { message: 'Not signed in' }, count: null }
+        // One aggregated row per folder — avoids shipping every save's collection_id
+        // through Vercel (was ~548 rows × multi-second /api/db on mobile Cloud).
+        const result = await query(
+          `select collection_id, count(*)::int as count
+           from public.saves
+           where user_id = $1::uuid
+             and collection_id is not null
+             and is_inbox = false
+             and coalesce(is_vault, false) = false
+           group by collection_id`,
+          [userId],
         )
         return { data: result.rows, error: null, count: result.rows.length }
       }

@@ -11,6 +11,7 @@ import { filterLibrarySaves } from './libraryCore'
 import { sortByPinnedThenCreated } from './libraryFilters'
 import { hasPinColumns, markPinColumnsUnavailable, missingPinColumn } from './pinColumns'
 import { attachSaveCountsFromMap } from './collectionsCore'
+import { collectionCoverFetchLimit } from '../constants/library'
 
 export type CollectionWithCount = Collection & { save_count: number }
 
@@ -34,40 +35,61 @@ async function fetchCollectionsRows(supabase: SupabaseClient): Promise<Collectio
 
 async function fetchCollectionMeta(
   supabase: SupabaseClient,
+  collectionCount: number,
 ): Promise<{ counts: Record<string, number>; coverPool: Record<string, CoverPoolEntry[]> }> {
-  let result = await supabase
-    .from('saves')
-    .select('collection_id, image_url, url, title, content, description, type, created_at')
-    .not('collection_id', 'is', null)
-    .eq('is_inbox', false)
-    .eq('is_vault', false)
-    .order('created_at', { ascending: false })
+  const coverLimit = collectionCoverFetchLimit(collectionCount)
 
-  if (result.error && /is_vault/.test(result.error.message)) {
-    result = await supabase
+  async function runCount(withVault: boolean) {
+    let q = supabase
       .from('saves')
-      .select('collection_id, image_url, url, title, content, description, type, created_at')
+      .select('collection_id')
+      .not('collection_id', 'is', null)
+      .eq('is_inbox', false)
+    if (withVault) q = q.eq('is_vault', false)
+    return q
+  }
+
+  async function runCovers(withVault: boolean) {
+    let q = supabase
+      .from('saves')
+      .select('collection_id, image_url, url, title, description, type, created_at')
       .not('collection_id', 'is', null)
       .eq('is_inbox', false)
       .order('created_at', { ascending: false })
+      .limit(coverLimit)
+    if (withVault) q = q.eq('is_vault', false)
+    return q
   }
 
-  if (result.error) throw result.error
+  let [countRes, coverRes] = await Promise.all([runCount(true), runCovers(true)])
+
+  if (countRes.error && /is_vault/.test(countRes.error.message)) {
+    countRes = await runCount(false)
+  }
+  if (coverRes.error && /is_vault/.test(coverRes.error.message)) {
+    coverRes = await runCovers(false)
+  }
+
+  if (countRes.error) throw countRes.error
+  if (coverRes.error) throw coverRes.error
 
   const counts: Record<string, number> = {}
-  const coverPool: Record<string, CoverPoolEntry[]> = {}
-
-  for (const row of result.data ?? []) {
+  for (const row of countRes.data ?? []) {
     const id = row.collection_id as string | null
     if (!id) continue
     counts[id] = (counts[id] ?? 0) + 1
+  }
+
+  const coverPool: Record<string, CoverPoolEntry[]> = {}
+  for (const row of coverRes.data ?? []) {
+    const id = row.collection_id as string | null
+    if (!id) continue
     const pool = coverPool[id] ?? (coverPool[id] = [])
     if (coverPoolNeedsMore(pool)) {
       pool.push({
         image_url: row.image_url,
         url: row.url,
         title: row.title,
-        content: row.content,
         description: row.description,
         type: row.type,
       })
@@ -89,10 +111,8 @@ type CoverPoolEntry = {
 export async function fetchCloudCollections(
   supabase: SupabaseClient,
 ): Promise<CollectionWithCount[]> {
-  const [collections, meta] = await Promise.all([
-    fetchCollectionsRows(supabase),
-    fetchCollectionMeta(supabase),
-  ])
+  const collections = await fetchCollectionsRows(supabase)
+  const meta = await fetchCollectionMeta(supabase, collections.length)
 
   return collections
     .map(c => {
