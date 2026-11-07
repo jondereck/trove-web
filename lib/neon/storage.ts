@@ -1,7 +1,14 @@
 import { GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { mediaObjectPublicUrl, readMediaPublicBase } from './mediaUrl'
+
+export { mediaObjectPublicUrl, readMediaPublicBase, rewriteProxiedMediaUrl } from './mediaUrl'
 
 export function mediaBucket(): string {
   return process.env.NEON_STORAGE_BUCKET ?? 'media'
+}
+
+export function publicMediaUrl(path: string): string | null {
+  return mediaObjectPublicUrl(path, readMediaPublicBase())
 }
 
 export function storageClient(): S3Client | null {
@@ -50,3 +57,4 @@ export async function getMedia(path: string): Promise<{ bytes: Uint8Array; conte
     throw error
   }
 }
+

@@ -1,4 +1,5 @@
-import { isMeaningfulDailyTasksState, normalizeDailyTasksState } from './dailyTasks'
+import { normalizeDailyTasksState } from './dailyTasks'
+import { isMeaningfulDailyTasksState } from './dailyTasksCloudSync'
 
 const DAILY_KEY = 'trove.dailyTasks.v1'
 const DIRTY_KEY = 'trove.dailyTasks.guestDirty.v1'

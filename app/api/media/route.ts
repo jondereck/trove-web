@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { neonUserId } from '@/lib/neon/client'
 import { neonPool } from '@/lib/neon/pool'
-import { putMedia } from '@/lib/neon/storage'
+import { publicMediaUrl, putMedia } from '@/lib/neon/storage'
 
 export async function POST(request: Request) {
   const userId = await neonUserId(request)
@@ -25,5 +25,6 @@ export async function POST(request: Request) {
      on conflict (path) do update set content_type = excluded.content_type, bytes = ''::bytea`,
     [path, contentType, userId],
   )
-  return NextResponse.json({ path })
+  const publicUrl = publicMediaUrl(path) ?? undefined
+  return NextResponse.json({ path, publicUrl })
 }

@@ -1,13 +1,15 @@
+import { rewriteProxiedMediaUrl } from './neon/mediaUrl'
+
 export function getSaveImageUrls(save: {
   image_url?: string | null
   image_urls?: string[] | null
 }): string[] {
   if (Array.isArray(save.image_urls)) {
     return save.image_urls
-      .map(u => (typeof u === 'string' ? u.trim() : ''))
-      .filter(Boolean)
+      .map(u => (typeof u === 'string' ? rewriteProxiedMediaUrl(u.trim()) : undefined))
+      .filter((u): u is string => !!u)
   }
-  const cover = save.image_url?.trim()
+  const cover = rewriteProxiedMediaUrl(save.image_url?.trim())
   return cover ? [cover] : []
 }
 

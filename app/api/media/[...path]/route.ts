@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { neonPool } from '@/lib/neon/pool'
-import { getMedia } from '@/lib/neon/storage'
+import { publicMediaUrl } from '@/lib/neon/storage'
 
 export async function GET(
   _request: Request,
@@ -11,15 +11,13 @@ export async function GET(
   if (!/^[a-zA-Z0-9_./-]+$/.test(key) || key.includes('..')) {
     return NextResponse.json({ error: 'Bad path' }, { status: 400 })
   }
-  const stored = await getMedia(key)
-  if (stored && stored.bytes.byteLength > 0) {
-    return new NextResponse(Buffer.from(stored.bytes), {
-      headers: {
-        'Content-Type': stored.contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    })
+
+  // Never stream object bytes through Vercel. Public Neon Object Storage holds the file.
+  const direct = publicMediaUrl(key)
+  if (direct) {
+    return NextResponse.redirect(direct, 302)
   }
+
   const result = await neonPool().query(
     'select content_type, bytes from public.media_objects where path = $1',
     [key],

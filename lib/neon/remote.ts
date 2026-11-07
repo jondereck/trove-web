@@ -160,7 +160,16 @@ export function createRemoteNeonClient(options: {
             return { error: null }
           },
           getPublicUrl(path: string) {
-            return { data: { publicUrl: `${options.apiUrl}/api/media/${path}` } }
+            const endpoint = (process.env.NEXT_PUBLIC_NEON_STORAGE_ENDPOINT
+              || process.env.EXPO_PUBLIC_NEON_STORAGE_ENDPOINT
+              || '').replace(/\/$/, '')
+            const bucket = (process.env.NEXT_PUBLIC_NEON_STORAGE_BUCKET
+              || process.env.EXPO_PUBLIC_NEON_STORAGE_BUCKET
+              || 'media').trim()
+            const publicUrl = endpoint
+              ? `${endpoint}/${bucket}/${path.replace(/^\/+/, '')}`
+              : `${options.apiUrl}/api/media/${path}`
+            return { data: { publicUrl } }
           },
         }
       },

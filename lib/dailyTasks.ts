@@ -6,6 +6,10 @@
 // module pure (no expo / native imports) so it runs under `tsx --test`.
 
 import { applyReminderClock, formatReminderClock } from './reminderDateTime'
+import {
+  normalizeReminderRepeat,
+  type ReminderRepeatRule,
+} from './reminderRepeat'
 
 export type DailyTask = {
   id: string
@@ -40,6 +44,8 @@ export type CompletedDailyTask = {
   /** Snapshot of the reminder fire time for restore. */
   fireAt?: string
   eventAt?: string
+  /** Snapshot of the repeat rule so uncheck can restore a series. */
+  repeat?: ReminderRepeatRule | null
   /** Repeating series this archive belongs to. The open task keeps `seriesId` as its id. */
   seriesId?: string
 }
@@ -278,6 +284,19 @@ function normalizeCompletedEntry(value: unknown): CompletedDailyTask | null {
     }
     if (typeof row.fireAt === 'string') entry.fireAt = row.fireAt
     if (typeof row.eventAt === 'string') entry.eventAt = row.eventAt
+    if ('repeat' in row) {
+      const anchorMs = Date.parse(
+        typeof row.eventAt === 'string'
+          ? row.eventAt
+          : typeof row.fireAt === 'string'
+            ? row.fireAt
+            : completedAt,
+      )
+      entry.repeat = normalizeReminderRepeat(
+        row.repeat,
+        Number.isFinite(anchorMs) ? new Date(anchorMs) : new Date(),
+      )
+    }
   } else if (row.source === 'task') {
     entry.source = 'task'
   }
@@ -623,6 +642,7 @@ export function completeReminderTask(
     title: string
     fireAt: string
     eventAt: string
+    repeat?: ReminderRepeatRule | null
   },
   now: Date = new Date(),
 ): DailyTasksState {
@@ -641,6 +661,7 @@ export function completeReminderTask(
     reminderId: input.reminderId,
     fireAt: input.fireAt,
     eventAt: input.eventAt,
+    repeat: input.repeat ?? null,
   }
   const completed = [entry, ...state.completed].slice(0, MAX_COMPLETED)
   return {
