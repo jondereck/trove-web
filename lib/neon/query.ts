@@ -276,25 +276,25 @@ export async function runQuery(
 
     if (scoped.action === 'insert' || scoped.action === 'upsert') {
       const rows = Array.isArray(scoped.values) ? scoped.values : [scoped.values ?? {}]
-      const keys = Object.keys(rows[0] ?? {})
+      if (rows.length === 0) return { data: [], error: null, count: 0 }
+      // Union keys so a batch insert stays one round-trip (backup import).
+      const keys = [...new Set(rows.flatMap((row) => Object.keys(row ?? {})))]
       keys.forEach(assertIdent)
-      const inserted: unknown[] = []
-      for (const row of rows) {
-        const holders = keys.map((key) => pushValue(params, valueFor(row[key])))
-        let sql = `insert into public.${scoped.table} (${keys.join(', ')}) values (${holders.join(', ')})`
-        if (scoped.action === 'upsert' && scoped.onConflict) {
-          const conflict = scoped.onConflict.split(',').map((part) => assertIdent(part.trim()))
-          const updates = keys
-            .filter((key) => !conflict.includes(key))
-            .map((key) => `${key} = excluded.${key}`)
-          sql += ` on conflict (${conflict.join(', ')}) do update set ${updates.join(', ')}`
-        }
-        sql += ' returning *'
-        const result = await query(sql, params.splice(0, params.length))
-        inserted.push(...result.rows)
-        params.length = 0
+      const valueGroups = rows.map((row) => {
+        const holders = keys.map((key) => pushValue(params, valueFor((row as Record<string, unknown>)[key])))
+        return `(${holders.join(', ')})`
+      })
+      let sql = `insert into public.${scoped.table} (${keys.join(', ')}) values ${valueGroups.join(', ')}`
+      if (scoped.action === 'upsert' && scoped.onConflict) {
+        const conflict = scoped.onConflict.split(',').map((part) => assertIdent(part.trim()))
+        const updates = keys
+          .filter((key) => !conflict.includes(key))
+          .map((key) => `${key} = excluded.${key}`)
+        sql += ` on conflict (${conflict.join(', ')}) do update set ${updates.join(', ')}`
       }
-      return shapeRows(inserted, scoped)
+      sql += ' returning *'
+      const result = await query(sql, params)
+      return shapeRows(result.rows, scoped)
     }
 
     let sql = `select ${scoped.countExact ? '*' : scoped.columns} from public.${scoped.table}${where}`

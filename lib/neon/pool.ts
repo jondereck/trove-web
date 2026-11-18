@@ -8,7 +8,8 @@ export function neonPool(): pg.Pool {
     globalPool.troveNeonPool = new pg.Pool({
       connectionString: databaseUrl(),
       ssl: { rejectUnauthorized: false },
-      max: 4,
+      // Backup import + Library fan-out need more than 4 concurrent /api/db calls.
+      max: 12,
     })
   }
   return globalPool.troveNeonPool

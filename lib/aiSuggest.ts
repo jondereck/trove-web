@@ -1,5 +1,5 @@
 import type { Collection, OGMetadata } from './types'
-import { supabaseAnonKey, supabaseUrl } from './env'
+import { siteUrl } from './env'
 
 export type AISuggestion = {
   collection: string
@@ -84,17 +84,13 @@ export async function callAiProxy(input: {
   userId?: string | null
   maxTokens?: number
 }): Promise<string> {
-  const url = supabaseUrl().trim()
-  const anon = supabaseAnonKey().trim()
-  if (!url || !anon) throw new Error('Supabase is not configured.')
-  const endpoint = `${url}/functions/v1/ai-proxy`
+  // Prefer same-origin /api/ai — Supabase edge is 402 (billing) as of 2026-11.
+  const base = siteUrl().replace(/\/$/, '')
+  const endpoint = typeof window !== 'undefined' ? '/api/ai' : `${base}/api/ai`
 
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${anon}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       system: input.system,
       user: input.user,

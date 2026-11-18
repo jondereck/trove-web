@@ -1,4 +1,4 @@
-import { supabaseAnonKey, supabaseUrl } from './env'
+import { siteUrl } from './env'
 import type { OGMetadata } from './types'
 
 export async function fetchOGMetadata(url: string): Promise<OGMetadata> {
@@ -11,17 +11,13 @@ export async function fetchOGMetadata(url: string): Promise<OGMetadata> {
   })()
 
   const base: OGMetadata = { url, title: hostFallback }
-  const endpoint = `${supabaseUrl()}/functions/v1/fetch-og`
-  const key = supabaseAnonKey()
-  if (!endpoint.includes('supabase') || !key) return base
+  const origin = siteUrl().replace(/\/$/, '')
+  const endpoint = typeof window !== 'undefined' ? '/api/og' : `${origin}/api/og`
 
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     })
     if (!res.ok) return base
