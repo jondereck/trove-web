@@ -6,6 +6,7 @@ export type QueryFilter =
   | { kind: 'in'; column: string; value: unknown[] }
   | { kind: 'not'; column: string; operator: string; value: unknown }
   | { kind: 'or'; raw: string }
+  | { kind: 'rowLt'; columns: string[]; values: unknown[] }
 
 export type QueryState = {
   table: string
@@ -160,6 +161,11 @@ function orParts(raw: string, values: unknown[]): string {
 export function whereSql(state: QueryState, values: unknown[]): string {
   const parts = state.filters.map((filter) => {
     if (filter.kind === 'or') return orParts(filter.raw, values)
+    if (filter.kind === 'rowLt') {
+      const cols = filter.columns.map(assertIdent).join(', ')
+      const holders = filter.values.map(value => pushValue(values, value)).join(', ')
+      return `(${cols}) < (${holders})`
+    }
     const column = assertIdent(filter.column)
     if (filter.kind === 'in') {
       if (filter.value.length === 0) return 'false'
@@ -400,6 +406,9 @@ export function createQueryBuilder(
       },
       or(raw: string) {
         return builder({ ...state, filters: [...state.filters, { kind: 'or', raw }] })
+      },
+      rowLt(columns: string[], values: unknown[]) {
+        return builder({ ...state, filters: [...state.filters, { kind: 'rowLt', columns, values }] })
       },
       order(column: string, options?: { ascending?: boolean }) {
         return builder({
