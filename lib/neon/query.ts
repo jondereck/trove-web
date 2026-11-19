@@ -80,6 +80,16 @@ const OWNER: Record<string, string> = {
   trove_mcp_tokens: 'user_id',
 }
 
+/**
+ * `on conflict (...) do update` can only touch the signed-in user's row.
+ * Returns null for tables without an owner column (or without a conflict key).
+ */
+export function upsertOwnerGuard(table: string, onConflict: string | null): string | null {
+  const owner = OWNER[table]
+  if (!owner || !onConflict) return null
+  return `${table}.${owner} = excluded.${owner}`
+}
+
 export function scopedState(state: QueryState, userId: string): QueryState {
   if (!/^[0-9a-f-]{36}$/i.test(userId)) throw new Error('Bad user id')
   if (state.rpc) return state
@@ -291,6 +301,10 @@ export async function runQuery(
           .filter((key) => !conflict.includes(key))
           .map((key) => `${key} = excluded.${key}`)
         sql += ` on conflict (${conflict.join(', ')}) do update set ${updates.join(', ')}`
+        // Ownership guard: a crafted id must never rewrite another account's
+        // row. Without this, the conflict target alone decides which row updates.
+        const guard = upsertOwnerGuard(scoped.table, scoped.onConflict)
+        if (guard) sql += ` where ${guard}`
       }
       sql += ' returning *'
       const result = await query(sql, params)
