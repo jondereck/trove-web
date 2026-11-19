@@ -9,6 +9,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: null, error: { message: 'Missing query' }, count: null }, { status: 400 })
   }
   const userId = await neonUserId(request)
+  const t0 = Date.now()
   const result = await runQuery((sql, params) => neonPool().query(sql, params), body.state, userId)
-  return NextResponse.json(result)
+  return NextResponse.json(result, {
+    headers: { 'Server-Timing': `db;dur=${Date.now() - t0}` },
+  })
 }
