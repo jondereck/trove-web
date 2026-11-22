@@ -11,9 +11,9 @@ import { createRequire } from 'node:module'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = join(__dirname, '..')
-const projectId = process.env.NEON_PROJECT_ID ?? 'icy-band-39501038'
-const branchId = process.env.NEON_BRANCH_ID ?? 'br-rapid-credit-az3xmnqm'
-const slugs = ['syncwatch', 'ai', 'og', 'rcwebhook', 'neonbackup']
+const projectId = process.env.NEON_PROJECT_ID ?? 'purple-surf-65228849'
+const branchId = process.env.NEON_BRANCH_ID ?? 'br-bitter-butterfly-azoh2wfn'
+const slugs = ['syncwatch', 'ai', 'jev', 'og', 'rcwebhook', 'neonbackup']
 
 const require = createRequire(import.meta.url)
 
@@ -36,9 +36,10 @@ const outRoot = join(root, 'neon-functions', '.dist')
 mkdirSync(outRoot, { recursive: true })
 
 for (const slug of slugs) {
-  const src = join(root, 'neon-functions', slug, 'index.ts')
-  if (!existsSync(src)) {
-    console.error('missing', src)
+  const srcDir = join(root, 'neon-functions', slug)
+  const srcFile = join(srcDir, 'index.ts')
+  if (!existsSync(srcFile)) {
+    console.error('missing', srcFile)
     process.exit(1)
   }
   console.log(`Deploying ${slug}…`)
@@ -47,7 +48,7 @@ for (const slug of slugs) {
     'deploy',
     slug,
     '--src',
-    src,
+    srcDir,
     '--project-id',
     projectId,
     '--branch',

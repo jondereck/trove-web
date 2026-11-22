@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
+import { runAiChatCompletion } from '@/lib/neon/aiGatewayChat'
 import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
 export async function POST(request: Request) {
   const proxied = await proxyNeonFunction('ai', request)
   if (proxied) return proxied
 
-  const key = process.env.OPENAI_API_KEY ?? ''
-  if (!key) return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 500 })
-  const body = await request.json().catch(() => null) as {
+  const body = (await request.json().catch(() => null)) as {
     system?: string
     user?: string
     max_tokens?: number
@@ -18,24 +17,13 @@ export async function POST(request: Request) {
   if (!body.user_id && !body.install_id) {
     return NextResponse.json({ error: 'Missing client id' }, { status: 400 })
   }
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      max_tokens: body.max_tokens ?? 512,
-      messages: [
-        ...(body.system ? [{ role: 'system', content: body.system }] : []),
-        { role: 'user', content: body.user },
-      ],
-    }),
+  const result = await runAiChatCompletion({
+    system: body.system,
+    user: body.user,
+    max_tokens: body.max_tokens,
   })
-  if (!response.ok) {
-    return NextResponse.json({ error: `OpenAI ${response.status}` }, { status: 502 })
+  if ('error' in result) {
+    return NextResponse.json({ error: result.error }, { status: result.status })
   }
-  const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> }
-  return NextResponse.json({ content: data.choices?.[0]?.message?.content ?? '' })
+  return NextResponse.json({ content: result.content })
 }
