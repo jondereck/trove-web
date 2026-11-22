@@ -20,7 +20,7 @@ export async function GET(
   )
   const row = result.rows[0] as { content_type: string; bytes: Buffer } | undefined
   if (row && row.bytes.length > 0) {
-    return new NextResponse(new Uint8Array(row.bytes), {
+    return new NextResponse(Buffer.from(row.bytes), {
       headers: {
         'Content-Type': row.content_type,
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -31,7 +31,7 @@ export async function GET(
   // React Native image loaders often fail on 302 → bare storage hosts; stream bytes here.
   const object = await getMedia(key)
   if (object) {
-    return new NextResponse(object.bytes, {
+    return new NextResponse(Buffer.from(object.bytes), {
       headers: {
         'Content-Type': object.contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
