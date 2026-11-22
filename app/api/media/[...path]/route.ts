@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { neonPool } from '@/lib/neon/pool'
-import { publicMediaUrl } from '@/lib/neon/storage'
+import { getMedia, publicMediaUrl } from '@/lib/neon/storage'
 
 export async function GET(
   _request: Request,
@@ -23,6 +23,17 @@ export async function GET(
     return new NextResponse(new Uint8Array(row.bytes), {
       headers: {
         'Content-Type': row.content_type,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    })
+  }
+
+  // React Native image loaders often fail on 302 → bare storage hosts; stream bytes here.
+  const object = await getMedia(key)
+  if (object) {
+    return new NextResponse(object.bytes, {
+      headers: {
+        'Content-Type': object.contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     })

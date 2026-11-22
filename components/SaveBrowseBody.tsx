@@ -4,7 +4,7 @@ import type { LibraryFilter, Save } from '@/lib/types'
 import type { LibraryViewMode } from '@/components/FilterBar'
 import SaveGrid from '@/components/SaveGrid'
 import TroveLoader from '@/components/TroveLoader'
-import { partitionPinnedSaves } from '@/lib/libraryFilters'
+import { allSavesNewestFirst, partitionPinnedSaves } from '@/lib/libraryFilters'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import styles from './SaveBrowseBody.module.css'
 
@@ -43,8 +43,9 @@ export default function SaveBrowseBody({
   onEnterSelection,
   onMove,
 }: Props) {
-  const { pinned, rest } = partitionPinnedSaves(saves)
+  const { pinned } = partitionPinnedSaves(saves)
   const hasPinned = showPinned && pinned.length > 0
+  const allSaves = allSavesNewestFirst(saves)
   const selection = {
     selectionActive,
     selectedIds,
@@ -89,16 +90,14 @@ export default function SaveBrowseBody({
       ) : null}
 
       {hasPinned ? (
-        rest.length > 0 ? (
-          <SaveGrid
-            saves={rest}
-            layout={layout}
-            title="ALL SAVES"
-            canEdit={canEdit}
-            fromFilter={fromFilter}
-            {...selection}
-          />
-        ) : null
+        <SaveGrid
+          saves={allSaves}
+          layout={layout}
+          title="ALL SAVES"
+          canEdit={canEdit}
+          fromFilter={fromFilter}
+          {...selection}
+        />
       ) : (
         <SaveGrid
           saves={saves}

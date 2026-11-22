@@ -1,34 +1,35 @@
 import { NextResponse } from 'next/server'
+import { fetchLinkPreview, hostnameOf } from '@/lib/og/boundedPreview'
 import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
-function meta(html: string, key: string): string | undefined {
-  const pattern = new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`, 'i')
-  const swapped = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, 'i')
-  return html.match(pattern)?.[1] ?? html.match(swapped)?.[1]
-}
-
 export async function POST(request: Request) {
-  const proxied = await proxyNeonFunction('og', request)
-  if (proxied) return proxied
+  const raw = await request.arrayBuffer()
+  const replay = () => new Request(request.url, {
+    method: 'POST',
+    headers: request.headers,
+    body: raw.byteLength ? raw : undefined,
+  })
 
-  const body = await request.json().catch(() => null) as { url?: string } | null
-  const url = body?.url ?? ''
-  let host = url
-  try { host = new URL(url).hostname.replace(/^www\./, '') } catch { /* keep */ }
+  let proxied: Response | null = null
   try {
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'facebookexternalhit/1.1' },
-      redirect: 'follow',
-    })
-    const html = await response.text()
-    return NextResponse.json({
-      url,
-      title: meta(html, 'og:title') ?? host,
-      description: meta(html, 'og:description'),
-      image: meta(html, 'og:image'),
-      siteName: meta(html, 'og:site_name'),
-    })
+    proxied = await proxyNeonFunction('og', replay(), 5000)
   } catch {
-    return NextResponse.json({ url, title: host })
+    proxied = null
+  }
+  if (proxied && proxied.status < 500) return proxied
+
+  let body: { url?: string } | null = null
+  try {
+    body = JSON.parse(new TextDecoder().decode(raw) || 'null') as { url?: string } | null
+  } catch {
+    body = null
+  }
+  const url = body?.url ?? ''
+  if (!url) return NextResponse.json({ url: '', title: '' })
+  try {
+    const preview = await fetchLinkPreview(url)
+    return NextResponse.json(preview)
+  } catch {
+    return NextResponse.json({ url, title: hostnameOf(url) })
   }
 }

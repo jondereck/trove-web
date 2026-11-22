@@ -14,6 +14,7 @@ export function neonFunctionUrl(slug: string): string | null {
 export async function proxyNeonFunction(
   slug: string,
   request: Request,
+  timeoutMs?: number,
 ): Promise<Response | null> {
   const target = neonFunctionUrl(slug)
   if (!target) return null
@@ -29,5 +30,12 @@ export async function proxyNeonFunction(
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     init.body = await request.arrayBuffer()
   }
-  return fetch(dest, init)
+  const ctrl = timeoutMs ? new AbortController() : null
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null
+  if (ctrl) init.signal = ctrl.signal
+  try {
+    return await fetch(dest, init)
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 }

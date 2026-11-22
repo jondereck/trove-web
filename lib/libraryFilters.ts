@@ -20,6 +20,15 @@ export function partitionPinnedSaves(saves: Save[]): { pinned: Save[]; rest: Sav
   return { pinned, rest }
 }
 
+/** ALL SAVES keeps pinned rows. Pinning only adds the highlight strip. */
+export function allSavesNewestFirst(saves: readonly Save[]): Save[] {
+  return [...saves].sort((a, b) => {
+    const byDate = b.created_at.localeCompare(a.created_at)
+    if (byDate !== 0) return byDate
+    return a.id.localeCompare(b.id)
+  })
+}
+
 export function filterSavesByChip(saves: Save[], filter: LibraryFilter): Save[] {
   const library = saves.filter(s => !s.is_inbox && !s.is_vault)
 

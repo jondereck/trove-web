@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { partitionPinnedSaves, sortByPinnedThenCreated } from './libraryFilters'
+import { allSavesNewestFirst, partitionPinnedSaves, sortByPinnedThenCreated } from './libraryFilters'
 import type { Save } from './types'
 
 function save(id: string, pinned: boolean, createdAt: string): Save {
@@ -49,6 +49,21 @@ describe('partitionPinnedSaves', () => {
     assert.deepEqual(
       rest.map(s => s.id),
       ['a'],
+    )
+  })
+})
+
+describe('allSavesNewestFirst', () => {
+  it('keeps pinned saves in All Saves, newest first', () => {
+    const saves = [
+      save('old-pin', true, '2026-08-15T00:00:00.000Z'),
+      save('new-pin', true, '2026-11-22T00:00:00.000Z'),
+      save('mid', false, '2026-11-01T00:00:00.000Z'),
+    ]
+
+    assert.deepEqual(
+      allSavesNewestFirst(saves).map(s => s.id),
+      ['new-pin', 'mid', 'old-pin'],
     )
   })
 })
