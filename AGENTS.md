@@ -23,9 +23,19 @@ save detail on web.
 | Checklist UI | `trove/components/NoteBodyEditor.tsx` | Never show raw `- [ ]` on web |
 | Quick Save steps | input → Analyzing → preview confirm | Match mobile; do not skip confirm |
 | Design tokens | `trove/constants/theme.ts` | `trove-web/lib/theme.ts` + `--trove-*` |
-| Supabase project | `trove/.env.local` | Same URL + anon key (`scripts/sync-web-env.ps1`) |
+| Cloud data | Neon PG18 (`DATABASE_URL`, Neon Auth, Neon media) | Same Neon project. Supabase is not the live store |
 
 When mobile and web disagree on UX, **update web, not mobile** (see `trove/AGENTS.md` § Trove Web).
+
+## Data backend (hard rule)
+
+Trove Web’s live store is **Neon**. Library, collections, auth, media, sync, and MCP reads use Neon when `NEXT_PUBLIC_DATA_BACKEND` is unset, `neon`, or any value other than `supabase`. A missing `DATABASE_URL` throws. It does not fall through to Supabase.
+
+Set `NEXT_PUBLIC_DATA_BACKEND=supabase` only to use the legacy project on purpose.
+
+Supabase writes (RevenueCat entitlement mirror and the Neon → Supabase backup) run only when `SUPABASE_MIRROR=1`. URL and service-role keys alone do not write. The backup route, `lib/neon/backup.ts`, and `neon-functions/neonbackup` stay in the repo so the PG17 mirror can be turned back on. Rollback: set `SUPABASE_MIRROR=1` (Vercel and the `neonbackup` function env, with the Supabase URL and service role), redeploy `neonbackup`, and re-enable the Neon schedule trigger `nightly-neon-backup` on branch `br-bitter-butterfly-azoh2wfn`. Vercel cron `/api/cron/neon-backup` copies again once the flag is set.
+
+`scripts/sync-web-env.ps1` (in the mobile repo) copies optional mirror keys. It must not replace `DATABASE_URL` or flip the data backend.
 
 Before porting a feature:
 

@@ -1,3 +1,4 @@
+import { supabaseMirrorEnabled } from '@/lib/dataBackend'
 import { neonPool } from './pool'
 
 const TABLES = [
@@ -13,6 +14,11 @@ const TABLES = [
 ] as const
 
 export async function copyNeonToSupabase(): Promise<Record<string, number>> {
+  if (!supabaseMirrorEnabled()) {
+    throw new Error(
+      'SUPABASE_MIRROR is off. Set SUPABASE_MIRROR=1 to copy Neon into the Supabase PG17 mirror.',
+    )
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
   if (!supabaseUrl || !serviceKey) throw new Error('Supabase backup target is not configured')

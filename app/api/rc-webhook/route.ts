@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { supabaseMirrorEnabled } from '@/lib/dataBackend'
 import { neonPool } from '@/lib/neon/pool'
 import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
@@ -60,7 +61,7 @@ async function writeNeon(rows: { id: string; tier: Tier; at: string }[]): Promis
   }
 }
 
-/** Keep the legacy Supabase ai-proxy in sync when the service key is configured. */
+/** Optional PG17 mirror. Runs only when SUPABASE_MIRROR=1. Keys alone do not write. */
 async function writeSupabase(rows: { id: string; tier: Tier; at: string }[]): Promise<boolean> {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').replace(/\/$/, '')
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -109,7 +110,9 @@ export async function POST(request: Request) {
     const rows = [...ids].map(id => ({ id, tier, at }))
 
     await writeNeon(rows)
-    const mirrored = await writeSupabase(rows).catch(() => false)
+    const mirrored = supabaseMirrorEnabled()
+      ? await writeSupabase(rows).catch(() => false)
+      : false
 
     return json({ ok: true, tier, ids: rows.length, mirrored })
   } catch (error) {

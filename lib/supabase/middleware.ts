@@ -1,9 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isNeonDataBackend } from '@/lib/dataBackend'
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from '@/lib/env'
 
 export async function updateSession(request: NextRequest) {
-  if (process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon' || !isSupabaseConfigured()) {
+  if (isNeonDataBackend() || !isSupabaseConfigured()) {
     return NextResponse.next({ request })
   }
 

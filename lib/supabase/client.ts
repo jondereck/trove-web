@@ -1,12 +1,13 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { isNeonDataBackend } from '@/lib/dataBackend'
 import { supabaseAnonKey, supabaseUrl } from '@/lib/env'
 import { createRemoteNeonClient } from '@/lib/neon/remote'
 
 const TOKEN_KEY = 'trove.neon.session'
 
 export function createClient() {
-  if (process.env.NEXT_PUBLIC_DATA_BACKEND !== 'neon') {
+  if (!isNeonDataBackend()) {
     return createBrowserClient(supabaseUrl(), supabaseAnonKey())
   }
   return createRemoteNeonClient({

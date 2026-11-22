@@ -1,3 +1,4 @@
+import { isNeonDataBackend } from './dataBackend'
 import { supabaseAnonKey, supabaseUrl } from './env'
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{22,128}$/
@@ -40,7 +41,7 @@ export async function fetchSharedCollection(
   token: string,
 ): Promise<SharedCollectionPayload | null> {
   if (!isSharedCollectionToken(token)) return null
-  const neon = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+  const neon = isNeonDataBackend()
   const base = neon ? '' : supabaseUrl()
   const anon = supabaseAnonKey()
   if (!neon && (!base.trim() || !anon.trim())) return null
@@ -66,7 +67,7 @@ export async function postSharedCollectionAction(
     | { action: 'attach_viewer'; token: string }
     | { action: 'accept_invite'; invite_token: string },
 ): Promise<{ ok: boolean; status: number; error?: string }> {
-  const neon = process.env.NEXT_PUBLIC_DATA_BACKEND === 'neon'
+  const neon = isNeonDataBackend()
   const base = neon ? '' : supabaseUrl()
   const anon = supabaseAnonKey()
   if (!neon && (!base.trim() || !anon.trim())) {

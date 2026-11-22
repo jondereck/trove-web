@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { isNeonDataBackend } from '@/lib/dataBackend'
 import { hashMcpToken, isMcpToken } from '@/lib/mcp/tokens'
 import { createServiceClient } from '@/lib/mcp/serviceClient'
 import { userFromSupabaseAccessToken } from '@/lib/mcp/supabaseAccessToken'
@@ -10,19 +11,20 @@ export type McpUser = {
 
 export async function resolveMcpUser(token: string | undefined): Promise<McpUser | null> {
   if (!token) return null
-  if (process.env.DATABASE_URL) {
+  if (isNeonDataBackend()) {
+    if (!process.env.DATABASE_URL) return null
     const { readSession } = await import('@/lib/neon/accounts')
     const session = await readSession(token)
     if (session) return { userId: session.appUserId, scopes: ['trove:read'] }
-    if (isMcpToken(token)) {
-      const { neonPool } = await import('@/lib/neon/pool')
-      const result = await neonPool().query(
-        'select user_id, scopes from public.mcp_resolve_token($1)',
-        [hashMcpToken(token)],
-      )
-      const row = result.rows[0] as { user_id?: string; scopes?: string[] } | undefined
-      if (row?.user_id) return { userId: row.user_id, scopes: row.scopes ?? ['trove:read'] }
-    }
+    if (!isMcpToken(token)) return null
+    const { neonPool } = await import('@/lib/neon/pool')
+    const result = await neonPool().query(
+      'select user_id, scopes from public.mcp_resolve_token($1)',
+      [hashMcpToken(token)],
+    )
+    const row = result.rows[0] as { user_id?: string; scopes?: string[] } | undefined
+    if (!row?.user_id) return null
+    return { userId: row.user_id, scopes: row.scopes ?? ['trove:read'] }
   }
   const oauthUser = await userFromSupabaseAccessToken(token)
   if (oauthUser) return oauthUser
@@ -39,9 +41,12 @@ export async function resolveMcpUser(token: string | undefined): Promise<McpUser
 }
 
 export async function readAsUser<T>(
-  userId: string,
+  _userId: string,
   fn: (supabase: SupabaseClient) => Promise<T>,
 ): Promise<T> {
+  if (isNeonDataBackend()) {
+    throw new Error('MCP reads use Neon. The Supabase service role is only for NEXT_PUBLIC_DATA_BACKEND=supabase.')
+  }
   const supabase = createServiceClient()
   if (!supabase) throw new Error('MCP server is missing SUPABASE_SERVICE_ROLE_KEY')
   return fn(supabase)

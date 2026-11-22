@@ -22,7 +22,7 @@ selection UX on web. Mobile wins; web follows.
 | Long-press mass selection | `SelectionModeHeader` + `SelectionActionBar` | Same on Library + collection detail |
 | Checklist UI | `trove/components/NoteBodyEditor.tsx` | Never show raw `- [ ]` on web |
 | Design tokens | `trove/constants/theme.ts` | `trove-web/lib/theme.ts` + `--trove-*` |
-| Supabase project | `trove/.env.local` | Same URL + anon key (`scripts/sync-web-env.ps1`) |
+| Cloud data | Neon PG18 (`DATABASE_URL`, Neon Auth, Neon media) | Same Neon project. Supabase mirror only if `SUPABASE_MIRROR=1` |
 
 When mobile and web disagree on Library / Collections / save detail UX, **update web, not mobile** (see `trove/AGENTS.md` § Trove Web).
 

@@ -1,5 +1,6 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler'
 import { z } from 'zod'
+import { isNeonDataBackend } from '@/lib/dataBackend'
 import { resolveMcpUser } from '@/lib/mcp/auth'
 import { pingText } from '@/lib/mcp/ping'
 import { createServiceClient, serviceRoleKey } from '@/lib/mcp/serviceClient'
@@ -12,7 +13,10 @@ type ToolExtra = {
 }
 
 async function callMcp(fn: string, args: Record<string, unknown>, userId: string) {
-  if (process.env.DATABASE_URL) {
+  if (isNeonDataBackend()) {
+    if (!process.env.DATABASE_URL) {
+      return { data: null, error: { message: 'Neon DATABASE_URL is not configured' }, count: null }
+    }
     const { emptyState, runQuery } = await import('@/lib/neon/query')
     const { neonPool } = await import('@/lib/neon/pool')
     return runQuery((sql, params) => neonPool().query(sql, params), {
@@ -33,7 +37,9 @@ async function callMcp(fn: string, args: Record<string, unknown>, userId: string
 }
 
 function requireUser(extra: ToolExtra): string | { error: string } {
-  if (!serviceRoleKey() && !process.env.DATABASE_URL) {
+  if (isNeonDataBackend()) {
+    if (!process.env.DATABASE_URL) return { error: 'Neon DATABASE_URL is not configured' }
+  } else if (!serviceRoleKey()) {
     return { error: 'MCP server is missing its database connection' }
   }
   const userId = extra.authInfo?.extra?.userId

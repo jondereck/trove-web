@@ -9,7 +9,7 @@ Slugs are `[a-z0-9]{1,20}` (no hyphens):
 | `jev` | Neon AI Gateway Decisions (TypeSafe Jev) |
 | `og` | OG HTML fetch |
 | `rcwebhook` | RevenueCat → entitlements |
-| `neonbackup` | Neon → Supabase backup (cron Trigger) |
+| `neonbackup` | Neon → Supabase PG17 mirror. Skips unless `SUPABASE_MIRROR=1`. Schedule trigger `nightly-neon-backup` stays disabled until that rollback. |
 
 Deploy (from `trove-web`):
 

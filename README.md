@@ -12,7 +12,7 @@ cursor C:\Users\jonde\trove.code-workspace
 
 Or **File → Open Workspace from File…** → `trove.code-workspace` (in your `jonde` folder).
 
-Sync Supabase keys from mobile:
+Optional Supabase mirror keys (does not switch the database off Neon):
 
 ```powershell
 cd C:\Users\jonde\trove
@@ -30,15 +30,15 @@ cd C:\Users\jonde\trove-web
 copy .env.local.example .env.local
 ```
 
-Fill `.env.local` with the **same** Supabase project as mobile (`EXPO_PUBLIC_*` names work too):
+Fill `.env.local` for **Neon** (the live store). Leave `NEXT_PUBLIC_DATA_BACKEND` unset or set it to `neon`. Set `DATABASE_URL` and `NEON_AUTH_URL`. Supabase URL and anon key are optional and do nothing for Library, auth, media, or sync unless you set `NEXT_PUBLIC_DATA_BACKEND=supabase` on purpose. Copies into Supabase run only when `SUPABASE_MIRROR=1`.
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=
+NEON_AUTH_URL=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-**OAuth (Google / Apple):** In Supabase Dashboard → Authentication → URL configuration, add:
+**Legacy Supabase OAuth redirect list** (only if `NEXT_PUBLIC_DATA_BACKEND=supabase`): add:
 
 - `http://localhost:3000/auth/callback`
 - `https://web-trove.vercel.app/auth/callback`
@@ -62,7 +62,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Tech stack
 
-Next.js 16, Supabase SSR auth, CSS Modules (Phase A screens) + **Tailwind CSS v4 + shadcn/ui** (foundation for Phase B/C).
+Next.js 16, Neon Postgres + Neon Auth, CSS Modules (Phase A screens) + **Tailwind CSS v4 + shadcn/ui** (foundation for Phase B/C). Supabase client code remains for an explicit `NEXT_PUBLIC_DATA_BACKEND=supabase` rollback.
 
 | Command | Purpose |
 |---------|---------|
@@ -78,9 +78,9 @@ Next.js 16, Supabase SSR auth, CSS Modules (Phase A screens) + **Tailwind CSS v4
 ## Deploy (Vercel)
 
 1. Import `jondereck/trove-web` on Vercel
-2. Set the three `NEXT_PUBLIC_*` env vars
-3. Add `https://<your-domain>/auth/callback` to Supabase Auth redirect URLs (Phase B OAuth)
+2. Set `DATABASE_URL`, `NEON_AUTH_URL`, and `NEXT_PUBLIC_SITE_URL`. Leave `NEXT_PUBLIC_DATA_BACKEND` unset (Neon). Do not set `SUPABASE_MIRROR` unless you want the PG17 copy.
+3. Neon Auth redirect URLs must include `https://<your-domain>/auth/callback`
 
 ## Parallel development
 
-Keep mobile (`trove`) and web (`trove-web`) in separate Cursor windows. Schema changes in mobile `supabase/migrations` must be reflected in web types/queries manually until a shared package exists.
+Keep mobile (`trove`) and web (`trove-web`) in separate Cursor windows. Schema changes on the Neon project must be reflected in web queries manually until a shared package exists.

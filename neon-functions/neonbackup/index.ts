@@ -12,6 +12,12 @@ const TABLES = [
   { name: 'trove_mcp_tokens', pk: 'id' },
 ] as const
 
+/** Keep in sync with lib/dataBackend.ts supabaseMirrorEnabled. */
+function supabaseMirrorEnabled(): boolean {
+  const raw = (process.env.SUPABASE_MIRROR ?? '').trim().toLowerCase()
+  return raw === '1' || raw === 'true' || raw === 'yes'
+}
+
 function authorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET ?? ''
   const header = request.headers.get('authorization') ?? ''
@@ -29,6 +35,13 @@ export default {
     }
     if (!authorized(request)) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!supabaseMirrorEnabled()) {
+      return Response.json({
+        ok: true,
+        skipped: true,
+        reason: 'SUPABASE_MIRROR is off. Neon is the live store. Set SUPABASE_MIRROR=1 to copy into the Supabase PG17 mirror.',
+      })
     }
     const supabaseUrl = (
       process.env.NEXT_PUBLIC_SUPABASE_URL ??

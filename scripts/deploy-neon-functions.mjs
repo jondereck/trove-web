@@ -64,12 +64,18 @@ for (const slug of slugs) {
   }
   if (slug === 'neonbackup') {
     if (process.env.CRON_SECRET) args.push('--env', `CRON_SECRET=${process.env.CRON_SECRET}`)
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      args.push('--env', `SUPABASE_SERVICE_ROLE_KEY=${process.env.SUPABASE_SERVICE_ROLE_KEY}`)
+    const mirror = ['1', 'true', 'yes'].includes(
+      (process.env.SUPABASE_MIRROR ?? '').trim().toLowerCase(),
+    )
+    if (mirror) {
+      args.push('--env', 'SUPABASE_MIRROR=1')
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        args.push('--env', `SUPABASE_SERVICE_ROLE_KEY=${process.env.SUPABASE_SERVICE_ROLE_KEY}`)
+      }
+      const sb =
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
+      if (sb) args.push('--env', `NEXT_PUBLIC_SUPABASE_URL=${sb}`)
     }
-    const sb =
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
-    if (sb) args.push('--env', `NEXT_PUBLIC_SUPABASE_URL=${sb}`)
   }
   try {
     execFileSync(neonBin, args, { stdio: 'inherit', cwd: root })
