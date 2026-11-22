@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
 function meta(html: string, key: string): string | undefined {
   const pattern = new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`, 'i')
@@ -7,6 +8,9 @@ function meta(html: string, key: string): string | undefined {
 }
 
 export async function POST(request: Request) {
+  const proxied = await proxyNeonFunction('og', request)
+  if (proxied) return proxied
+
   const body = await request.json().catch(() => null) as { url?: string } | null
   const url = body?.url ?? ''
   let host = url

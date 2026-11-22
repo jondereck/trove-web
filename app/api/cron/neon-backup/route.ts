@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import { copyNeonToSupabase } from '@/lib/neon/backup'
+import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
 export async function GET(request: Request) {
   return POST(request)
 }
 
 export async function POST(request: Request) {
+  const proxied = await proxyNeonFunction('neonbackup', request)
+  if (proxied) return proxied
+
   const secret = process.env.CRON_SECRET
   const header = request.headers.get('authorization') ?? ''
   if (!secret || header !== `Bearer ${secret}`) {

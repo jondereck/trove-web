@@ -30,6 +30,17 @@ export type QueryResult = {
   count: number | null
 }
 
+const TOUCH_UPDATED_AT = new Set(['saves', 'collections'])
+
+/** Stamp updated_at so sync-watch watermarks move on every write. */
+export function touchUpdatedAt(
+  table: string,
+  row: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!TOUCH_UPDATED_AT.has(table)) return row
+  return { ...row, updated_at: new Date().toISOString() }
+}
+
 export function emptyState(table: string): QueryState {
   return {
     table,
@@ -285,7 +296,7 @@ export async function runQuery(
     }
 
     if (scoped.action === 'update') {
-      const row = (scoped.values ?? {}) as Record<string, unknown>
+      const row = touchUpdatedAt(scoped.table, (scoped.values ?? {}) as Record<string, unknown>)
       const keys = Object.keys(row)
       if (keys.length === 0) return { data: null, error: null, count: null }
       const sets = keys.map((key) => {
@@ -300,7 +311,8 @@ export async function runQuery(
     }
 
     if (scoped.action === 'insert' || scoped.action === 'upsert') {
-      const rows = Array.isArray(scoped.values) ? scoped.values : [scoped.values ?? {}]
+      const rawRows = Array.isArray(scoped.values) ? scoped.values : [scoped.values ?? {}]
+      const rows = rawRows.map((row) => touchUpdatedAt(scoped.table, (row ?? {}) as Record<string, unknown>))
       if (rows.length === 0) return { data: [], error: null, count: 0 }
       // Union keys so a batch insert stays one round-trip (backup import).
       const keys = [...new Set(rows.flatMap((row) => Object.keys(row ?? {})))]

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { neonPool } from '@/lib/neon/pool'
+import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
 /**
  * RevenueCat webhook → entitlements (port of the Supabase edge function).
@@ -83,6 +84,9 @@ async function writeSupabase(rows: { id: string; tier: Tier; at: string }[]): Pr
 }
 
 export async function POST(request: Request) {
+  const proxied = await proxyNeonFunction('rcwebhook', request)
+  if (proxied) return proxied
+
   const secret = process.env.RC_WEBHOOK_SECRET ?? ''
   if (!secret || request.headers.get('authorization') !== secret) {
     return json({ error: 'Unauthorized' }, 401)

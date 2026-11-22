@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
+import { proxyNeonFunction } from '@/lib/neon/functionProxy'
 
 export async function POST(request: Request) {
+  const proxied = await proxyNeonFunction('ai', request)
+  if (proxied) return proxied
+
   const key = process.env.OPENAI_API_KEY ?? ''
   if (!key) return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 500 })
   const body = await request.json().catch(() => null) as {

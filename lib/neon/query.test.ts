@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { emptyState, scopedState, upsertOwnerGuard, whereSql } from './query'
+import { emptyState, scopedState, touchUpdatedAt, upsertOwnerGuard, whereSql } from './query'
+
+test('touchUpdatedAt stamps saves and collections', () => {
+  const stamped = touchUpdatedAt('saves', { title: 'x' })
+  assert.equal(stamped.title, 'x')
+  assert.equal(typeof stamped.updated_at, 'string')
+  assert.deepEqual(touchUpdatedAt('profiles', { id: '1' }), { id: '1' })
+})
 
 test('a save read is limited to the signed-in user', () => {
   const state = emptyState('saves')
