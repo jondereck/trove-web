@@ -3,6 +3,8 @@ import { neonUserId } from '@/lib/neon/client'
 import { neonPool } from '@/lib/neon/pool'
 import { runQuery, type QueryState } from '@/lib/neon/query'
 
+export const preferredRegion = 'sin1'
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as { state?: QueryState } | null
   if (!body?.state) {

@@ -3,6 +3,8 @@ import { neonUserId } from '@/lib/neon/client'
 import { neonPool } from '@/lib/neon/pool'
 import { runQuery, type QueryResult, type QueryState } from '@/lib/neon/query'
 
+export const preferredRegion = 'sin1'
+
 const MAX_STATES = 12
 
 /**

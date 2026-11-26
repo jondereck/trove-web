@@ -234,7 +234,7 @@ export async function runQuery(
       }
       if (state.rpc.fn === 'search_saves') {
         if (!userId) return { data: null, error: { message: 'Not signed in' }, count: null }
-        const columns = `id, user_id, url, title, description, type, content,
+        const columns = `id, user_id, url, title, left(description, 240) as description, type,
           image_url, image_urls, collection_id, tags, is_inbox, created_at,
           is_favorite, is_viewed, is_pinned, is_watched, watched_at, updated_at, is_vault`
         const terms = args.terms ?? []
