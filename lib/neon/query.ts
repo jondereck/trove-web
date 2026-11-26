@@ -206,7 +206,8 @@ function valueFor(value: unknown): unknown {
 }
 
 const RPC_ARGS: Record<string, string[]> = {
-  search_saves: ['terms'],
+  search_saves: ['p_user_id', 'terms'],
+  library_reminder_saves: ['p_user_id', 'p_limit', 'p_offset'],
   /** Inline GROUP BY — not a Postgres function; handled below. */
   collection_save_counts: [],
   mcp_resolve_token: ['p_token_hash'],
@@ -233,18 +234,23 @@ export async function runQuery(
       }
       if (state.rpc.fn === 'search_saves') {
         if (!userId) return { data: null, error: { message: 'Not signed in' }, count: null }
-        // The function returns whole rows (content, vault ciphertext, edit
-        // metadata …). Project only what SaveCard + client ranking need and cap
-        // the set: this response was ~180 KB for 6 hits on mobile Cloud.
         const columns = `id, user_id, url, title, description, type, content,
           image_url, image_urls, collection_id, tags, is_inbox, created_at,
           is_favorite, is_viewed, is_pinned, is_watched, watched_at, updated_at, is_vault`
+        const terms = args.terms ?? []
         const result = await query(
-          `select ${columns} from public.search_saves($1::text[])
-           where user_id = $2::uuid
-           order by created_at desc
-           limit 60`,
-          [args.terms ?? [], userId],
+          `select ${columns} from public.search_saves($1::uuid, $2::text[])`,
+          [userId, terms],
+        )
+        return { data: result.rows, error: null, count: result.rows.length }
+      }
+      if (state.rpc.fn === 'library_reminder_saves') {
+        if (!userId) return { data: null, error: { message: 'Not signed in' }, count: null }
+        const pLimit = Number(args.p_limit ?? 24)
+        const pOffset = Number(args.p_offset ?? 0)
+        const result = await query(
+          'select * from public.library_reminder_saves($1::uuid, $2::integer, $3::integer)',
+          [userId, pLimit, pOffset],
         )
         return { data: result.rows, error: null, count: result.rows.length }
       }
