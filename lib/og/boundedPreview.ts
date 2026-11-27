@@ -1,3 +1,5 @@
+import { decodeOgText } from './decodeEntities'
+
 export const OG_PAGE_MS = 3500
 
 export type OgPreview = {
@@ -30,9 +32,9 @@ export function fieldsFromOEmbed(
   siteName: string,
 ): OgPreview | null {
   if (!data) return null
-  const oembedTitle = typeof data.title === 'string' ? data.title.trim() : ''
-  const author = typeof data.author_name === 'string' ? data.author_name.trim() : ''
-  const image = typeof data.thumbnail_url === 'string' ? data.thumbnail_url.trim() : ''
+  const oembedTitle = decodeOgText(typeof data.title === 'string' ? data.title : undefined) ?? ''
+  const author = decodeOgText(typeof data.author_name === 'string' ? data.author_name : undefined) ?? ''
+  const image = decodeOgText(typeof data.thumbnail_url === 'string' ? data.thumbnail_url : undefined) ?? ''
   const split = oembedTitle.match(PLATFORM_TITLE)
   const caption = split?.[3]?.trim() || (oembedTitle && oembedTitle !== author && !split ? oembedTitle : '')
   const title = author || split?.[1]?.trim() || caption
@@ -108,12 +110,15 @@ export async function fetchLinkPreview(url: string): Promise<OgPreview> {
       signal: AbortSignal.timeout(OG_PAGE_MS),
     })
     const html = await response.text()
+    const rawTitle = metaContent(html, 'og:title') ?? fromOembed?.title ?? host
+    const rawDescription = metaContent(html, 'og:description') ?? fromOembed?.description
+    const rawImage = metaContent(html, 'og:image') ?? fromOembed?.image
     return {
       url,
-      title: metaContent(html, 'og:title') ?? fromOembed?.title ?? host,
-      description: metaContent(html, 'og:description') ?? fromOembed?.description,
-      image: metaContent(html, 'og:image') ?? fromOembed?.image,
-      siteName: metaContent(html, 'og:site_name') ?? fromOembed?.siteName ?? host,
+      title: decodeOgText(rawTitle) ?? rawTitle,
+      description: decodeOgText(rawDescription),
+      image: decodeOgText(rawImage),
+      siteName: decodeOgText(metaContent(html, 'og:site_name')) ?? fromOembed?.siteName ?? host,
     }
   } catch {
     return fromOembed ?? { url, title: host, siteName: host }
